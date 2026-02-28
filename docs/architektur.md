@@ -1,6 +1,6 @@
 # DIY Energy Management – Architektur
 
-> Intel N100 Mini PC (HA OS) · Sungrow SH10RT · 12.8 kWh Batterie · Novelan LICV 8.2
+> KAMRUI N100 (HA OS) · Synology DS218+ (NAS/Backup) · Sungrow SH10RT · 12.8 kWh Batterie · Novelan LICV 8.2
 
 ## Phase 1: Parallelbetrieb (Simulation)
 
@@ -16,9 +16,11 @@ graph TB
 
     subgraph N100P1["🖥️ KAMRUI N100 (Home Assistant OS)"]
         HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboard · Sensoren</small>"]
+        TMPL["📐 Template-Sensoren<br/><small>Abstraktionsschicht</small>"]
         EMHASSP1["🧠 EMHASS Add-on<br/><small>Simulationsmodus · nur berechnen</small>"]
         INFLUXP1["📈 InfluxDB Add-on<br/><small>Langzeit-Logging</small>"]
         GRAFANAP1["📊 Grafana Add-on<br/><small>Vergleichs-Dashboard</small>"]
+        MQTTP1["MQTT Broker<br/><small>Mosquitto Add-on</small>"]
     end
 
     subgraph LOKAL1["🏠 Lokales Netzwerk"]
@@ -31,8 +33,9 @@ graph TB
     SOLCAST -->|PV-Forecast| HAP1
     GOSUNGROW -->|SOC · Power · Grid| HAP1
 
-    %% HA → Simulation
-    HAP1 -->|Sensordaten| EMHASSP1
+    %% HA → Template → EMHASS
+    HAP1 --> TMPL
+    TMPL -->|generische Sensoren| EMHASSP1
     EMHASSP1 -.->|simulierter Plan| HAP1
     HAP1 --> INFLUXP1
     INFLUXP1 --> GRAFANAP1
@@ -47,7 +50,7 @@ graph TB
     classDef heartbeat fill:#14532d,stroke:#22c55e,color:#f1f5f9
 
     class ENTSOE,SOLCAST,GOSUNGROW cloud
-    class HAP1,EMHASSP1,INFLUXP1,GRAFANAP1 haos
+    class HAP1,TMPL,EMHASSP1,INFLUXP1,GRAFANAP1,MQTTP1 haos
     class HEARTBEAT,SUNGROW1 lokal
 ```
 
@@ -64,12 +67,12 @@ graph TB
         GOSUNGROW["GoSungrow Cloud<br/><small>Backup-Monitoring</small>"]
     end
 
-    subgraph N100["🖥️ Intel N100 Mini PC (Home Assistant OS)"]
+    subgraph SERVER["🖥️ KAMRUI N100 (Home Assistant OS)"]
         HA["🏠 Home Assistant<br/><small>Automationen · Dashboard · Sensoren</small>"]
-        EMHASS["🧠 EMHASS Add-on<br/><small>LP Optimizer · HiGHS Solver (x86)</small>"]
-        MQTT["MQTT Broker<br/><small>Mosquitto Add-on</small>"]
-        GRAFANA["📊 Grafana Add-on<br/><small>Langzeit-Visualisierung</small>"]
-        INFLUX["📈 InfluxDB Add-on<br/><small>Langzeit-Speicher</small>"]
+        EMHASS["🧠 EMHASS<br/><small>LP Optimizer · HiGHS Solver (x86)</small>"]
+        MQTT["MQTT Broker<br/><small>Mosquitto</small>"]
+        GRAFANA["📊 Grafana<br/><small>Langzeit-Visualisierung</small>"]
+        INFLUX["📈 InfluxDB<br/><small>Langzeit-Speicher</small>"]
     end
 
     subgraph LOKAL["🏠 Lokales Netzwerk"]
@@ -134,13 +137,13 @@ gantt
     dateFormat YYYY-MM-DD
     axisFormat %b
 
-    section Phase 1 – Simulation
-    N100 Mini PC bestellen + HA OS flashen  :p1hw, 2026-03-01, 5d
+    section Phase 1 – Simulation (KAMRUI N100)
+    KAMRUI N100 + HA OS einrichten          :p1hw, 2026-03-01, 3d
     ENTSO-e API-Key + Integration           :p1a, after p1hw, 2d
     Solcast/Forecast.Solar einrichten       :p1b, after p1a, 2d
     GoSungrow Langzeit-Logging (90 Tage)    :p1c, after p1a, 3d
     Vergleichs-Dashboard bauen              :p1d, after p1c, 5d
-    EMHASS Add-on Simulationsmodus          :p1e, after p1d, 5d
+    EMHASS Docker Simulationsmodus           :p1e, after p1d, 5d
     Daten sammeln & vergleichen             :p1f, after p1e, 42d
 
     section Phase 2 – Umstieg
@@ -155,43 +158,39 @@ gantt
 
 ## Hardware
 
-### HA-Server: Intel N100 Mini PC
+### HA-Server: KAMRUI N100 (bestellt)
 
-> **Warum N100?** x86_64 → EMHASS HiGHS-Solver läuft nativ (auf ARM nur GLPK). 16 GB RAM = Headroom für alle Add-ons. NVMe SSD = keine SD-Karten-Ausfälle. HA OS wird direkt geflasht (kein Windows).
+| Spec | Detail |
+|---|---|
+| **CPU** | Intel N100 (x86_64, 4C/4T, 3.4 GHz) |
+| **RAM** | 16 GB DDR4 |
+| **Storage** | 512 GB SSD |
+| **Stromverbrauch** | ~8W idle (~21 €/Jahr) |
+| **Preis** | 179,99 € |
 
-| Modell | CPU | RAM | Storage | Preis (DE) | Lüfterlos | Idle | Strom/Jahr |
-|---|---|---|---|---|---|---|---|
-| **KAMRUI N100** | N100 | 16 GB | 512 GB | **179,99 €** | Nein | ~8W | ~21 € |
-| Beelink Mini S12 Pro | N100 | 16 GB | 500 GB | 339 € | Nein | ~8W | ~21 € |
-| MeLE Quieter 4C | N100 | 16 GB | 512 GB | 399,99 € | Ja | ~5W | ~13 € |
-
-> Preise: Amazon.de, Stand Februar 2026. TRIGKEY Green G4 und BMAX B4 Plus nicht verfügbar.
-
-**Gewählt: KAMRUI N100** (16GB/512GB) – bestes Preis-Leistungs-Verhältnis auf dem deutschen Markt. Gleicher N100-Chip wie alle anderen, halber Preis vom Beelink. WiFi 5 + BT, aber HA läuft ohnehin per Ethernet.
-
-> Hinweis: Vorinstalliertes Windows 11 Pro wird komplett durch HA OS überschrieben.
+> HA OS wird direkt geflasht (kein Windows). HiGHS-Solver läuft nativ (x86_64).
+> 16 GB RAM = Headroom für alle Add-ons.
 
 ### Weitere Hardware
 
 | Komponente | Empfehlung | Preis |
 |---|---|---|
 | **SG-Ready Relais** | Shelly Plus oder ESP32 Relay | ~15 € einmalig |
-| **NAS (Backups)** | Synology DS218 (vorhanden) | -- |
 
 ## Software-Komponenten
 
 | Komponente | Rolle | Kosten |
 |---|---|---|
-| **Home Assistant OS** | Basis-System auf N100 Mini PC | Kostenlos |
-| **ENTSO-e** | Börsenpreise (Phase 1) | Kostenlos |
+| **Home Assistant OS** | Auf KAMRUI N100 | Kostenlos |
+| **ENTSO-e** | Börsenpreise | Kostenlos |
 | **Tibber / aWATTar** | Dynamischer Tarif (Phase 2) | ~6 €/Mo |
 | **Solcast / Forecast.Solar** | PV-Prognose 48h | Kostenlos |
-| **Sungrow Modbus (mkaiser)** | Inverter + Batterie Steuerung | Kostenlos |
-| **EMHASS Add-on** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
-| **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 | Kostenlos |
-| **GoSungrow Cloud** | Backup-Monitoring via MQTT | Kostenlos |
+| **Sungrow Modbus (mkaiser)** | Inverter + Batterie Steuerung (Phase 2) | Kostenlos |
+| **EMHASS** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
+| **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 (Phase 2) | Kostenlos |
+| **GoSungrow Cloud** | Monitoring via MQTT | Kostenlos |
 | **InfluxDB + Grafana** | Langzeit-Analyse | Kostenlos |
 
-> **Laufende Kosten: ~6 €/Mo** (nur Tibber Grundgebühr) vs. ~34 €/Mo bei 1komma5° → **Ersparnis ~336 €/Jahr**
+> **Laufende Kosten (Phase 2): ~6 €/Mo** (nur Tibber Grundgebühr) vs. ~34 €/Mo bei 1komma5° → **Ersparnis ~336 €/Jahr**
 >
-> **Einmalige Kosten: ~195 €** (KAMRUI + Shelly) – amortisiert sich in ~7 Monaten
+> **Einmalige Kosten: ~195 €** (KAMRUI 179,99 € + Shelly ~15 €) – amortisiert sich in ~7 Monaten

@@ -30,18 +30,40 @@
 > Ziel: Stack aufbauen, EMHASS-Ergebnisse mit Heartbeat vergleichen, fundierte Entscheidung treffen.
 > Architektur-Diagramm: [architektur.md](architektur.md)
 
-### 1.0 Hardware: KAMRUI N100 Mini PC
-- [ ] **KAMRUI N100** bestellen (N100, 16GB DDR4, 512GB SSD, 179,99 € auf Amazon.de)
+### 1.0 Plattform: KAMRUI N100 (bestellt)
 - [ ] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
-- [ ] Grundkonfiguration: Netzwerk, Benutzer, MQTT Broker (Mosquitto Add-on)
-- [ ] GoSungrow / MQTT Integration von bestehender HA-Instanz migrieren
-- [ ] HA-Backups automatisch auf Synology ablegen (SMB/NFS Netzlaufwerk)
+- [ ] Grundkonfiguration: Netzwerk, Benutzer
+- [ ] Add-ons installieren: Mosquitto, InfluxDB, Grafana
+- [ ] GoSungrow / MQTT Integration konfigurieren
+- [ ] HA-Backups automatisch auf Synology ablegen (SMB/NFS)
 
-> **Warum N100?** x86_64 → EMHASS HiGHS-Solver läuft nativ. 16 GB RAM = Headroom für alle Add-ons. ~8W idle = ~21 €/Jahr Strom.
+> **KAMRUI N100:** Intel N100 (x86_64, 4C/4T), 16 GB RAM, 512 GB SSD.
+> HiGHS-Solver läuft nativ. HA OS mit Add-ons statt Docker.
+> **Synology DS218+** bleibt als NAS + Backup-Ziel.
+
+### 1.0a Abstraktionsschicht: Template-Sensoren
+- [ ] Template-Sensoren mit **generischen Namen** anlegen, die auf GoSungrow-Entities zeigen
+- [ ] EMHASS, Dashboards und Automationen referenzieren **nur** die Template-Sensoren
+- [ ] Beim Umstieg auf Modbus (Phase 2) → nur Template-Quelle ändern, sonst nichts
+
+Sensoren für die Abstraktionsschicht:
+
+| Template-Sensor | Phase 1 Quelle (GoSungrow API) | Phase 2 Quelle (Modbus) |
+|---|---|---|
+| `sensor.pv_power` | `gosungrow...p13003` | `sungrow_total_dc_power` |
+| `sensor.battery_soc` | `gosungrow...p13141` | `sungrow_battery_level` |
+| `sensor.battery_charge_power` | `gosungrow...p13126` | `sungrow_battery_charging_power` |
+| `sensor.battery_discharge_power` | `gosungrow...p13150` | `sungrow_battery_discharging_power` |
+| `sensor.grid_import_power` | `gosungrow...p13149` | `sungrow_import_power` |
+| `sensor.grid_export_power` | `gosungrow...p13121` | `sungrow_export_power` |
+| `sensor.load_power` | `gosungrow...p13119` | `sungrow_load_power` |
+| `sensor.battery_power_net` | `gosungrow...battery_power` | `sungrow_battery_power` |
+
+> **Wichtig:** Die Modbus-Entity-Namen in der Tabelle sind Beispiele – die exakten Namen ergeben sich
+> aus der mkaiser-Integration. Beim Umstieg einfach nachschlagen und in den Templates ersetzen.
 >
-> **Rolle der Geräte:**
-> - **N100 Mini PC** = dediziertes HA OS Gerät (kein Windows, reines HA-System)
-> - **Synology DS218** = NAS (Fileserver, Backups, Medien) + HA-Backup-Ziel
+> **Steuerungs-Entities** (Batterie-Lademodus, SOC-Grenzen, Zeitpläne) gibt es nur über Modbus –
+> die kommen in Phase 2 neu dazu und brauchen keine Migration.
 
 ### 1.1 Börsenpreise als Sensor (nur lesend)
 - [ ] **ENTSO-e Transparency Platform** Integration installieren (kostenlos, nur Registrierung nötig)
@@ -61,8 +83,8 @@
 - [ ] Prüfen ob Prognosedaten plausibel sind
 
 ### 1.3 EMHASS im Simulationsmodus
-- [ ] **EMHASS Add-on** in HA OS installieren (läuft als Docker-Container auf dem N100)
-  - Linear-Programming-Optimierer mit **HiGHS-Solver** (x86 nativ)
+- [ ] **EMHASS** als Docker-Container auf der DS218+ installieren
+  - Linear-Programming-Optimierer mit **HiGHS-Solver** (x86 nativ auf J3355)
   - Kombiniert: Strompreise + PV-Prognose + Verbrauchsmuster
   - ML-basierte Lastvorhersage
   - Doku speziell für Sungrow: [LibreHEMS](https://www.librehems.com)
@@ -134,7 +156,12 @@
 - [ ] Heartbeat vom Netz trennen
 - [ ] **mkaiser Sungrow-SHx-Modbus-Integration** einrichten
 - [ ] Modbus TCP Zugriff auf Wechselrichter (Port 502) testen
-- [ ] Lade-/Entladezeiten und -modi per Automation steuern
+- [ ] **Template-Sensoren umstellen**: GoSungrow-Entities → Modbus-Entities (siehe Tabelle in 1.0a)
+- [ ] Prüfen ob EMHASS, Dashboards, Automationen weiterhin funktionieren (sollten, da sie nur Templates referenzieren)
+- [ ] Neue Steuerungs-Entities einrichten (nur über Modbus verfügbar):
+  - Batterie-Lademodus (Forced Charge, Self-Consumption, etc.)
+  - Lade-/Entladezeiten und -zeitpläne
+  - Min/Max SOC Grenzen
 
 ### 2.3 Wärmepumpensteuerung (Novelan)
 - [ ] **SG-Ready** Ansteuerung über HA einrichten
