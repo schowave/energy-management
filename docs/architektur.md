@@ -2,7 +2,58 @@
 
 > Intel N100 Mini PC (HA OS) · Sungrow SH10RT · 12.8 kWh Batterie · Novelan LICV 8.2
 
-## Systemarchitektur
+## Phase 1: Parallelbetrieb (Simulation)
+
+> Heartbeat steuert weiterhin per Modbus. HA liest nur über GoSungrow Cloud-API. Kein Modbus-Konflikt.
+
+```mermaid
+graph TB
+    subgraph CLOUD["☁️ Cloud / APIs"]
+        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise</small>"]
+        SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
+        GOSUNGROW["GoSungrow Cloud<br/><small>PV · Batterie · Grid Daten</small>"]
+    end
+
+    subgraph N100P1["🖥️ KAMRUI N100 (Home Assistant OS)"]
+        HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboard · Sensoren</small>"]
+        EMHASSP1["🧠 EMHASS Add-on<br/><small>Simulationsmodus · nur berechnen</small>"]
+        INFLUXP1["📈 InfluxDB Add-on<br/><small>Langzeit-Logging</small>"]
+        GRAFANAP1["📊 Grafana Add-on<br/><small>Vergleichs-Dashboard</small>"]
+    end
+
+    subgraph LOKAL1["🏠 Lokales Netzwerk"]
+        HEARTBEAT["💚 1komma5° Heartbeat<br/><small>steuert per Modbus TCP :502</small>"]
+        SUNGROW1["Sungrow SH10RT<br/><small>Modbus TCP :502</small>"]
+    end
+
+    %% Cloud → HA (nur lesend)
+    ENTSOE -->|Börsenpreise| HAP1
+    SOLCAST -->|PV-Forecast| HAP1
+    GOSUNGROW -->|SOC · Power · Grid| HAP1
+
+    %% HA → Simulation
+    HAP1 -->|Sensordaten| EMHASSP1
+    EMHASSP1 -.->|simulierter Plan| HAP1
+    HAP1 --> INFLUXP1
+    INFLUXP1 --> GRAFANAP1
+
+    %% Heartbeat steuert (HA hat keinen Modbus-Zugriff)
+    HEARTBEAT ==>|Modbus TCP| SUNGROW1
+
+    %% Styling
+    classDef cloud fill:#1e3a5f,stroke:#3b82f6,color:#f1f5f9
+    classDef haos fill:#14532d,stroke:#22c55e,color:#f1f5f9
+    classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
+    classDef heartbeat fill:#14532d,stroke:#22c55e,color:#f1f5f9
+
+    class ENTSOE,SOLCAST,GOSUNGROW cloud
+    class HAP1,EMHASSP1,INFLUXP1,GRAFANAP1 haos
+    class HEARTBEAT,SUNGROW1 lokal
+```
+
+> HA hat **keinen Modbus-Zugriff** – alle Daten kommen über GoSungrow Cloud-API. EMHASS berechnet, was es tun **würde**, führt aber nichts aus. Heartbeat bleibt alleiniger Steuerer.
+
+## Phase 2: Systemarchitektur (nach Umstieg)
 
 ```mermaid
 graph TB

@@ -49,6 +49,11 @@
   - Kein Stromvertrag nötig, reine Marktdaten-API
   - https://transparency.entsoe.eu/ → kostenlosen API-Key beantragen
 - [ ] Stündliche Börsenpreise als Sensor in HA verfügbar machen
+- [ ] **Dynamischer Endpreis-Sensor** (Template-Sensor): Börsenpreis + Netzentgelte + Steuern + Abgaben + Aufschlag
+  - Damit EMHASS gegen einen realistischen dynamischen Endpreis optimiert
+  - Aufschläge aus Tibber/aWATTar Tarifbedingungen entnehmen
+- [ ] **Festpreis-Sensor** (als Baseline): Aktueller Arbeitspreis des lokalen Grundversorgers (z.B. ~35 ct/kWh)
+  - Einfacher `input_number` Helper in HA reicht
 
 ### 1.2 PV-Prognose
 - [ ] **Solcast** oder **Forecast.Solar** Integration einrichten
@@ -61,9 +66,18 @@
   - Kombiniert: Strompreise + PV-Prognose + Verbrauchsmuster
   - ML-basierte Lastvorhersage
   - Doku speziell für Sungrow: [LibreHEMS](https://www.librehems.com)
-- [ ] Strompreis- und PV-Sensoren anbinden
+- [ ] **Anlagen-Parameter exakt konfigurieren** (für validen Vergleich entscheidend!):
+  - Batteriekapazität: 12.8 kWh
+  - Max. Lade-/Entladeleistung (aus Sungrow Datenblatt)
+  - Wechselrichter-Effizienz (~97%)
+  - Min/Max SOC Grenzen
+- [ ] Strompreis- und PV-Sensoren anbinden (Endpreis-Sensor aus 1.1!)
 - [ ] Verbrauchsdaten über **GoSungrow Cloud-API** (bereits vorhanden) einspeisen
 - [ ] EMHASS berechnet Day-Ahead-Plan → **nur anzeigen, nicht ausführen**
+- [ ] **EMHASS-Plan in erwartete Kosten umrechnen** (Template-Sensoren):
+  - Erwarteter SOC-Verlauf über den Tag
+  - Erwartete Import/Export-kWh pro Stunde
+  - Erwartete Tageskosten mit dynamischem Endpreis
 - [ ] Alternative: **WattWise** (AppDaemon-App, einfacher als EMHASS)
 
 ### 1.4 Heartbeat-Tracking (Entscheidungen nachvollziehen)
@@ -77,20 +91,33 @@
 - [ ] HA Recorder `purge_keep_days` hochsetzen (z.B. 90 Tage)
 - [ ] Optional: InfluxDB + Grafana für langfristige Analyse
 
-### 1.5 Vergleichs-Dashboard
+### 1.5 Vergleichs-Dashboard (3 Szenarien)
 - [ ] Dashboard bauen mit **Zeitstrahl-Überlagerung**:
-  - Börsenpreis-Kurve (ct/kWh)
-  - Battery SOC Verlauf
+  - Börsenpreis-Kurve (ct/kWh) + Festpreis-Linie als Referenz
+  - Battery SOC Verlauf (Heartbeat real) vs. EMHASS-Simulation
   - Lade-/Entlade-Zeitpunkte von Heartbeat
   - Import/Export Zeitpunkte
+- [ ] **Täglicher Kostenvergleich – 3 Szenarien:**
+  - **① Baseline (Festpreis, keine Optimierung):** Σ(Gesamtverbrauch kWh × Festpreis Grundversorger)
+    - = was der Strom ohne jede Optimierung kosten würde
+  - **② Heartbeat real (1komma5°):** Σ(tatsächlicher Import kWh × Festpreis) + 1komma5 Fixkosten anteilig
+    - Heartbeat-Preis ist unbekannt, aber die Import-kWh sind messbar
+    - Zeigt: wieviel kWh Heartbeat durch Batterieverschiebung vermeidet
+  - **③ EMHASS simuliert (dynamischer Tarif):** Σ(simulierter Import kWh × dynamischer Endpreis) + Tibber Fixkosten anteilig
+    - Zeigt: was EMHASS mit stundengenauer Preisoptimierung rausholen würde
+  - Alle drei als Tagessaldo + kumuliert über Wochen
+- [ ] **Einsparungs-Metriken:**
+  - Heartbeat-Ersparnis vs. Baseline: ② vs. ① (was bringt Heartbeat?)
+  - EMHASS-Ersparnis vs. Baseline: ③ vs. ① (was würde EMHASS bringen?)
+  - EMHASS vs. Heartbeat: ③ vs. ② (lohnt sich der Wechsel?)
 - [ ] Fragen die das Dashboard beantworten soll:
   - Lädt Heartbeat die Batterie in günstigen Stunden?
   - Wird vor PV-Spitzen entladen um Platz zu schaffen?
   - Wird bei hohen Preisen aus Batterie versorgt statt importiert?
-  - Wie oft wird bei teuren Preisen trotzdem importiert?
-- [ ] EMHASS-Empfehlung daneben legen (wenn 1.3 läuft)
+  - **Wieviel spart Heartbeat vs. gar keine Optimierung?**
+  - **Würde EMHASS + dynamischer Tarif mehr sparen?**
 - [ ] Über Wochen Daten sammeln und vergleichen
-- [ ] Bewertung: Bringt Heartbeat mehr als ~300 €/Jahr Mehrkosten?
+- [ ] Bewertung: Lohnt sich der Wechsel? (EMHASS-Ersparnis > 300 €/Jahr Fixkosten-Ersparnis?)
 
 ---
 
