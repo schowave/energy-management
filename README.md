@@ -11,16 +11,15 @@ Projekt-Dokumentation für den Aufbau eines DIY-Energiemanagementsystems mit Hom
 - **NAS:** Synology DS218 (Backups, Fileserver)
 - **Aktuell:** 1komma5° Energy Trader + Heartbeat (Evaluation läuft)
 
+## Dokumentation
+
+- **[docs/projektplan.md](docs/projektplan.md)** – Phasenplan: Simulation → Umstieg
+- **[docs/architektur.md](docs/architektur.md)** – Systemarchitektur (Mermaid-Diagramme)
+
 ## Repo-Struktur
 
 ```
-docs/
-  projektplan.md      Phasenplan: Simulation → Umstieg
-  architektur.md      Systemarchitektur (Mermaid-Diagramme)
+docs/                 Projektdokumentation
 config/
   synology-test/      HA-Config der bestehenden Test-Installation (Synology)
 ```
-
-## Status
-
-**Phase 1 – Simulation:** Heartbeat-Entscheidungen tracken und mit EMHASS vergleichen, bevor 1komma5° gekündigt wird. Siehe [docs/projektplan.md](docs/projektplan.md).
