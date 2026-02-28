@@ -1,0 +1,221 @@
+views:
+  - title: Overview
+    icon: mdi:sun-compass
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13003
+            name: Total DC Power (PV)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13119
+            name: Load Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13121
+            name: Feed-in Power (Export)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13149
+            name: Grid Purchasing Power (Import)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13126
+            name: Battery Charging Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13150
+            name: Battery Discharging Power
+        title: Power
+      - type: gauge
+        entity: sensor.gosungrow_virtual_5899628_14_1_1_p13141
+        name: Battery Level (SOC)
+        min: 0
+        max: 100
+        severity:
+          green: 70
+          yellow: 40
+          red: 20
+      - show_name: true
+        show_icon: true
+        show_state: true
+        type: glance
+        entities:
+          - entity: sun.sun
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13141
+            name: Battery SOC
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13126
+            name: Bat Charging
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13150
+            name: Bat Discharging
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13121
+            name: Feed-in
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13149
+            name: Grid Purchase
+        title: Status
+        columns: 3
+        state_color: true
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13112
+            name: Daily PV Yield
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13116
+            name: Daily PV Consumed by Loads
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13199
+            name: Daily Load Consumption
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13147
+            name: Daily Purchased Energy
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13122
+            name: Daily Feed-in Energy
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13174
+            name: Daily PV-to-Battery Charge
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13144
+            name: Daily Self-consumption Rate
+        title: Energy (Daily)
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13140
+            name: Battery Capacity
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13141
+            name: Battery Level (SOC)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13142
+            name: Battery SOH
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13126
+            name: Battery Charging Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13150
+            name: Battery Discharging Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13138
+            name: Battery Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13139
+            name: Battery Current
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13143
+            name: Battery Temperature
+        title: Battery
+      - chart_type: line
+        period: 5minute
+        type: statistics-graph
+        entities:
+          - sensor.gosungrow_virtual_5899628_14_1_1_p13157
+          - sensor.gosungrow_virtual_5899628_14_1_1_p13158
+          - sensor.gosungrow_virtual_5899628_14_1_1_p13159
+        stat_types:
+          - mean
+        title: Phase Voltages
+
+  - title: Detailed Info
+    icon: mdi:solar-power-variant-outline
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13119
+            name: Load Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13157
+            name: Phase A Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13008
+            name: Phase A Current
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13158
+            name: Phase B Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13009
+            name: Phase B Current
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13159
+            name: Phase C Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13010
+            name: Phase C Current
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13187
+            name: AC Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13188
+            name: AC Current
+        title: Grid / Load
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13112
+            name: Daily PV Yield
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13116
+            name: Daily PV Consumed by Loads
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13173
+            name: Daily Feed-in Energy (PV)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13174
+            name: Daily PV-to-Battery Charge
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13122
+            name: Daily Feed-in Energy
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13147
+            name: Daily Purchased Energy
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13199
+            name: Daily Load Consumption
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13134
+            name: Total PV Yield
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13125
+            name: Total Feed-in Energy
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13175
+            name: Total Feed-in Energy (PV)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13148
+            name: Total Purchased Energy
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13130
+            name: Total Load Consumption
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13137
+            name: Total PV Consumed by Loads
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13176
+            name: Total PV-to-Battery Charge
+        title: Energy
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13002
+            name: MPPT1 Current
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13105
+            name: MPPT2 Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13106
+            name: MPPT2 Current
+        title: PV Gen (MPPT)
+      - type: gauge
+        entity: sensor.gosungrow_virtual_5899628_14_1_1_p13141
+        name: Battery Level (SOC)
+        min: 0
+        max: 100
+        severity:
+          green: 70
+          yellow: 40
+          red: 20
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13140
+            name: Battery Capacity
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13143
+            name: Battery Temperature
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13126
+            name: Battery Charging Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13150
+            name: Battery Discharging Power
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13138
+            name: Battery Voltage
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13139
+            name: Battery Current
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13141
+            name: Battery Level (SOC)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13142
+            name: Battery SOH
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13162
+            name: Max Charging Current (BMS)
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13163
+            name: Max Discharging Current (BMS)
+        title: Battery (Detail)
+      - chart_type: line
+        period: day
+        days_to_show: 60
+        type: statistics-graph
+        entities:
+          - sensor.gosungrow_virtual_5899628_14_1_1_p13141
+        stat_types:
+          - min
+          - max
+        title: Battery SoC last 60 days
+      - chart_type: line
+        period: day
+        days_to_show: 360
+        type: statistics-graph
+        entities:
+          - sensor.gosungrow_virtual_5899628_14_1_1_p13141
+        stat_types:
+          - mean
+          - min
+          - max
+        title: Battery SoC last 360 days
+        logarithmic_scale: false
+        hide_legend: false
+      - type: entities
+        entities:
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13160
+            name: Insulation Impedance
+          - entity: sensor.gosungrow_virtual_5899628_14_1_1_p13161
+            name: Bus Voltage
+        title: System Info
+title: PV System
