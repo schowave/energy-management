@@ -256,3 +256,57 @@ sensor.gosungrow_getpsdetail_5899628_storage_inverter_data_5899628_14_1_1_device
 
 sensor.gosungrow_virtual_5899628_43_2_1_p58659:
   friendly_name: "Battery Rated Power"
+
+# --- Binary Sensors (noch fehlende) ---
+binary_sensor.gosungrow_virtual_5899628_14_1_1_battery_energy_active:
+  friendly_name: "Battery Energy Active"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_grid_to_battery_power_active:
+  friendly_name: "Grid to Battery Active"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_pv_to_load_power_active:
+  friendly_name: "PV to Load Active"
+
+# --- System Binary Sensors (getPsDetail) ---
+binary_sensor.gosungrow_getpsdetail_5899628_has_ammeter:
+  friendly_name: "Has Ammeter"
+
+binary_sensor.gosungrow_getpsdetail_5899628_is_have_es_inverter:
+  friendly_name: "Has ES Inverter"
+
+binary_sensor.gosungrow_getpsdetail_5899628_is_transform_system:
+  friendly_name: "Is Transform System"
+
+binary_sensor.gosungrow_getpsdetail_5899628_is_tuv:
+  friendly_name: "Is TUV"
+
+binary_sensor.gosungrow_getpsdetail_5899628_p83023y_valid:
+  friendly_name: "Plant PR Valid"
+
+binary_sensor.gosungrow_getpsdetail_5899628_power_charge_set:
+  friendly_name: "Power Charge Set"
+
+binary_sensor.gosungrow_getpsdetail_5899628_storage_inverter_data_5899628_14_1_1_has_ammeter:
+  friendly_name: "Inverter Has Ammeter"
+
+binary_sensor.gosungrow_getpsdetail_5899628_valid_flag:
+  friendly_name: "Valid Flag"
+
+# --- System Binary Sensors (getPsList) ---
+binary_sensor.gosungrow_getpslist_devices_5899628_is_bank_ps:
+  friendly_name: "Is Bank PS"
+
+binary_sensor.gosungrow_getpslist_devices_5899628_is_tuv:
+  friendly_name: "Is TUV (List)"
+
+binary_sensor.gosungrow_getpslist_devices_5899628_mlpe_flag:
+  friendly_name: "MLPE Flag"
+
+binary_sensor.gosungrow_getpslist_devices_5899628_ps_is_not_init:
+  friendly_name: "PS Not Initialized"
+
+binary_sensor.gosungrow_getpslist_devices_5899628_ps_status:
+  friendly_name: "PS Status"
+
+binary_sensor.gosungrow_getpslist_devices_5899628_valid_flag:
+  friendly_name: "Valid Flag (List)"
