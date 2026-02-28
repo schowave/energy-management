@@ -83,8 +83,8 @@ Sensoren für die Abstraktionsschicht:
 - [ ] Prüfen ob Prognosedaten plausibel sind
 
 ### 1.3 EMHASS im Simulationsmodus
-- [ ] **EMHASS** als Docker-Container auf der DS218+ installieren
-  - Linear-Programming-Optimierer mit **HiGHS-Solver** (x86 nativ auf J3355)
+- [ ] **EMHASS Add-on** in HA OS installieren (auf dem KAMRUI N100)
+  - Linear-Programming-Optimierer mit **HiGHS-Solver** (x86 nativ)
   - Kombiniert: Strompreise + PV-Prognose + Verbrauchsmuster
   - ML-basierte Lastvorhersage
   - Doku speziell für Sungrow: [LibreHEMS](https://www.librehems.com)
