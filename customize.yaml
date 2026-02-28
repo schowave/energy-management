@@ -1,0 +1,258 @@
+###############################################################################
+# GoSungrow Entity Customizations
+###############################################################################
+
+# --- Power ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13003:
+  friendly_name: "Total DC Power (PV)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13119:
+  friendly_name: "Load Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13121:
+  friendly_name: "Export Power (Feed-in)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13149:
+  friendly_name: "Import Power (Grid)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13126:
+  friendly_name: "Battery Charging Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13150:
+  friendly_name: "Battery Discharging Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_battery_power:
+  friendly_name: "Battery Power (net)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13011:
+  friendly_name: "Total Active Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13012:
+  friendly_name: "Reactive Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13013:
+  friendly_name: "Power Factor"
+
+# --- Battery ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13140:
+  friendly_name: "Battery Capacity"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13141:
+  friendly_name: "Battery Level (SOC)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13142:
+  friendly_name: "Battery SOH"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13143:
+  friendly_name: "Battery Temperature"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13138:
+  friendly_name: "Battery Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13139:
+  friendly_name: "Battery Current"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13162:
+  friendly_name: "Max Charging Current (BMS)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13163:
+  friendly_name: "Max Discharging Current (BMS)"
+
+sensor.gosungrow_virtual_5899628_43_2_1_p58604:
+  friendly_name: "Battery SOC (BMS)"
+
+# --- Energy Daily ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13112:
+  friendly_name: "Daily PV Yield"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13116:
+  friendly_name: "Daily PV Consumed by Loads"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13199:
+  friendly_name: "Daily Load Consumption"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13147:
+  friendly_name: "Daily Purchased Energy"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13122:
+  friendly_name: "Daily Feed-in Energy"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13174:
+  friendly_name: "Daily PV-to-Battery Charge"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13173:
+  friendly_name: "Daily Feed-in Energy (PV)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13144:
+  friendly_name: "Daily Self-consumption Rate"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13028:
+  friendly_name: "Daily Battery Charge"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13029:
+  friendly_name: "Daily Battery Discharge"
+
+# --- Energy Total ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13134:
+  friendly_name: "Total PV Yield"
+  state_class: total_increasing
+  device_class: energy
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13148:
+  friendly_name: "Total Purchased Energy"
+  state_class: total_increasing
+  device_class: energy
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13125:
+  friendly_name: "Total Feed-in Energy"
+  state_class: total_increasing
+  device_class: energy
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13034:
+  friendly_name: "Total Battery Charge"
+  state_class: total_increasing
+  device_class: energy
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13035:
+  friendly_name: "Total Battery Discharge"
+  state_class: total_increasing
+  device_class: energy
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13130:
+  friendly_name: "Total Load Consumption"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13137:
+  friendly_name: "Total PV Consumed by Loads"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13175:
+  friendly_name: "Total Feed-in Energy (PV)"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13176:
+  friendly_name: "Total PV-to-Battery Charge"
+
+# --- Grid / Phases (Inverter) ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13157:
+  friendly_name: "Phase A Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13158:
+  friendly_name: "Phase B Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13159:
+  friendly_name: "Phase C Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13008:
+  friendly_name: "Phase A Current"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13009:
+  friendly_name: "Phase B Current"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13010:
+  friendly_name: "Phase C Current"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13187:
+  friendly_name: "AC Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13188:
+  friendly_name: "AC Current"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13007:
+  friendly_name: "Grid Frequency"
+
+# --- Grid / Phases (Meter) ---
+sensor.gosungrow_virtual_5899628_7_1_1_p8000:
+  friendly_name: "Meter Phase A Voltage"
+
+sensor.gosungrow_virtual_5899628_7_1_1_p8001:
+  friendly_name: "Meter Phase B Voltage"
+
+sensor.gosungrow_virtual_5899628_7_1_1_p8002:
+  friendly_name: "Meter Phase C Voltage"
+
+sensor.gosungrow_virtual_5899628_7_1_1_p8018:
+  friendly_name: "Meter Active Power"
+
+sensor.gosungrow_virtual_5899628_7_1_1_p8076:
+  friendly_name: "Meter Phase A Active Power"
+
+sensor.gosungrow_virtual_5899628_7_1_1_p8077:
+  friendly_name: "Meter Phase B Active Power"
+
+sensor.gosungrow_virtual_5899628_7_1_1_p8078:
+  friendly_name: "Meter Phase C Active Power"
+
+# --- Backup ---
+sensor.gosungrow_virtual_5899628_14_1_1_p18068:
+  friendly_name: "Total Backup Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p18065:
+  friendly_name: "Backup Phase A Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p18066:
+  friendly_name: "Backup Phase B Power"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p18067:
+  friendly_name: "Backup Phase C Power"
+
+# --- MPPT ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13001:
+  friendly_name: "MPPT1 Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13002:
+  friendly_name: "MPPT1 Current"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13105:
+  friendly_name: "MPPT2 Voltage"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13106:
+  friendly_name: "MPPT2 Current"
+
+# --- System ---
+sensor.gosungrow_virtual_5899628_14_1_1_p13019:
+  friendly_name: "Inverter Temperature"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13160:
+  friendly_name: "Insulation Impedance"
+
+sensor.gosungrow_virtual_5899628_14_1_1_p13161:
+  friendly_name: "Bus Voltage"
+
+# --- Binary Sensors ---
+binary_sensor.gosungrow_virtual_5899628_14_1_1_pv_power_active:
+  friendly_name: "PV Generating"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_pv_to_battery_power_active:
+  friendly_name: "Battery Charging"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_battery_power_active:
+  friendly_name: "Battery Active"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_pv_to_grid_power_active:
+  friendly_name: "Exporting Power"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_grid_to_load_power_active:
+  friendly_name: "Importing Power"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_grid_power_active:
+  friendly_name: "Grid Power Active"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_load_power_active:
+  friendly_name: "Load Power Active"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_battery_to_grid_power_active:
+  friendly_name: "Battery to Grid Active"
+
+binary_sensor.gosungrow_virtual_5899628_14_1_1_battery_to_load_power_active:
+  friendly_name: "Battery to Load Active"
+
+# --- Inverter Info ---
+sensor.gosungrow_getpsdetail_5899628_storage_inverter_data_5899628_14_1_1_device_type:
+  friendly_name: "Device Type"
+
+sensor.gosungrow_getpsdetail_5899628_storage_inverter_data_5899628_14_1_1_device_state:
+  friendly_name: "Inverter State"
+
+sensor.gosungrow_getpsdetail_5899628_storage_inverter_data_5899628_14_1_1_device_code:
+  friendly_name: "Device Code"
+
+sensor.gosungrow_virtual_5899628_43_2_1_p58659:
+  friendly_name: "Battery Rated Power"

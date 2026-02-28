@@ -1,0 +1,22 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.1.0/24
+    - 172.17.0.0/16
+    - 127.0.0.1
+
+homeassistant:
+  packages:
+#    sungrow: !include integrations/modbus_sungrow.yaml
+  customize: !include customize.yaml
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
