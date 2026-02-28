@@ -141,6 +141,43 @@ Sensoren für die Abstraktionsschicht:
 - [ ] Über Wochen Daten sammeln und vergleichen
 - [ ] Bewertung: Lohnt sich der Wechsel? (EMHASS-Ersparnis > 300 €/Jahr Fixkosten-Ersparnis?)
 
+### 1.6 Wärmepumpe einbinden (parallel, unabhängig von Heartbeat)
+
+**Stromverbrauch (Shelly vorhanden):**
+- [ ] Vorhandenen Shelly (Stromverbrauch WP) in HA einbinden
+- [ ] Template-Sensor `sensor.wp_power` anlegen (Abstraktionsschicht)
+- [ ] In InfluxDB langfristig loggen (Verbrauchsmuster der WP verstehen)
+
+**SG-Ready Steuerung (Shelly noch kaufen):**
+- [ ] **Klären: Ist SG-Ready bei der Novelan LICV 8.2 freigeschaltet?**
+  - Servicemenü der WP prüfen (SG-Ready Einstellung vorhanden?)
+  - Falls nicht: Heizungsbauer kontaktieren → kann er freischalten?
+  - Falls nicht: Novelan/LE Support kontaktieren → Freischaltung anfordern
+  - Kosten und Garantie-Auswirkungen klären
+- [ ] SG-Ready Klemmen auf der WP-Platine identifizieren (Anschlussplan/Serviceanleitung)
+- [ ] Shelly Plus Relay besorgen (~15 €)
+- [ ] Verkabelung: Shelly → SG-Ready Klemmen (potentialfreie Kontakte)
+- [ ] Shelly in HA einbinden → 4 Betriebszustände testen:
+  - Kontakt 1 AUS + Kontakt 2 AUS = Normalbetrieb
+  - Kontakt 1 EIN + Kontakt 2 AUS = Eco / Sperre
+  - Kontakt 1 AUS + Kontakt 2 EIN = Boost (PV-Überschuss / billiger Strom)
+  - Kontakt 1 EIN + Kontakt 2 EIN = Erzwungener Boost
+- [ ] Einfache Test-Automation: bei PV-Überschuss > X kW → Boost-Modus
+
+> **1komma5 steuert die Novelan nicht** – SG-Ready ist komplett unabhängig von Heartbeat.
+> Kann jetzt schon eingerichtet und getestet werden.
+
+### 1.7 Weitere Sensoren einbinden
+
+**Digitaler Wasserzähler:**
+- [ ] Hersteller und Modell des Zählers prüfen (Aufschrift am Zähler)
+- [ ] Schnittstelle klären:
+  - Impulsgeber vorhanden? (Cyble-Anschluss bei Itron/Actaris)
+  - Wireless M-Bus? (Funk-Zähler → M-Bus USB-Stick)
+  - Keine Schnittstelle? → Optische Erkennung (ESP32-CAM + AI-on-the-edge)
+- [ ] Passende Hardware besorgen und in HA einbinden
+- [ ] Verbrauchsdaten langfristig loggen
+
 ---
 
 ## Phase 2: Umstieg (nach Kündigung)
@@ -164,9 +201,10 @@ Sensoren für die Abstraktionsschicht:
   - Min/Max SOC Grenzen
 
 ### 2.3 Wärmepumpensteuerung (Novelan)
-- [ ] **SG-Ready** Ansteuerung über HA einrichten
-- [ ] Bei PV-Überschuss oder niedrigen Börsenpreisen → Boost-Modus
+- [ ] SG-Ready Steuerung bereits aus Phase 1.6 vorhanden
+- [ ] EMHASS als Deferrable Load konfigurieren (WP-Boost bei optimalem Preis)
 - [ ] Thermische Trägheit des Warmwasserspeichers als Energiespeicher nutzen
+- [ ] Automationen: Boost bei PV-Überschuss ODER niedrigem Börsenpreis
 
 ### 2.4 EMHASS scharf schalten
 - [ ] EMHASS von Simulation auf aktive Steuerung umstellen
