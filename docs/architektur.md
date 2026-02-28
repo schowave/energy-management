@@ -104,12 +104,28 @@ gantt
 
 ## Hardware
 
+### HA-Server: Intel N100 Mini PC
+
+> **Warum N100?** x86_64 → EMHASS HiGHS-Solver läuft nativ (auf ARM nur GLPK). 16 GB RAM = Headroom für alle Add-ons. NVMe SSD = keine SD-Karten-Ausfälle. HA OS wird direkt geflasht (kein Windows).
+
+| Modell | CPU | RAM | Storage | Preis (DE) | Lüfterlos | Idle | Strom/Jahr |
+|---|---|---|---|---|---|---|---|
+| **KAMRUI N100** | N100 | 16 GB | 512 GB | **179,99 €** | Nein | ~8W | ~21 € |
+| Beelink Mini S12 Pro | N100 | 16 GB | 500 GB | 339 € | Nein | ~8W | ~21 € |
+| MeLE Quieter 4C | N100 | 16 GB | 512 GB | 399,99 € | Ja | ~5W | ~13 € |
+
+> Preise: Amazon.de, Stand Februar 2026. TRIGKEY Green G4 und BMAX B4 Plus nicht verfügbar.
+
+**Gewählt: KAMRUI N100** (16GB/512GB) – bestes Preis-Leistungs-Verhältnis auf dem deutschen Markt. Gleicher N100-Chip wie alle anderen, halber Preis vom Beelink. WiFi 5 + BT, aber HA läuft ohnehin per Ethernet.
+
+> Hinweis: Vorinstalliertes Windows 11 Pro wird komplett durch HA OS überschrieben.
+
+### Weitere Hardware
+
 | Komponente | Empfehlung | Preis |
 |---|---|---|
-| **HA-Server** | Intel N100 Mini PC (z.B. Beelink S12 Pro, 16GB/500GB) | ~180 € einmalig |
 | **SG-Ready Relais** | Shelly Plus oder ESP32 Relay | ~15 € einmalig |
-
-> **Warum N100?** x86_64-Architektur → EMHASS HiGHS-Solver läuft nativ (auf ARM nur GLPK). 16 GB RAM = Headroom für alle Add-ons. NVMe SSD = keine SD-Karten-Ausfälle. ~10W idle = ~25 €/Jahr Strom.
+| **NAS (Backups)** | Synology DS218 (vorhanden) | -- |
 
 ## Software-Komponenten
 
@@ -127,4 +143,4 @@ gantt
 
 > **Laufende Kosten: ~6 €/Mo** (nur Tibber Grundgebühr) vs. ~34 €/Mo bei 1komma5° → **Ersparnis ~336 €/Jahr**
 >
-> **Einmalige Kosten: ~195 €** (N100 + Shelly) – amortisiert sich in ~7 Monaten
+> **Einmalige Kosten: ~195 €** (KAMRUI + Shelly) – amortisiert sich in ~7 Monaten

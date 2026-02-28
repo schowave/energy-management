@@ -30,14 +30,14 @@
 > Ziel: Stack aufbauen, EMHASS-Ergebnisse mit Heartbeat vergleichen, fundierte Entscheidung treffen.
 > Architektur-Diagramm: [architektur.md](architektur.md)
 
-### 1.0 Hardware: Intel N100 Mini PC
-- [ ] Mini PC bestellen (z.B. Beelink Mini S12 Pro, 16GB RAM, 500GB NVMe, ~180 €)
+### 1.0 Hardware: KAMRUI N100 Mini PC
+- [ ] **KAMRUI N100** bestellen (N100, 16GB DDR4, 512GB SSD, 179,99 € auf Amazon.de)
 - [ ] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
 - [ ] Grundkonfiguration: Netzwerk, Benutzer, MQTT Broker (Mosquitto Add-on)
 - [ ] GoSungrow / MQTT Integration von bestehender HA-Instanz migrieren
 - [ ] HA-Backups automatisch auf Synology ablegen (SMB/NFS Netzlaufwerk)
 
-> **Warum N100?** x86_64 → EMHASS HiGHS-Solver läuft nativ. 16 GB RAM = Headroom für alle Add-ons. ~10W idle.
+> **Warum N100?** x86_64 → EMHASS HiGHS-Solver läuft nativ. 16 GB RAM = Headroom für alle Add-ons. ~8W idle = ~21 €/Jahr Strom.
 >
 > **Rolle der Geräte:**
 > - **N100 Mini PC** = dediziertes HA OS Gerät (kein Windows, reines HA-System)
