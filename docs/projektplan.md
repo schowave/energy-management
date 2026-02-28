@@ -1,4 +1,4 @@
-# TODO: Energiemanagement mit Home Assistant
+# Projektplan: Energiemanagement mit Home Assistant
 
 ## Entscheidung: 1komma5° Heartbeat vs. Eigenbau
 
