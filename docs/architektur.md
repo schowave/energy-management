@@ -183,7 +183,7 @@ gantt
 |---|---|---|
 | **Home Assistant OS** | Auf KAMRUI N100 | Kostenlos |
 | **ENTSO-e** | Börsenpreise | Kostenlos |
-| **Tibber / aWATTar** | Dynamischer Tarif (Phase 2) | ~6 €/Mo |
+| **Tibber / aWATTar** | Dynamischer Tarif (Phase 2) | ~6 €/Mo Grundgebühr |
 | **Solcast / Forecast.Solar** | PV-Prognose 48h | Kostenlos |
 | **Sungrow Modbus (mkaiser)** | Inverter + Batterie Steuerung (Phase 2) | Kostenlos |
 | **EMHASS** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
@@ -191,9 +191,13 @@ gantt
 | **GoSungrow Cloud** | Monitoring via MQTT | Kostenlos |
 | **InfluxDB + Grafana** | Langzeit-Analyse | Kostenlos |
 
-> **Laufende Kosten (Phase 2): ~6 €/Mo** (nur Tibber Grundgebühr) vs. ~34 €/Mo bei 1komma5° → **Ersparnis ~336 €/Jahr**
+> **Fixkosten-Vergleich:**
+> Tarifunabhängig (beide Szenarien): ~12 €/Mo (Messstellenbetrieb ~5,85 € + Netzentgelt/TEPA ~6 €)
+> 1komma5°: + ~22 €/Mo (Energy Trader + Dynamic Pulse + Gebühren) = **~34 €/Mo gesamt**
+> Tibber: + ~6 €/Mo Grundgebühr = **~18 €/Mo gesamt**
+> **Differenz: ~10 €/Mo → ~120 €/Jahr** + Einsparungen durch bessere Optimierung
 >
-> **Einmalige Kosten: ~195 €** (KAMRUI 179,99 € + Shelly ~15 €) – amortisiert sich in ~7 Monaten
+> **Einmalige Kosten: ~195 €** (KAMRUI 179,99 € + Shelly ~15 €) – amortisiert sich in ~20 Monaten durch Fixkosten allein, schneller mit Optimierungsgewinnen
 
 ## Entscheidungslog (ADRs)
 
@@ -213,3 +217,4 @@ Alle Technologieentscheidungen sind als Architecture Decision Records dokumentie
 | [ADR-0010](adr/0010-mosquitto-mqtt-broker.md) | Mosquitto als MQTT Broker | Akzeptiert |
 | [ADR-0011](adr/0011-shelly-sg-ready-wp-steuerung.md) | Shelly Relay für SG-Ready WP-Steuerung | Akzeptiert |
 | [ADR-0012](adr/0012-dynamischer-stromtarif.md) | Dynamischer Stromtarif (Tibber/aWATTar) | Vorgeschlagen |
+| [ADR-0013](adr/0013-energiemanagement-ansatz.md) | Energiemanagement: EMHASS vs. Heartbeat vs. iHomeManager | Akzeptiert |

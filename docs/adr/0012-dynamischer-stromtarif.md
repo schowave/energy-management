@@ -33,4 +33,4 @@ Finale Entscheidung offen — wird nach Phase 1 getroffen. Tendenz: Tibber (grö
 - Finale Tarifwahl beeinflusst den Endpreis-Template-Sensor (ADR-0004)
 - Wechsel zu dynamischem Tarif erfordert Smart Meter (iMSys) — Verfügbarkeit beim Netzbetreiber prüfen
 - Kein Preisdeckel wie bei 1komma5° (15 ct/kWh) — Dunkelflauten-Risiko wird durch Batterie + Optimierung abgefedert
-- Geschätzte Ersparnis bei Fixkosten: ~28 €/Mo (34 € 1komma5° → ~6 € Tibber/aWATTar)
+- Geschätzte Ersparnis bei Fixkosten: ~10 €/Mo (~120 €/Jahr). Messstellenbetrieb (~5,85 €) und Netzentgelt/TEPA (~6 €) fallen in beiden Szenarien an — nur die tarifspezifischen Kosten unterscheiden sich (1komma5° ~22 €/Mo vs. Tibber ~6 €/Mo)

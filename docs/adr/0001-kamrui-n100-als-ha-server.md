@@ -29,7 +29,7 @@ KAMRUI N100 Mini-PC (Intel N100, 16 GB RAM, 512 GB SSD) für 179,99 €.
 
 ## Konsequenzen
 
-- Einmalige Investition von 179,99 € (amortisiert sich in ~7 Monaten durch Fixkosten-Ersparnis)
+- Einmalige Investition von 179,99 € (amortisiert sich in ~20 Monaten durch Fixkosten-Ersparnis allein, schneller mit Optimierungsgewinnen)
 - Home Assistant OS kann direkt auf die SSD geflasht werden (kein separates OS nötig)
 - Alle EMHASS-Solver laufen nativ ohne Emulation
 - Synology DS218+ wird zum reinen Backup-Ziel degradiert

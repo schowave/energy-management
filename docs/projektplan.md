@@ -7,16 +7,18 @@
 - Heartbeat verbindet sich per **Modbus TCP** (scannt Port 502 im Netzwerk)
 - Sungrow erlaubt nur **eine aktive Modbus-TCP-Verbindung** → Konflikt mit HA
 - Fixkosten 1komma5°: ~34 €/Monat (Energy Trader 9,99 + Dynamic Pulse 4,49 + Gebühren 9,29 + Smart Meter 9,90)
+- Davon tarifunabhängig (fallen auch bei Tibber an): ~12 €/Mo (Messstellenbetrieb ~5,85 + Netzentgelt/TEPA ~6)
+- 1komma5°-spezifische Mehrkosten: ~22 €/Mo → bei Tibber nur ~6 €/Mo Grundgebühr → **Differenz ~10 €/Mo**
 
 ### Option A: Bei 1komma5° bleiben
 - Heartbeat steuert Batterie + Verbraucher
 - HA nur für **Monitoring** (über GoSungrow Cloud-API / MQTT, kein Modbus)
 - Kein Modbus-Konflikt
-- Preisgarantie (15 ct/kWh Deckel bei Dunkelflauten)
+- Preisgarantie (25 ct/kWh Deckel bei Dunkelflauten)
 
 ### Option B: Eigenbau mit HA (dieses TODO)
 - Wechsel zu günstigerem dynamischen Tarif (Tibber 5,99 €/Mo, aWATTar 4,58 €/Mo, Rabot Charge 4,99 €/Mo)
-- **Ersparnis: ~300 €/Jahr** an Fixkosten
+- **Ersparnis: ~120 €/Jahr** an Fixkosten (Differenz ~10 €/Mo, da Messstellenbetrieb + Netzentgelt in beiden Szenarien anfallen)
 - Volle Kontrolle, aber eigene Verantwortung für Optimierung + Preisrisiko
 
 > **Heartbeat ist Pflicht für Energy Trader** → beides zusammen kündigen.
@@ -145,7 +147,7 @@ Sensoren für die Abstraktionsschicht:
   - **Wieviel spart Heartbeat vs. gar keine Optimierung?**
   - **Würde EMHASS + dynamischer Tarif mehr sparen?**
 - [ ] Über Wochen Daten sammeln und vergleichen
-- [ ] Bewertung: Lohnt sich der Wechsel? (EMHASS-Ersparnis > 300 €/Jahr Fixkosten-Ersparnis?)
+- [ ] Bewertung: Lohnt sich der Wechsel? (EMHASS-Ersparnis + ~120 €/Jahr Fixkosten-Ersparnis)
 
 ### 1.6 Wärmepumpe einbinden (parallel, unabhängig von Heartbeat)
 
