@@ -7,8 +7,8 @@ Projekt-Dokumentation für den Aufbau eines DIY-Energiemanagementsystems mit Hom
 - **PV-Anlage:** ~10 kWp mit Sungrow SH10RT Hybrid-Wechselrichter
 - **Batterie:** 12.8 kWh Sungrow SBR
 - **Wärmepumpe:** Novelan LICV 8.2 (SG-Ready)
-- **HA-Server:** Intel N100 Mini PC mit Home Assistant OS (geplant)
-- **NAS:** Synology DS218 (Backups, Fileserver)
+- **HA-Server:** KAMRUI N100 Mini PC mit Home Assistant OS (bestellt)
+- **NAS:** Synology DS218+ (Backups, Fileserver)
 - **Aktuell:** 1komma5° Energy Trader + Heartbeat (Evaluation läuft)
 
 ## Dokumentation

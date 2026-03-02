@@ -51,8 +51,8 @@ Für die Optimierung von Batterie (12.8 kWh Sungrow SBR) und Wärmepumpe (Novela
 
 | Feature | 1komma5° Heartbeat | Sungrow iHomeManager | EMHASS-Eigenbau |
 |---|---|---|---|
-| **Hardware** | Heartbeat-Controller (599 €) + Smart Meter | DIN-Rail-Gerät (~200-400 €, Preis regional variabel) | KAMRUI N100 (180 €) + Shelly (15 €) |
-| **Laufende Kosten** | ~22 €/Mo (Energy Trader 9,99 + Dynamic Pulse 4,49 + Gebühren) | ~6 €/Mo (ext. Tarif, z.B. Tibber) | ~6 €/Mo (ext. Tarif, z.B. Tibber) |
+| **Hardware** | Heartbeat-Controller (599 €) + Smart Meter | DIN-Rail-Gerät (~200-400 €, Preis regional variabel) | KAMRUI N100 (179,99 €, ADR-0001) + Shelly (~15 €, ADR-0011) |
+| **Laufende Kosten** | ~22 €/Mo tarifspezifisch (Energy Trader 9,99 + Dynamic Pulse 4,49 + Gebühren) + ~12 €/Mo tarifunabhängig = **~34 €/Mo gesamt** | ~6 €/Mo Grundgebühr (z.B. Tibber, ADR-0012) + ~12 €/Mo tarifunabhängig = **~18 €/Mo gesamt** | ~6 €/Mo Grundgebühr (z.B. Tibber, ADR-0012) + ~12 €/Mo tarifunabhängig = **~18 €/Mo gesamt** |
 | **Cloud-Abhängigkeit** | Ja (1komma5°-Cloud, 200+ Entwickler in Berlin) | Ja (Sungrow iSolarCloud) | Nein — vollständig lokal |
 | **Protokoll** | Modbus TCP (belegt Port 502) | Modbus RS485/LAN/WiFi + Cloud | Modbus TCP über HA |
 | **Monitoring** | 1komma5°-App | iSolarCloud App + Web | InfluxDB + Grafana (volle Kontrolle) |

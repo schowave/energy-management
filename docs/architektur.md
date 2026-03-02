@@ -101,7 +101,7 @@ graph TB
     HA --> INFLUX
     INFLUX --> GRAFANA
 
-    SYNOLOGY["🗄️ Synology DS218<br/><small>NAS · HA-Backups</small>"]
+    SYNOLOGY["🗄️ Synology DS218+<br/><small>NAS · HA-Backups</small>"]
 
     %% HA → Lokal
     HA ==>|Modbus TCP| SUNGROW
@@ -143,7 +143,7 @@ gantt
     Solcast/Forecast.Solar einrichten       :p1b, after p1a, 2d
     GoSungrow Langzeit-Logging (90 Tage)    :p1c, after p1a, 3d
     Vergleichs-Dashboard bauen              :p1d, after p1c, 5d
-    EMHASS Docker Simulationsmodus           :p1e, after p1d, 5d
+    EMHASS Add-on Simulationsmodus            :p1e, after p1d, 5d
     Daten sammeln & vergleichen             :p1f, after p1e, 42d
 
     section Phase 2 – Umstieg
@@ -152,7 +152,7 @@ gantt
     Heartbeat trennen + Modbus freigeben    :p2c, after p2b, 2d
     Sungrow Modbus-Integration (mkaiser)    :p2d, after p2c, 3d
     EMHASS scharf schalten                  :p2e, after p2d, 3d
-    WP SG-Ready über Shelly einbinden       :p2f, after p2e, 3d
+    WP SG-Ready über Shelly mit EMHASS koppeln :p2f, after p2e, 3d
     Feintuning & Monitoring                 :p2g, after p2f, 14d
 ```
 
