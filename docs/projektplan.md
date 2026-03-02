@@ -102,6 +102,12 @@ Sensoren für die Abstraktionsschicht:
   - Erwartete Tageskosten mit dynamischem Endpreis
 - [ ] Alternative: **WattWise** (AppDaemon-App, einfacher als EMHASS)
 
+> **Warum EMHASS statt evcc?**
+> evcc ist für EV-Laden gebaut und startet nicht ohne Wallbox (Dummy-Workaround nötig, nicht supported).
+> Die Batterie-Optimierung nutzt nur einen einfachen Preisschwellwert statt echtem LP-Optimierer.
+> EMHASS ist für genau diesen Use Case (Heim-Batterie + dynamischer Tarif) gebaut.
+> evcc wäre nur relevant bei einem späteren E-Auto mit Wallbox – dann als Ergänzung zu EMHASS.
+
 ### 1.4 Heartbeat-Tracking (Entscheidungen nachvollziehen)
 - [ ] Folgende Sensoren im HA Recorder / InfluxDB langfristig loggen:
   - **Börsenpreis** (ENTSO-e, stündlich)

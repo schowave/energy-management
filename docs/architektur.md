@@ -194,3 +194,18 @@ gantt
 > **Laufende Kosten (Phase 2): ~6 €/Mo** (nur Tibber Grundgebühr) vs. ~34 €/Mo bei 1komma5° → **Ersparnis ~336 €/Jahr**
 >
 > **Einmalige Kosten: ~195 €** (KAMRUI 179,99 € + Shelly ~15 €) – amortisiert sich in ~7 Monaten
+
+## Entscheidungslog
+
+### EMHASS statt evcc (März 2026)
+
+evcc wurde als Alternative für das Batterie-Management evaluiert. Ergebnis: **nicht geeignet** für diesen Use Case.
+
+| Kriterium | evcc | EMHASS |
+|---|---|---|
+| Ohne Wallbox nutzbar | Nein (Dummy-Workaround, unsupported) | Ja |
+| Optimierung | Einfacher Preisschwellwert | LP-Optimierer (PV + Last + Preis) |
+| Tägliche Anpassung | Manuell / Cron-Script nötig | Automatisch (Day-Ahead-Plan) |
+| Sungrow SH10RT | Supported, aber bekannte Bugs | Über HA Modbus-Integration |
+
+evcc wäre nur relevant bei einem späteren E-Auto mit Wallbox – dann als Ergänzung neben EMHASS.
