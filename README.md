@@ -15,6 +15,7 @@ Projekt-Dokumentation für den Aufbau eines DIY-Energiemanagementsystems mit Hom
 
 - **[docs/projektplan.md](docs/projektplan.md)** – Phasenplan: Simulation → Umstieg
 - **[docs/architektur.md](docs/architektur.md)** – Systemarchitektur (Mermaid-Diagramme)
+- **[docs/adr/](docs/adr/)** – Architecture Decision Records (Technologieentscheidungen)
 
 ## Repo-Struktur
 

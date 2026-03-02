@@ -195,17 +195,21 @@ gantt
 >
 > **Einmalige Kosten: ~195 €** (KAMRUI 179,99 € + Shelly ~15 €) – amortisiert sich in ~7 Monaten
 
-## Entscheidungslog
+## Entscheidungslog (ADRs)
 
-### EMHASS statt evcc (März 2026)
+Alle Technologieentscheidungen sind als Architecture Decision Records dokumentiert:
 
-evcc wurde als Alternative für das Batterie-Management evaluiert. Ergebnis: **nicht geeignet** für diesen Use Case.
-
-| Kriterium | evcc | EMHASS |
+| ADR | Entscheidung | Status |
 |---|---|---|
-| Ohne Wallbox nutzbar | Nein (Dummy-Workaround, unsupported) | Ja |
-| Optimierung | Einfacher Preisschwellwert | LP-Optimierer (PV + Last + Preis) |
-| Tägliche Anpassung | Manuell / Cron-Script nötig | Automatisch (Day-Ahead-Plan) |
-| Sungrow SH10RT | Supported, aber bekannte Bugs | Über HA Modbus-Integration |
-
-evcc wäre nur relevant bei einem späteren E-Auto mit Wallbox – dann als Ergänzung neben EMHASS.
+| [ADR-0001](adr/0001-kamrui-n100-als-ha-server.md) | KAMRUI N100 als HA-Server | Akzeptiert |
+| [ADR-0002](adr/0002-home-assistant-os.md) | Home Assistant OS als Betriebssystem | Akzeptiert |
+| [ADR-0003](adr/0003-emhass-als-energieoptimierer.md) | EMHASS als Energieoptimierer | Akzeptiert |
+| [ADR-0004](adr/0004-entsoe-fuer-boersenpreise.md) | ENTSO-e für Börsenpreise | Akzeptiert |
+| [ADR-0005](adr/0005-solcast-fuer-pv-prognose.md) | Solcast / Forecast.Solar für PV-Prognose | Vorgeschlagen |
+| [ADR-0006](adr/0006-gosungrow-cloud-api-phase1.md) | GoSungrow Cloud-API (Phase 1) | Akzeptiert |
+| [ADR-0007](adr/0007-mkaiser-sungrow-modbus-phase2.md) | mkaiser Sungrow-Modbus (Phase 2) | Vorgeschlagen |
+| [ADR-0008](adr/0008-template-sensoren-abstraktionsschicht.md) | Template-Sensoren als Abstraktionsschicht | Akzeptiert |
+| [ADR-0009](adr/0009-influxdb-grafana-langzeitmonitoring.md) | InfluxDB + Grafana für Monitoring | Akzeptiert |
+| [ADR-0010](adr/0010-mosquitto-mqtt-broker.md) | Mosquitto als MQTT Broker | Akzeptiert |
+| [ADR-0011](adr/0011-shelly-sg-ready-wp-steuerung.md) | Shelly Relay für SG-Ready WP-Steuerung | Akzeptiert |
+| [ADR-0012](adr/0012-dynamischer-stromtarif.md) | Dynamischer Stromtarif (Tibber/aWATTar) | Vorgeschlagen |
