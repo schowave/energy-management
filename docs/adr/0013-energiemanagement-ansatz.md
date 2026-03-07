@@ -68,7 +68,7 @@ EMHASS-Eigenbau auf Home Assistant (KAMRUI N100).
 ### Gegen 1komma5° Heartbeat
 - **Steuert die Novelan WP nicht** — ein großer Optimierungshebel bleibt ungenutzt
 - **~10 €/Mo teurer** als Tibber + Eigenbau (tarifspezifische Mehrkosten → ~120 €/Jahr)
-- **Blackbox** — nicht nachvollziehbar, ob/wann schlecht eingekauft wird
+- **Blackbox** — nicht nachvollziehbar, ob/wann schlecht eingekauft wird (teilweise mitigiert durch [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) → ADR-0014: Preise und Energy-Daten auslesen, aber Entscheidungslogik bleibt intransparent)
 - **Starker Vendor Lock-in** — Tarif, Hardware und Software gekoppelt, bei Kündigung alles weg
 - **Intraday-Handel und VPP** sind echte Stärken — allerdings sind die versprochenen 1.000 €/Jahr Erlöse Marketing, realistisch eher deutlich weniger
 - Der 25 ct/kWh Preisdeckel schützt bei Dunkelflauten, aber das Risiko ist bei 12.8-kWh-Batterie + Optimierung gering

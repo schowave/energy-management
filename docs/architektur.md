@@ -12,10 +12,12 @@ graph TB
         ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise</small>"]
         SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
         GOSUNGROW["GoSungrow Cloud<br/><small>PV · Batterie · Grid Daten</small>"]
+        HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren (kWh)</small>"]
     end
 
     subgraph N100P1["🖥️ KAMRUI N100 (Home Assistant OS)"]
         HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboard · Sensoren</small>"]
+        HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration (BirknerAlex)</small>"]
         TMPL["📐 Template-Sensoren<br/><small>Abstraktionsschicht</small>"]
         EMHASSP1["🧠 EMHASS Add-on<br/><small>Simulationsmodus · nur berechnen</small>"]
         INFLUXP1["📈 InfluxDB Add-on<br/><small>Langzeit-Logging</small>"]
@@ -32,6 +34,8 @@ graph TB
     ENTSOE -->|Börsenpreise| HAP1
     SOLCAST -->|PV-Forecast| HAP1
     GOSUNGROW -->|SOC · Power · Grid| HAP1
+    HB_API -->|Preise · kWh| HACS_1K5
+    HACS_1K5 --> HAP1
 
     %% HA → Template → EMHASS
     HAP1 --> TMPL
@@ -47,14 +51,13 @@ graph TB
     classDef cloud fill:#1e3a5f,stroke:#3b82f6,color:#f1f5f9
     classDef haos fill:#14532d,stroke:#22c55e,color:#f1f5f9
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
-    classDef heartbeat fill:#14532d,stroke:#22c55e,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,GOSUNGROW cloud
-    class HAP1,TMPL,EMHASSP1,INFLUXP1,GRAFANAP1,MQTTP1 haos
+    class ENTSOE,SOLCAST,GOSUNGROW,HB_API cloud
+    class HAP1,HACS_1K5,TMPL,EMHASSP1,INFLUXP1,GRAFANAP1,MQTTP1 haos
     class HEARTBEAT,SUNGROW1 lokal
 ```
 
-> HA hat **keinen Modbus-Zugriff** – alle Daten kommen über GoSungrow Cloud-API. EMHASS berechnet, was es tun **würde**, führt aber nichts aus. Heartbeat bleibt alleiniger Steuerer.
+> HA hat **keinen Modbus-Zugriff** – Inverterdaten kommen über GoSungrow Cloud-API, Strompreise und Energy-Sensoren (kWh) über die [1komma5grad HACS-Integration](https://github.com/BirknerAlex/hacs_1komma5grad) (→ ADR-0014). EMHASS berechnet, was es tun **würde**, führt aber nichts aus. Heartbeat bleibt alleiniger Steuerer.
 
 ## Phase 2: Systemarchitektur (nach Umstieg)
 
@@ -188,6 +191,7 @@ gantt
 | **Sungrow Modbus (mkaiser)** | Inverter + Batterie Steuerung (Phase 2) | Kostenlos |
 | **EMHASS** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
 | **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 (Phase 2) | Kostenlos |
+| **1komma5grad HACS** | Heartbeat-Preise + Energy-Sensoren (Phase 1) | Kostenlos |
 | **GoSungrow Cloud** | Monitoring via MQTT | Kostenlos |
 | **InfluxDB + Grafana** | Langzeit-Analyse | Kostenlos |
 
@@ -218,3 +222,4 @@ Alle Technologieentscheidungen sind als Architecture Decision Records dokumentie
 | [ADR-0011](adr/0011-shelly-sg-ready-wp-steuerung.md) | Shelly Relay für SG-Ready WP-Steuerung | Akzeptiert |
 | [ADR-0012](adr/0012-dynamischer-stromtarif.md) | Dynamischer Stromtarif (Tibber/aWATTar) | Vorgeschlagen |
 | [ADR-0013](adr/0013-energiemanagement-ansatz.md) | Energiemanagement: EMHASS vs. Heartbeat vs. iHomeManager | Akzeptiert |
+| [ADR-0014](adr/0014-1komma5grad-hacs-integration.md) | 1komma5grad HACS-Integration für Heartbeat-Daten (Phase 1) | Akzeptiert |

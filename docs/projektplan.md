@@ -36,7 +36,9 @@
 - [ ] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
 - [ ] Grundkonfiguration: Netzwerk, Benutzer
 - [ ] Add-ons installieren: Mosquitto, InfluxDB, Grafana
+- [ ] HACS (Home Assistant Community Store) installieren
 - [ ] GoSungrow / MQTT Integration konfigurieren
+- [ ] [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) über HACS installieren (→ ADR-0014)
 - [ ] HA-Backups automatisch auf Synology ablegen (SMB/NFS)
 
 > **KAMRUI N100:** Intel N100 (x86_64, 4C/4T), 16 GB RAM, 512 GB SSD.
@@ -111,6 +113,20 @@ Sensoren für die Abstraktionsschicht:
 > evcc wäre nur relevant bei einem späteren E-Auto mit Wallbox – dann als Ergänzung zu EMHASS.
 
 ### 1.4 Heartbeat-Tracking (Entscheidungen nachvollziehen)
+
+**1komma5grad HACS-Integration (→ ADR-0014):**
+- [ ] **[hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad)** über HACS installieren
+  - Neue Heartbeat API (`app.1komma5grad.com`) — nicht das archivierte Legacy-Repo (derlangemarkus)
+  - Liefert: **Dynamic Pulse Strompreis** (aktuell + Forecast), Energy-Sensoren (kWh)
+- [ ] Verfügbare Sensoren der Integration:
+  - **Strompreis** (aktueller Dynamic Pulse Preis inkl. Netzentgelte + MwSt.) + Forecast-Attribute
+  - **Grid Import/Export** (kWh) — für HA Energy Dashboard
+  - **Solar Production** (kWh)
+  - **Battery In/Out** (kWh)
+  - **Heat Pump** (kWh) — falls von Heartbeat erfasst (bei Novelan unwahrscheinlich)
+- [ ] Heartbeat-Preissensor mit ENTSO-e-Börsenpreis vergleichen (Aufschlag/Marge sichtbar machen)
+
+**GoSungrow für granulare Power-Daten (ergänzend):**
 - [ ] Folgende Sensoren im HA Recorder / InfluxDB langfristig loggen:
   - **Börsenpreis** (ENTSO-e, stündlich)
   - **Battery SOC** (GoSungrow: `p13141`)
@@ -119,7 +135,11 @@ Sensoren für die Abstraktionsschicht:
   - **PV-Erzeugung** (GoSungrow: `p13003`)
   - **Load Power** (GoSungrow: `p13119`)
 - [ ] HA Recorder `purge_keep_days` hochsetzen (z.B. 90 Tage)
-- [ ] Optional: InfluxDB + Grafana für langfristige Analyse
+- [ ] InfluxDB + Grafana für langfristige Analyse
+
+> **Zwei Datenquellen, zwei Zwecke:**
+> GoSungrow liefert granulare **Power-Daten** (Watt, sekündlich) — ideal für EMHASS und detaillierte Analyse.
+> hacs_1komma5grad liefert **Preisdaten** (Dynamic Pulse) und aggregierte **Energy-Daten** (kWh) — ideal für Kostenvergleich und HA Energy Dashboard.
 
 ### 1.5 Vergleichs-Dashboard (3 Szenarien)
 - [ ] Dashboard bauen mit **Zeitstrahl-Überlagerung**:
