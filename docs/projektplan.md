@@ -32,21 +32,21 @@
 > Ziel: Stack aufbauen, EMHASS-Ergebnisse mit Heartbeat vergleichen, fundierte Entscheidung treffen.
 > Architektur-Diagramm: [architektur.md](architektur.md)
 
-### 1.0 Plattform: KAMRUI N100 (bestellt)
-- [ ] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
-- [ ] Grundkonfiguration: Netzwerk, Benutzer
+### 1.0 Plattform: KAMRUI N100
+
+> Detaillierte Setup-Anleitung: [setup-playbook.md](setup-playbook.md)
+
+- [x] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
+- [x] Grundkonfiguration: Netzwerk, Benutzer
+- [x] **Cloudflared Add-on** → Remote-Zugriff via `https://ha.schowalter.co` (→ ADR-0015)
 - [ ] Add-ons installieren: Mosquitto, InfluxDB, Grafana
 - [ ] HACS (Home Assistant Community Store) installieren
 - [ ] GoSungrow / MQTT Integration konfigurieren
 - [ ] [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) über HACS installieren (→ ADR-0014)
-- [ ] **Cloudflared Add-on** installieren → Cloudflare Tunnel für Remote-Zugriff (→ ADR-0015)
-  - External hostname: `ha.schowalter.co`
-  - `configuration.yaml`: `use_x_forwarded_for: true`, `trusted_proxies: 172.30.33.0/24`
-  - External URL in HA setzen: `https://ha.schowalter.co`
 - [ ] HA-Backups automatisch auf Synology ablegen (SMB/NFS)
 
 > **KAMRUI N100:** Intel N100 (x86_64, 4C/4T), 16 GB RAM, 512 GB SSD.
-> HiGHS-Solver läuft nativ. HA OS mit Add-ons statt Docker.
+> Home Assistant OS 17.1 installiert. HiGHS-Solver läuft nativ (x86_64).
 > **Synology DS218+** bleibt als NAS + Backup-Ziel.
 
 ### 1.0a Abstraktionsschicht: Template-Sensoren

@@ -4,19 +4,19 @@
 
 ## 0. HAOS installieren
 
-- [ ] HAOS-Image für Generic x86-64 herunterladen: https://www.home-assistant.io/installation/generic-x86-64
-- [ ] Image auf USB-Stick flashen (Balena Etcher oder Ubuntu Live USB)
-- [ ] KAMRUI N100: Beim Booten `DEL` oder `F7` drücken → Boot von USB
-- [ ] UEFI Boot-Modus aktiv, Secure Boot deaktiviert
-- [ ] Von USB booten → HAOS wird auf interne SSD geschrieben
-- [ ] USB entfernen, Ethernet anschließen, neustarten
-- [ ] Browser öffnen: http://homeassistant.local:8123
-- [ ] Onboarding: Benutzer anlegen, Standort, Einheiten
+- [x] HAOS-Image für Generic x86-64 herunterladen: https://www.home-assistant.io/installation/generic-x86-64
+- [x] Image auf USB-Stick flashen (Balena Etcher oder Ubuntu Live USB)
+- [x] KAMRUI N100: Beim Booten `DEL` oder `F7` drücken → Boot von USB
+- [x] UEFI Boot-Modus aktiv, Secure Boot deaktiviert
+- [x] Von USB booten → HAOS wird auf interne SSD geschrieben
+- [x] USB entfernen, Ethernet anschließen, neustarten
+- [x] Browser öffnen: http://homeassistant.local:8123
+- [x] Onboarding: Benutzer anlegen, Standort, Einheiten
 
 ## 1. Grundkonfiguration
 
-- [ ] **Erweiterter Modus** aktivieren: Profil (links unten) → "Erweiterter Modus" Toggle
-- [ ] **Add-on Store** öffnen: Einstellungen → Add-ons → Add-on Store (oder direkt: http://homeassistant.local:8123/hassio/store)
+- [x] **Erweiterter Modus** aktivieren: Profil (links unten) → "Erweiterter Modus" Toggle
+- [x] **Add-on Store** öffnen: Einstellungen → Add-ons → Add-on Store (oder direkt: http://homeassistant.local:8123/hassio/store)
 
 ## 2. Add-on Repositories hinzufügen
 
@@ -34,44 +34,44 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ## 3. Add-ons installieren & konfigurieren
 
-### 3.1 File Editor
+### 3.1 File Editor ✅
 
-- [ ] Add-on Store → "File editor" suchen → **Installieren**
-- [ ] Add-on Config: "Enforce Basepath" deaktivieren (um alle Verzeichnisse zu sehen)
-- [ ] Add-on starten → "In Seitenleiste anzeigen" aktivieren
+- [x] Add-on Store → "File editor" suchen → **Installieren**
+- [x] Add-on Config: "Enforce Basepath" deaktivieren (um alle Verzeichnisse zu sehen)
+- [x] Add-on starten → "In Seitenleiste anzeigen" aktivieren
 
 > File Editor wird für viele weitere Schritte gebraucht (configuration.yaml bearbeiten).
 
-### 3.2 Cloudflared (Remote-Zugriff)
+### 3.2 Cloudflared (Remote-Zugriff) ✅
 
 **Add-on installieren:**
-- [ ] Add-on Store → "Cloudflared" suchen → **Installieren**
+- [x] Add-on Store → "Cloudflared" suchen → **Installieren**
   - Falls nicht gefunden: Zuerst Repository hinzufügen (siehe Schritt 2)
 
 **Add-on konfigurieren (über UI):**
-- [ ] Tab "Konfiguration" → Externer Hostname: `ha.schowalter.co` → **Speichern**
+- [x] Tab "Konfiguration" → Externer Hostname: `ha.schowalter.co` → **Speichern**
 
 **HTTP-Proxy konfigurieren (VOR dem ersten Tunnel-Start!):**
-- [ ] File Editor → `/config/configuration.yaml` öffnen → folgenden Block einfügen:
+- [x] File Editor → `/config/configuration.yaml` öffnen → folgenden Block einfügen:
   ```yaml
   http:
     use_x_forwarded_for: true
     trusted_proxies:
       - 172.30.33.0/24
   ```
-- [ ] Home Assistant neustarten (Einstellungen → System → Neustart)
+- [x] Home Assistant neustarten (Einstellungen → System → Neustart)
 
 > **Wichtig:** Ohne diesen Block gibt es `400: Bad Request` beim Zugriff über ha.schowalter.co!
 > HA muss dem Cloudflare-Proxy vertrauen, sonst blockiert es die weitergeleiteten Anfragen.
 
 **Tunnel einrichten:**
-- [ ] Tab "Informationen" → Add-on **Starten**
-- [ ] Tab "Protokoll" → **Cloudflare Login-Link** erscheint
-- [ ] Link im Browser öffnen → Domain `schowalter.co` autorisieren
-- [ ] Testen: https://ha.schowalter.co im Browser aufrufen
+- [x] Tab "Informationen" → Add-on **Starten**
+- [x] Tab "Protokoll" → **Cloudflare Login-Link** erscheint
+- [x] Link im Browser öffnen → Domain `schowalter.co` autorisieren
+- [x] Testen: https://ha.schowalter.co im Browser aufrufen
 
 **External URL setzen:**
-- [ ] Einstellungen → System → Netzwerk → External URL: `https://ha.schowalter.co`
+- [x] Einstellungen → System → Netzwerk → External URL: `https://ha.schowalter.co`
 
 ### 3.3 Mosquitto MQTT Broker
 
@@ -203,14 +203,15 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 ## Reihenfolge zusammengefasst
 
 ```
-HAOS flashen → Onboarding → Erweiterter Modus
-→ File Editor → Samba → Terminal (Grundlagen)
-→ Mosquitto → Cloudflared (Infrastruktur)
+HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
+→ File Editor → Cloudflared (Grundlagen + Remote)       ✅ erledigt
+→ Mosquitto → Samba → Terminal (Infrastruktur)
 → InfluxDB → Grafana (Monitoring)
 → HACS → hacs_1komma5grad (Integrationen)
 → ENTSO-e → Solcast → GoSungrow (Datenquellen)
 → Template-Sensoren → Energy Dashboard (Abstraktionsschicht)
 → Synology Backup (Sicherheit)
+→ Recorder konfigurieren (90 Tage)
 ```
 
 ## Nützliche URLs

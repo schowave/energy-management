@@ -153,13 +153,15 @@ gantt
     axisFormat %b
 
     section Phase 1 – Simulation (KAMRUI N100)
-    KAMRUI N100 + HA OS einrichten          :p1hw, 2026-03-01, 3d
-    ENTSO-e API-Key + Integration           :p1a, after p1hw, 2d
+    KAMRUI N100 + HA OS + Cloudflared       :done, p1hw, 2026-03-01, 8d
+    HACS + hacs_1komma5grad + Mosquitto     :active, p1hacs, after p1hw, 3d
+    ENTSO-e API-Key + Integration           :p1a, after p1hacs, 2d
     Solcast/Forecast.Solar einrichten       :p1b, after p1a, 2d
-    GoSungrow Langzeit-Logging (90 Tage)    :p1c, after p1a, 3d
-    Vergleichs-Dashboard bauen              :p1d, after p1c, 5d
-    EMHASS Add-on Simulationsmodus            :p1e, after p1d, 5d
-    Daten sammeln & vergleichen             :p1f, after p1e, 42d
+    GoSungrow + Template-Sensoren           :p1c, after p1a, 3d
+    InfluxDB + Grafana + Recorder           :p1d, after p1c, 3d
+    Vergleichs-Dashboard bauen              :p1e, after p1d, 5d
+    EMHASS Add-on Simulationsmodus          :p1f, after p1e, 5d
+    Daten sammeln & vergleichen             :p1g, after p1f, 42d
 
     section Phase 2 – Umstieg
     Kündigungsfristen prüfen & kündigen     :p2a, after p1f, 7d
@@ -173,17 +175,19 @@ gantt
 
 ## Hardware
 
-### HA-Server: KAMRUI N100 (bestellt)
+### HA-Server: KAMRUI N100 (installiert)
 
 | Spec | Detail |
 |---|---|
 | **CPU** | Intel N100 (x86_64, 4C/4T, 3.4 GHz) |
 | **RAM** | 16 GB DDR4 |
 | **Storage** | 512 GB SSD |
+| **OS** | Home Assistant OS 17.1 |
+| **Remote-Zugriff** | https://ha.schowalter.co (Cloudflare Tunnel) |
 | **Stromverbrauch** | ~8W idle (~21 €/Jahr) |
 | **Preis** | 179,99 € |
 
-> HA OS wird direkt geflasht (kein Windows). HiGHS-Solver läuft nativ (x86_64).
+> HA OS direkt geflasht (kein Windows). HiGHS-Solver läuft nativ (x86_64).
 > 16 GB RAM = Headroom für alle Add-ons.
 
 ### Weitere Hardware
