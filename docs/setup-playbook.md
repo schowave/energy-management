@@ -34,20 +34,15 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ## 3. Add-ons installieren & konfigurieren
 
-### 3.1 Mosquitto MQTT Broker
-
-- [ ] Add-on Store → "Mosquitto broker" suchen → **Installieren**
-- [ ] Add-on starten
-- [ ] Integration einrichten: Einstellungen → Geräte & Dienste → MQTT → Konfigurieren
-- [ ] Automatisch erkannten Broker bestätigen
-
-### 3.2 File Editor
+### 3.1 File Editor
 
 - [ ] Add-on Store → "File editor" suchen → **Installieren**
 - [ ] Add-on Config: "Enforce Basepath" deaktivieren (um alle Verzeichnisse zu sehen)
 - [ ] Add-on starten → "In Seitenleiste anzeigen" aktivieren
 
-### 3.3 Cloudflared (Remote-Zugriff)
+> File Editor wird für viele weitere Schritte gebraucht (configuration.yaml bearbeiten).
+
+### 3.2 Cloudflared (Remote-Zugriff)
 
 **Add-on installieren:**
 - [ ] Add-on Store → "Cloudflared" suchen → **Installieren**
@@ -57,7 +52,6 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [ ] Tab "Konfiguration" → Externer Hostname: `ha.schowalter.co` → **Speichern**
 
 **HTTP-Proxy konfigurieren (VOR dem ersten Tunnel-Start!):**
-- [ ] File Editor Add-on installieren (Add-on Store → "File editor" → Installieren → Starten)
 - [ ] File Editor → `/config/configuration.yaml` öffnen → folgenden Block einfügen:
   ```yaml
   http:
@@ -78,6 +72,13 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 **External URL setzen:**
 - [ ] Einstellungen → System → Netzwerk → External URL: `https://ha.schowalter.co`
+
+### 3.3 Mosquitto MQTT Broker
+
+- [ ] Add-on Store → "Mosquitto broker" suchen → **Installieren**
+- [ ] Add-on starten
+- [ ] Integration einrichten: Einstellungen → Geräte & Dienste → MQTT → Konfigurieren
+- [ ] Automatisch erkannten Broker bestätigen
 
 ### 3.4 Samba Share (Dateizugriff vom PC)
 
