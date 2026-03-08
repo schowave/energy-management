@@ -1,0 +1,27 @@
+# Home Assistant – KAMRUI N100 (HAOS)
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Cloudflare Tunnel (Cloudflared Add-on) → ha.schowalter.co
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
+
+homeassistant:
+  name: Home
+  unit_system: metric
+  currency: EUR
+  country: DE
+  time_zone: Europe/Berlin
+
+# Template-Sensoren (Abstraktionsschicht → ADR-0008)
+template: !include templates.yaml
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

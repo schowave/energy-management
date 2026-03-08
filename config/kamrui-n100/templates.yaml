@@ -1,0 +1,73 @@
+# Template-Sensoren – Abstraktionsschicht (ADR-0008)
+# Phase 1: Quellen sind GoSungrow Cloud-API Entities
+# Phase 2: Quellen auf Modbus-Entities (mkaiser) umstellen
+
+# --- PV & Inverter ---
+- sensor:
+    - name: "PV Power"
+      unique_id: tpl_pv_power
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13003') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13003') not in ['unknown', 'unavailable'] }}"
+
+# --- Batterie ---
+    - name: "Battery SOC"
+      unique_id: tpl_battery_soc
+      unit_of_measurement: "%"
+      device_class: battery
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13141') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13141') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Battery Charge Power"
+      unique_id: tpl_battery_charge_power
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13126') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13126') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Battery Discharge Power"
+      unique_id: tpl_battery_discharge_power
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13150') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13150') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Battery Power Net"
+      unique_id: tpl_battery_power_net
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: >
+        {{ (states('sensor.gosungrow_p13126') | float(0))
+         - (states('sensor.gosungrow_p13150') | float(0)) }}
+
+# --- Grid ---
+    - name: "Grid Import Power"
+      unique_id: tpl_grid_import_power
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13149') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13149') not in ['unknown', 'unavailable'] }}"
+
+    - name: "Grid Export Power"
+      unique_id: tpl_grid_export_power
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13121') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13121') not in ['unknown', 'unavailable'] }}"
+
+# --- Hausverbrauch ---
+    - name: "Load Power"
+      unique_id: tpl_load_power
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: "{{ states('sensor.gosungrow_p13119') | float(0) }}"
+      availability: "{{ states('sensor.gosungrow_p13119') not in ['unknown', 'unavailable'] }}"
