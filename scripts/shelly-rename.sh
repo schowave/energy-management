@@ -2,6 +2,9 @@
 # ============================================================================
 # shelly-rename.sh – Shelly-Geräte benennen (Gen2+ RPC API)
 #
+# Setzt den Gerätenamen per Sys.SetConfig. Der Hostname (WiFi STA) wird
+# von Gen4-Geräten nicht unterstützt und daher nur als Referenz geführt.
+#
 # Verwendung:
 #   ./shelly-rename.sh              # Alle Geräte umbenennen + rebooten
 #   ./shelly-rename.sh --dry-run    # Nur anzeigen
@@ -37,8 +40,8 @@ load_devices
 
 # --- Check-Modus ---
 if [[ "$CHECK" == true ]]; then
-    printf "%-16s %-14s %-25s %-25s %-28s %-28s %s\n" "IP" "MAC" "Name (ist)" "Name (soll)" "Hostname (ist)" "Hostname (soll)" "Status"
-    printf "%-16s %-14s %-25s %-25s %-28s %-28s %s\n" "───" "───" "───" "───" "───" "───" "───"
+    printf "%-16s %-14s %-25s %-25s %-28s %s\n" "IP" "MAC" "Name (ist)" "Name (soll)" "Hostname (Ref)" "Status"
+    printf "%-16s %-14s %-25s %-25s %-28s %s\n" "───" "───" "───" "───" "───" "───"
 
     for entry in "${DEVICES[@]}"; do
         IFS=';' read -r ip name hostname <<< "$entry"
@@ -58,19 +61,13 @@ if [[ "$CHECK" == true ]]; then
 
         current_name=$(echo "$config" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
         mac=$(echo "$config" | grep -o '"mac":"[^"]*"' | cut -d'"' -f4)
-        current_hostname=$(echo "$config" | grep -o '"host":"[^"]*"' | head -1 | cut -d'"' -f4)
         [[ -z "$current_name" ]] && current_name="(nicht gesetzt)"
-        [[ -z "$current_hostname" ]] && current_hostname="(nicht gesetzt)"
 
-        name_ok=false; host_ok=false
-        [[ "$current_name" == "$name" ]] && name_ok=true
-        [[ "$current_hostname" == "$hostname" ]] && host_ok=true
-
-        if [[ "$name_ok" == true && "$host_ok" == true ]]; then
-            printf "%-16s %-14s %-25s %-25s %-28s %-28s " "$ip" "$mac" "$current_name" "$name" "$current_hostname" "$hostname"
+        if [[ "$current_name" == "$name" ]]; then
+            printf "%-16s %-14s %-25s %-25s %-28s " "$ip" "$mac" "$current_name" "$name" "$hostname"
             echo -e "${GREEN}✅${NC}"
         else
-            printf "%-16s %-14s %-25s %-25s %-28s %-28s " "$ip" "$mac" "$current_name" "$name" "$current_hostname" "$hostname"
+            printf "%-16s %-14s %-25s %-25s %-28s " "$ip" "$mac" "$current_name" "$name" "$hostname"
             echo -e "${YELLOW}⚠️  ändern${NC}"
         fi
     done
@@ -113,65 +110,39 @@ for entry in "${DEVICES[@]}"; do
     }
 
     current_name=$(echo "$config" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
-    current_hostname=$(echo "$config" | grep -o '"host":"[^"]*"' | head -1 | cut -d'"' -f4)
     mac=$(echo "$config" | grep -o '"mac":"[^"]*"' | cut -d'"' -f4)
     [[ -z "$current_name" ]] && current_name="(null)"
-    [[ -z "$current_hostname" ]] && current_hostname="(null)"
 
     echo "  MAC:          ${mac}"
     echo "  Name:         ${current_name} → ${name}"
-    echo "  Hostname:     ${current_hostname} → ${hostname}"
+    echo "  Hostname:     ${hostname} (Referenz, nicht per API setzbar)"
 
-    name_ok=false; host_ok=false
-    [[ "$current_name" == "$name" ]] && name_ok=true
-    [[ "$current_hostname" == "$hostname" ]] && host_ok=true
-
-    if [[ "$name_ok" == true && "$host_ok" == true ]]; then
+    if [[ "$current_name" == "$name" ]]; then
         echo -e "  ${GREEN}✅ Bereits korrekt${NC}\n"
         ((skipped++))
         continue
     fi
 
     if [[ "$DRY_RUN" == true ]]; then
-        [[ "$name_ok" != true ]] && echo -e "  ${YELLOW}→ Name ändern${NC}"
-        [[ "$host_ok" != true ]] && echo -e "  ${YELLOW}→ Hostname ändern${NC}"
+        echo -e "  ${YELLOW}→ Name ändern${NC}"
         echo ""
         ((skipped++))
         continue
     fi
 
-    needs_reboot=false
-
     # Name setzen
-    if [[ "$name_ok" != true ]]; then
-        result=$(curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Sys.SetConfig" \
-            -d "{\"config\":{\"device\":{\"name\":\"${name}\"}}}" 2>/dev/null) || {
-            echo -e "  ${RED}❌ Fehler beim Name setzen${NC}\n"
-            ((failed++))
-            continue
-        }
-        echo -e "  ${GREEN}✅ Name gesetzt${NC}"
-        needs_reboot=true
-    fi
+    result=$(curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Sys.SetConfig" \
+        -d "{\"config\":{\"device\":{\"name\":\"${name}\"}}}" 2>/dev/null) || {
+        echo -e "  ${RED}❌ Fehler beim Name setzen${NC}\n"
+        ((failed++))
+        continue
+    }
+    echo -e "  ${GREEN}✅ Name gesetzt${NC}"
 
-    # Hostname setzen (WiFi STA)
-    if [[ "$host_ok" != true ]]; then
-        result=$(curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Sys.SetConfig" \
-            -d "{\"config\":{\"device\":{\"name\":\"${name}\"},\"wifi\":{\"sta\":{\"host\":\"${hostname}\"}}}}" 2>/dev/null) || {
-            echo -e "  ${RED}❌ Fehler beim Hostname setzen${NC}\n"
-            ((failed++))
-            continue
-        }
-        echo -e "  ${GREEN}✅ Hostname gesetzt${NC}"
-        needs_reboot=true
-    fi
-
-    # Reboot wenn nötig
-    if [[ "$needs_reboot" == true ]]; then
-        echo "  ↻ Neustart..."
-        curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Shelly.Reboot" 2>/dev/null || true
-        echo -e "  ${GREEN}✅ Neustart ausgelöst${NC}\n"
-    fi
+    # Reboot
+    echo "  ↻ Neustart..."
+    curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Shelly.Reboot" 2>/dev/null || true
+    echo -e "  ${GREEN}✅ Neustart ausgelöst${NC}\n"
 
     ((success++))
 done
