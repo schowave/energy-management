@@ -6,37 +6,34 @@
 #   ./shelly-rename.sh              # Alle Geräte umbenennen + rebooten
 #   ./shelly-rename.sh --dry-run    # Nur anzeigen
 #   ./shelly-rename.sh --check      # Aktuellen Status prüfen
+#   ./shelly-rename.sh --ip X.X.X.X # Nur ein bestimmtes Gerät
 # ============================================================================
 
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEVICES_FILE="${SCRIPT_DIR}/shelly-devices.sh"
+source "${SCRIPT_DIR}/shelly-common.sh"
+
 DRY_RUN=false
 CHECK=false
+FILTER_IP=""
 TIMEOUT=5
-
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --dry-run) DRY_RUN=true; shift ;;
         --check)   CHECK=true; shift ;;
-        -h|--help) echo "Verwendung: $0 [--dry-run] [--check]"; exit 0 ;;
-        *)         echo "Unbekannt: $1"; exit 1 ;;
+        --ip)      FILTER_IP="$2"; shift 2 ;;
+        -h|--help)
+            echo "Verwendung: $0 [--dry-run] [--check] [--ip X.X.X.X]"
+            exit 0
+            ;;
+        *) echo "Unbekannt: $1"; exit 1 ;;
     esac
 done
 
 # Geräteliste laden
-if [[ ! -f "$DEVICES_FILE" ]]; then
-    echo -e "${RED}Geräteliste nicht gefunden: ${DEVICES_FILE}${NC}"
-    exit 1
-fi
-
-# register-Funktion überschreiben um Geräte zu sammeln
-DEVICES=()
-register() { DEVICES+=("$1;$2;$3"); }
-source "$DEVICES_FILE"
+load_devices
 
 # --- Check-Modus ---
 if [[ "$CHECK" == true ]]; then
@@ -47,6 +44,12 @@ if [[ "$CHECK" == true ]]; then
         IFS=';' read -r ip name hostname <<< "$entry"
         [[ -z "$ip" ]] && continue
 
+        # TODO-Einträge überspringen
+        [[ "$name" == TODO_* ]] && continue
+
+        # IP-Filter
+        [[ -n "$FILTER_IP" && "$ip" != "$FILTER_IP" ]] && continue
+
         config=$(curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Sys.GetConfig" 2>/dev/null) || {
             printf "%-16s %-14s " "$ip" ""
             echo -e "${RED}❌ NICHT ERREICHBAR${NC}"
@@ -55,7 +58,6 @@ if [[ "$CHECK" == true ]]; then
 
         current_name=$(echo "$config" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4)
         mac=$(echo "$config" | grep -o '"mac":"[^"]*"' | cut -d'"' -f4)
-        # WiFi STA Hostname: sta.host oder wifi.sta.host je nach Firmware
         current_hostname=$(echo "$config" | grep -o '"host":"[^"]*"' | head -1 | cut -d'"' -f4)
         [[ -z "$current_name" ]] && current_name="(nicht gesetzt)"
         [[ -z "$current_hostname" ]] && current_hostname="(nicht gesetzt)"
@@ -78,6 +80,7 @@ fi
 # --- Rename ---
 echo -e "${CYAN}Shelly-Geräte umbenennen${NC}"
 [[ "$DRY_RUN" == true ]] && echo -e "${YELLOW}(Dry-Run – keine Änderungen)${NC}"
+[[ -n "$FILTER_IP" ]] && echo -e "${CYAN}Filter: nur ${FILTER_IP}${NC}"
 echo ""
 
 success=0; skipped=0; failed=0
@@ -87,6 +90,17 @@ for entry in "${DEVICES[@]}"; do
 
     if [[ -z "$ip" ]]; then
         ((skipped++))
+        continue
+    fi
+
+    # TODO-Einträge überspringen
+    if [[ "$name" == TODO_* ]]; then
+        ((skipped++))
+        continue
+    fi
+
+    # IP-Filter
+    if [[ -n "$FILTER_IP" && "$ip" != "$FILTER_IP" ]]; then
         continue
     fi
 
