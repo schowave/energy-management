@@ -13,6 +13,7 @@ graph TB
         SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
         GOSUNGROW["GoSungrow Cloud<br/><small>PV · Batterie · Grid Daten</small>"]
         HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren (kWh)</small>"]
+        CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
     end
 
     subgraph N100P1["🖥️ KAMRUI N100 (Home Assistant OS)"]
@@ -23,6 +24,7 @@ graph TB
         INFLUXP1["📈 InfluxDB Add-on<br/><small>Langzeit-Logging</small>"]
         GRAFANAP1["📊 Grafana Add-on<br/><small>Vergleichs-Dashboard</small>"]
         MQTTP1["MQTT Broker<br/><small>Mosquitto Add-on</small>"]
+        CFD_P1["🔒 Cloudflared Add-on<br/><small>Tunnel → Cloudflare</small>"]
     end
 
     subgraph LOKAL1["🏠 Lokales Netzwerk"]
@@ -47,13 +49,17 @@ graph TB
     %% Heartbeat steuert (HA hat keinen Modbus-Zugriff)
     HEARTBEAT ==>|Modbus TCP| SUNGROW1
 
+    %% Cloudflare Tunnel (Remote-Zugriff)
+    CFD_P1 -->|ausgehender Tunnel| CF
+    CF -.->|"ha.schowalter.co<br/>HTTPS"| CFD_P1
+
     %% Styling
     classDef cloud fill:#1e3a5f,stroke:#3b82f6,color:#f1f5f9
     classDef haos fill:#14532d,stroke:#22c55e,color:#f1f5f9
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,GOSUNGROW,HB_API cloud
-    class HAP1,HACS_1K5,TMPL,EMHASSP1,INFLUXP1,GRAFANAP1,MQTTP1 haos
+    class ENTSOE,SOLCAST,GOSUNGROW,HB_API,CF cloud
+    class HAP1,HACS_1K5,TMPL,EMHASSP1,INFLUXP1,GRAFANAP1,MQTTP1,CFD_P1 haos
     class HEARTBEAT,SUNGROW1 lokal
 ```
 
@@ -68,6 +74,7 @@ graph TB
         SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
         TIBBER["Tibber / aWATTar<br/><small>Dynamischer Tarif</small>"]
         GOSUNGROW["GoSungrow Cloud<br/><small>Backup-Monitoring</small>"]
+        CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
     end
 
     subgraph SERVER["🖥️ KAMRUI N100 (Home Assistant OS)"]
@@ -76,6 +83,7 @@ graph TB
         MQTT["MQTT Broker<br/><small>Mosquitto</small>"]
         GRAFANA["📊 Grafana<br/><small>Langzeit-Visualisierung</small>"]
         INFLUX["📈 InfluxDB<br/><small>Langzeit-Speicher</small>"]
+        CFD["🔒 Cloudflared Add-on<br/><small>Tunnel → Cloudflare</small>"]
     end
 
     subgraph LOKAL["🏠 Lokales Netzwerk"]
@@ -112,6 +120,10 @@ graph TB
     HA -.->|Backup via SMB| SYNOLOGY
     METER -.-> HA
 
+    %% Cloudflare Tunnel (Remote-Zugriff)
+    CFD -->|ausgehender Tunnel| CF
+    CF -.->|"ha.schowalter.co<br/>HTTPS"| CFD
+
     %% Lokal → Hardware
     SUNGROW --- PV
     SUNGROW --- BATTERIE
@@ -124,8 +136,8 @@ graph TB
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
     classDef hw fill:#450a0a,stroke:#ef4444,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,TIBBER,GOSUNGROW cloud
-    class HA,EMHASS,MQTT,GRAFANA,INFLUX haos
+    class ENTSOE,SOLCAST,TIBBER,GOSUNGROW,CF cloud
+    class HA,EMHASS,MQTT,GRAFANA,INFLUX,CFD haos
     class SUNGROW,METER,SHELLY,SYNOLOGY lokal
     class PV,BATTERIE,WP,HAUS hw
 ```
@@ -192,6 +204,7 @@ gantt
 | **EMHASS** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
 | **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 (Phase 2) | Kostenlos |
 | **1komma5grad HACS** | Heartbeat-Preise + Energy-Sensoren (Phase 1) | Kostenlos |
+| **Cloudflared** | Cloudflare Tunnel · Remote-Zugriff via ha.schowalter.co | Kostenlos |
 | **GoSungrow Cloud** | Monitoring via MQTT | Kostenlos |
 | **InfluxDB + Grafana** | Langzeit-Analyse | Kostenlos |
 
@@ -223,3 +236,4 @@ Alle Technologieentscheidungen sind als Architecture Decision Records dokumentie
 | [ADR-0012](adr/0012-dynamischer-stromtarif.md) | Dynamischer Stromtarif (Tibber/aWATTar) | Vorgeschlagen |
 | [ADR-0013](adr/0013-energiemanagement-ansatz.md) | Energiemanagement: EMHASS vs. Heartbeat vs. iHomeManager | Akzeptiert |
 | [ADR-0014](adr/0014-1komma5grad-hacs-integration.md) | 1komma5grad HACS-Integration für Heartbeat-Daten (Phase 1) | Akzeptiert |
+| [ADR-0015](adr/0015-cloudflare-tunnel-remote-zugriff.md) | Cloudflare Tunnel für Remote-Zugriff | Akzeptiert |
