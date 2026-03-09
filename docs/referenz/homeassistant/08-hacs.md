@@ -4,11 +4,11 @@
 
 ## Installation (HAOS)
 
-1. HACS Add-on Repository hinzufügen:
-   - Einstellungen → Add-ons → 3-Punkt-Menü → Repositories
+1. HACS App Repository hinzufügen:
+   - Einstellungen → Apps → 3-Punkt-Menü → Repositories
    - URL: `https://github.com/hacs/addons`
-2. **Einstellungen → Add-ons → Add-on Store → "Get HACS"** installieren
-3. Add-on starten
+2. **Einstellungen → Apps → App Store → "Get HACS"** installieren
+3. App starten
 4. Logs prüfen für weitere Anweisungen
 5. Home Assistant neustarten
 6. HACS-Integration konfigurieren (GitHub-Konto verknüpfen)

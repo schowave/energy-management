@@ -17,7 +17,7 @@ Nach Kündigung des 1komma5° Energy Trader / Heartbeat wird ein Optimierer ben�
 
 ## Entscheidung
 
-EMHASS Add-on mit HiGHS-Solver auf dem KAMRUI N100.
+EMHASS App mit HiGHS-Solver auf dem KAMRUI N100.
 
 ## Begründung
 

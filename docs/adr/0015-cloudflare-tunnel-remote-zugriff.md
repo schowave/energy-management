@@ -10,14 +10,14 @@ Home Assistant soll von unterwegs erreichbar sein — über `ha.schowalter.co`. 
 
 | Option | Pro | Contra |
 |---|---|---|
-| **Cloudflare Tunnel (Cloudflared Add-on)** | Kein Port-Forwarding, kein offener Port, automatisches SSL, DDoS-Schutz, einfaches HAOS Add-on | Abhängigkeit von Cloudflare, minimale Latenz durch Proxy |
+| **Cloudflare Tunnel (Cloudflared App)** | Kein Port-Forwarding, kein offener Port, automatisches SSL, DDoS-Schutz, einfaches HAOS App | Abhängigkeit von Cloudflare, minimale Latenz durch Proxy |
 | Port-Forwarding + Let's Encrypt | Kein Drittanbieter-Proxy | Port 443 offen am Router, manuelles Zertifikats-Management, kein DDoS-Schutz |
 | VPN (WireGuard/Tailscale) | Volle Verschlüsselung, kein offener Port | Kein Zugriff ohne VPN-Client, umständlicher für Companion App |
 | Nabu Casa (HA Cloud) | Offiziell supportet, einfachste Einrichtung | 7,50 €/Mo, redundant wenn Cloudflare-Domain vorhanden |
 
 ## Entscheidung
 
-**Cloudflare Tunnel** via Cloudflared Add-on in HAOS.
+**Cloudflare Tunnel** via Cloudflared App in HAOS.
 
 ## Begründung
 
@@ -26,7 +26,7 @@ Home Assistant soll von unterwegs erreichbar sein — über `ha.schowalter.co`. 
 - **Automatisches SSL** — HTTPS ohne eigenes Zertifikats-Management
 - **DDoS-Schutz** inklusive über Cloudflare-Netzwerk
 - **Kostenlos** — Cloudflare Tunnels sind im Free-Plan enthalten
-- **HAOS Add-on verfügbar** — einfache Installation und Konfiguration
+- **HAOS App verfügbar** — einfache Installation und Konfiguration
 
 ## Konfiguration
 
@@ -39,7 +39,7 @@ http:
 ```
 
 - External URL: `https://ha.schowalter.co`
-- Cloudflared Add-on hostname: `ha.schowalter.co`
+- Cloudflared App hostname: `ha.schowalter.co`
 
 ## Konsequenzen
 

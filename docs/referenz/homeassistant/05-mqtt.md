@@ -9,7 +9,7 @@ MQTT ist ein leichtgewichtiges Publish/Subscribe-Protokoll für IoT. Die HA MQTT
 ## Setup
 
 1. **Einstellungen → Geräte & Dienste → Integration hinzufügen → MQTT**
-2. Empfohlen: **Mosquitto Broker Add-on** (generiert sichere Credentials automatisch)
+2. Empfohlen: **Mosquitto Broker App** (generiert sichere Credentials automatisch)
 
 ## Broker-Konfiguration
 

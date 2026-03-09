@@ -16,11 +16,11 @@
 ## 1. Grundkonfiguration
 
 - [x] **Erweiterter Modus** aktivieren: Profil (links unten) → "Erweiterter Modus" Toggle
-- [x] **Add-on Store** öffnen: Einstellungen → Add-ons → Add-on Store (oder direkt: http://homeassistant.local:8123/hassio/store)
+- [x] **App Store** öffnen: Einstellungen → Apps → App Store (oder direkt: http://homeassistant.local:8123/hassio/store)
 
-## 2. Add-on Repositories hinzufügen
+## 2. App Repositories hinzufügen
 
-Im Add-on Store: **⋮ (3 Punkte oben rechts) → Repositories**
+Im App Store: **⋮ (3 Punkte oben rechts) → Repositories**
 
 Folgende URLs einzeln einfügen und jeweils "Hinzufügen" klicken:
 
@@ -28,27 +28,27 @@ Folgende URLs einzeln einfügen und jeweils "Hinzufügen" klicken:
 
 | Repository | URL | Enthält |
 |---|---|---|
-| **Cloudflared** | `https://github.com/brenner-tobias/ha-addons` | Cloudflare Tunnel Add-on |
+| **Cloudflared** | `https://github.com/brenner-tobias/ha-addons` | Cloudflare Tunnel App |
 
 Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
-## 3. Add-ons installieren & konfigurieren
+## 3. Apps installieren & konfigurieren
 
 ### 3.1 File Editor ✅
 
-- [x] Add-on Store → "File editor" suchen → **Installieren**
-- [x] Add-on Config: "Enforce Basepath" deaktivieren (um alle Verzeichnisse zu sehen)
-- [x] Add-on starten → "In Seitenleiste anzeigen" aktivieren
+- [x] App Store → "File editor" suchen → **Installieren**
+- [x] App Config: "Enforce Basepath" deaktivieren (um alle Verzeichnisse zu sehen)
+- [x] App starten → "In Seitenleiste anzeigen" aktivieren
 
 > File Editor wird für viele weitere Schritte gebraucht (configuration.yaml bearbeiten).
 
 ### 3.2 Cloudflared (Remote-Zugriff) ✅
 
-**Add-on installieren:**
-- [x] Add-on Store → "Cloudflared" suchen → **Installieren**
+**App installieren:**
+- [x] App Store → "Cloudflared" suchen → **Installieren**
   - Falls nicht gefunden: Zuerst Repository hinzufügen (siehe Schritt 2)
 
-**Add-on konfigurieren (über UI):**
+**App konfigurieren (über UI):**
 - [x] Tab "Konfiguration" → Externer Hostname: `ha.schowalter.co` → **Speichern**
 
 **HTTP-Proxy konfigurieren (VOR dem ersten Tunnel-Start!):**
@@ -65,7 +65,7 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 > HA muss dem Cloudflare-Proxy vertrauen, sonst blockiert es die weitergeleiteten Anfragen.
 
 **Tunnel einrichten:**
-- [x] Tab "Informationen" → Add-on **Starten**
+- [x] Tab "Informationen" → App **Starten**
 - [x] Tab "Protokoll" → **Cloudflare Login-Link** erscheint
 - [x] Link im Browser öffnen → Domain `schowalter.co` autorisieren
 - [x] Testen: https://ha.schowalter.co im Browser aufrufen
@@ -75,22 +75,22 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ### 3.3 Mosquitto MQTT Broker
 
-- [ ] Add-on Store → "Mosquitto broker" suchen → **Installieren**
-- [ ] Add-on starten
+- [ ] App Store → "Mosquitto broker" suchen → **Installieren**
+- [ ] App starten
 - [ ] Integration einrichten: Einstellungen → Geräte & Dienste → MQTT → Konfigurieren
 - [ ] Automatisch erkannten Broker bestätigen
 
 ### 3.4 Samba Share (Dateizugriff vom PC)
 
-- [ ] Add-on Store → "Samba share" suchen → **Installieren**
-- [ ] Add-on Config: Benutzername + Passwort setzen
-- [ ] Add-on starten
+- [ ] App Store → "Samba share" suchen → **Installieren**
+- [ ] App Config: Benutzername + Passwort setzen
+- [ ] App starten
 - [ ] Vom PC verbinden: `\\homeassistant.local` (Windows) / `smb://homeassistant.local` (Mac)
 
 ### 3.5 InfluxDB
 
-- [ ] Add-on Store → "InfluxDB" suchen → **Installieren**
-- [ ] Add-on starten → "In Seitenleiste anzeigen" aktivieren
+- [ ] App Store → "InfluxDB" suchen → **Installieren**
+- [ ] App starten → "In Seitenleiste anzeigen" aktivieren
 - [ ] InfluxDB UI öffnen → Datenbank `homeassistant` anlegen (InfluxDB 1.x) oder Bucket erstellen (2.x)
 - [ ] `configuration.yaml` ergänzen (InfluxDB 1.x Beispiel):
   ```yaml
@@ -113,22 +113,22 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ### 3.6 Grafana
 
-- [ ] Add-on Store → "Grafana" suchen → **Installieren**
-- [ ] Add-on starten → "In Seitenleiste anzeigen" aktivieren
+- [ ] App Store → "Grafana" suchen → **Installieren**
+- [ ] App starten → "In Seitenleiste anzeigen" aktivieren
 - [ ] Grafana öffnen → InfluxDB als Datenquelle hinzufügen:
   - URL: `http://a0d7b0f9-influxdb:8086`
   - Database: `homeassistant`
 
 ### 3.7 Terminal & SSH (optional, für CLI-Zugriff)
 
-- [ ] Add-on Store → "Terminal & SSH" suchen → **Installieren**
-- [ ] Add-on starten → "In Seitenleiste anzeigen" aktivieren
+- [ ] App Store → "Terminal & SSH" suchen → **Installieren**
+- [ ] App starten → "In Seitenleiste anzeigen" aktivieren
 
 ## 4. HACS installieren
 
-- [ ] Add-on Store → ⋮ → Repositories → `https://github.com/hacs/addons` hinzufügen
-- [ ] Add-on Store → "Get HACS" suchen → **Installieren** → **Starten**
-- [ ] Add-on Logs prüfen für Anweisungen
+- [ ] App Store → ⋮ → Repositories → `https://github.com/hacs/addons` hinzufügen
+- [ ] App Store → "Get HACS" suchen → **Installieren** → **Starten**
+- [ ] App Logs prüfen für Anweisungen
 - [ ] Home Assistant neustarten
 - [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "HACS"
 - [ ] GitHub-Konto verknüpfen (Device Code Flow)
@@ -219,7 +219,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 | Was | URL |
 |---|---|
 | HA Lokal | http://homeassistant.local:8123 |
-| Add-on Store | http://homeassistant.local:8123/hassio/store |
+| App Store | http://homeassistant.local:8123/hassio/store |
 | Systeminformationen | http://homeassistant.local:8123/config/info |
 | Entwicklerwerkzeuge | http://homeassistant.local:8123/developer-tools/state |
 | HA Extern | https://ha.schowalter.co |

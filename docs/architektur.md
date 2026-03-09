@@ -20,11 +20,11 @@ graph TB
         HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboard · Sensoren</small>"]
         HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration (BirknerAlex)</small>"]
         TMPL["📐 Template-Sensoren<br/><small>Abstraktionsschicht</small>"]
-        EMHASSP1["🧠 EMHASS Add-on<br/><small>Simulationsmodus · nur berechnen</small>"]
-        INFLUXP1["📈 InfluxDB Add-on<br/><small>Langzeit-Logging</small>"]
-        GRAFANAP1["📊 Grafana Add-on<br/><small>Vergleichs-Dashboard</small>"]
-        MQTTP1["MQTT Broker<br/><small>Mosquitto Add-on</small>"]
-        CFD_P1["🔒 Cloudflared Add-on<br/><small>Tunnel → Cloudflare</small>"]
+        EMHASSP1["🧠 EMHASS App<br/><small>Simulationsmodus · nur berechnen</small>"]
+        INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging</small>"]
+        GRAFANAP1["📊 Grafana App<br/><small>Vergleichs-Dashboard</small>"]
+        MQTTP1["MQTT Broker<br/><small>Mosquitto App</small>"]
+        CFD_P1["🔒 Cloudflared App<br/><small>Tunnel → Cloudflare</small>"]
     end
 
     subgraph LOKAL1["🏠 Lokales Netzwerk"]
@@ -83,7 +83,7 @@ graph TB
         MQTT["MQTT Broker<br/><small>Mosquitto</small>"]
         GRAFANA["📊 Grafana<br/><small>Langzeit-Visualisierung</small>"]
         INFLUX["📈 InfluxDB<br/><small>Langzeit-Speicher</small>"]
-        CFD["🔒 Cloudflared Add-on<br/><small>Tunnel → Cloudflare</small>"]
+        CFD["🔒 Cloudflared App<br/><small>Tunnel → Cloudflare</small>"]
     end
 
     subgraph LOKAL["🏠 Lokales Netzwerk"]
@@ -106,7 +106,7 @@ graph TB
     GOSUNGROW -.->|MQTT| MQTT
     MQTT --> HA
 
-    %% HA ↔ Add-ons
+    %% HA ↔ Apps
     HA -->|Sensordaten| EMHASS
     EMHASS -->|Optimierungsplan| HA
     HA --> INFLUX
@@ -160,7 +160,7 @@ gantt
     GoSungrow + Template-Sensoren           :p1c, after p1a, 3d
     InfluxDB + Grafana + Recorder           :p1d, after p1c, 3d
     Vergleichs-Dashboard bauen              :p1e, after p1d, 5d
-    EMHASS Add-on Simulationsmodus          :p1f, after p1e, 5d
+    EMHASS App Simulationsmodus          :p1f, after p1e, 5d
     Daten sammeln & vergleichen             :p1g, after p1f, 42d
 
     section Phase 2 – Umstieg
@@ -188,7 +188,7 @@ gantt
 | **Preis** | 179,99 € |
 
 > HA OS direkt geflasht (kein Windows). HiGHS-Solver läuft nativ (x86_64).
-> 16 GB RAM = Headroom für alle Add-ons.
+> 16 GB RAM = Headroom für alle Apps.
 
 ### Weitere Hardware
 

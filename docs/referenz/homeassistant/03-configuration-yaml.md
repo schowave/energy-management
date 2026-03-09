@@ -10,9 +10,9 @@ Die `configuration.yaml` enthält Integrationen und Einstellungen, die nicht üb
 
 ### Zugriff (HAOS)
 
-- **File Editor Add-on** (empfohlen für Einsteiger)
-- **Studio Code Server Add-on** (Syntax-Check, Autocomplete)
-- **Samba Add-on** → Datei auf dem PC bearbeiten
+- **File Editor App** (empfohlen für Einsteiger)
+- **Studio Code Server App** (Syntax-Check, Autocomplete)
+- **Samba App** → Datei auf dem PC bearbeiten
 
 ### Pfad finden
 

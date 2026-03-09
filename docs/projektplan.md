@@ -38,8 +38,8 @@
 
 - [x] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
 - [x] Grundkonfiguration: Netzwerk, Benutzer
-- [x] **Cloudflared Add-on** → Remote-Zugriff via `https://ha.schowalter.co` (→ ADR-0015)
-- [ ] Add-ons installieren: Mosquitto, InfluxDB, Grafana
+- [x] **Cloudflared App** → Remote-Zugriff via `https://ha.schowalter.co` (→ ADR-0015)
+- [ ] Apps installieren: Mosquitto, InfluxDB, Grafana
 - [ ] HACS (Home Assistant Community Store) installieren
 - [ ] GoSungrow / MQTT Integration konfigurieren
 - [ ] [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) über HACS installieren (→ ADR-0014)
@@ -91,7 +91,7 @@ Sensoren für die Abstraktionsschicht:
 - [ ] Prüfen ob Prognosedaten plausibel sind
 
 ### 1.3 EMHASS im Simulationsmodus
-- [ ] **EMHASS Add-on** in HA OS installieren (auf dem KAMRUI N100)
+- [ ] **EMHASS App** in HA OS installieren (auf dem KAMRUI N100)
   - Linear-Programming-Optimierer mit **HiGHS-Solver** (x86 nativ)
   - Kombiniert: Strompreise + PV-Prognose + Verbrauchsmuster
   - ML-basierte Lastvorhersage

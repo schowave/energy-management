@@ -10,19 +10,19 @@ Für den Vergleich von Heartbeat vs. EMHASS (Phase 1) und das langfristige Monit
 
 | Option | Pro | Contra |
 |---|---|---|
-| **InfluxDB + Grafana** | Zeitreihen-optimiert, mächtige Abfragen (Flux/InfluxQL), Grafana-Dashboards, HA Add-ons verfügbar | Zwei zusätzliche Add-ons, RAM-Verbrauch |
+| **InfluxDB + Grafana** | Zeitreihen-optimiert, mächtige Abfragen (Flux/InfluxQL), Grafana-Dashboards, HA Apps verfügbar | Zwei zusätzliche Apps, RAM-Verbrauch |
 | HA Recorder (SQLite) | Keine Zusatzsoftware, integriert | Nicht für Langzeitdaten, keine komplexen Aggregationen, wird bei großen Datenmengen langsam |
 | Prometheus + Grafana | Pull-basiert, industriestandard | Weniger geeignet für HA (Push-basiert), komplexere Einrichtung |
-| TimescaleDB | SQL + Zeitreihen | Kein HA Add-on, komplexere Einrichtung |
+| TimescaleDB | SQL + Zeitreihen | Kein HA App, komplexere Einrichtung |
 
 ## Entscheidung
 
-InfluxDB als Langzeit-Speicher, Grafana als Visualisierung — beide als HA OS Add-ons.
+InfluxDB als Langzeit-Speicher, Grafana als Visualisierung — beide als HA OS Apps.
 
 ## Begründung
 
 - **Zeitreihen-optimiert**: InfluxDB ist für genau diesen Use Case gebaut (Sensordaten über Zeit)
-- **HA-Integration**: Nativer InfluxDB-Export in HA, ein Klick Add-on-Installation
+- **HA-Integration**: Nativer InfluxDB-Export in HA, ein Klick App-Installation
 - **Grafana-Dashboards**: Zeitstrahl-Überlagerungen (Heartbeat vs. EMHASS vs. Baseline) sind mit Grafana einfach umsetzbar
 - **512 GB SSD** (KAMRUI N100) bietet ausreichend Speicher für Jahre an Sensordaten
 - **16 GB RAM** verkraftet InfluxDB + Grafana neben HA + EMHASS

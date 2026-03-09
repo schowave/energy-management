@@ -4,7 +4,7 @@
 
 ## Kontext
 
-Für den Betrieb von Home Assistant OS mit EMHASS (HiGHS LP-Solver), InfluxDB, Grafana und weiteren Add-ons wird ein dauerhaft laufender Server benötigt. Der Stromverbrauch muss minimal sein, da der Server 24/7 läuft.
+Für den Betrieb von Home Assistant OS mit EMHASS (HiGHS LP-Solver), InfluxDB, Grafana und weiteren Apps wird ein dauerhaft laufender Server benötigt. Der Stromverbrauch muss minimal sein, da der Server 24/7 läuft.
 
 ## Betrachtete Alternativen
 
@@ -22,7 +22,7 @@ KAMRUI N100 Mini-PC (Intel N100, 16 GB RAM, 512 GB SSD) für 179,99 €.
 ## Begründung
 
 - **x86_64-Architektur** ist Voraussetzung für den HiGHS-Solver in EMHASS (LP-Optimierung)
-- **16 GB RAM** bietet Headroom für alle Add-ons (HA + EMHASS + InfluxDB + Grafana + Mosquitto)
+- **16 GB RAM** bietet Headroom für alle Apps (HA + EMHASS + InfluxDB + Grafana + Mosquitto)
 - **~8W idle** (~21 €/Jahr Strom) macht den 24/7-Betrieb wirtschaftlich
 - **512 GB SSD** reicht für InfluxDB-Langzeitdaten (Jahre an Sensordaten)
 - Die Synology DS218+ bleibt als NAS/Backup-Ziel erhalten
