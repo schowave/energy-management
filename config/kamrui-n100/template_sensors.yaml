@@ -1,0 +1,30 @@
+- sensor:
+    - name: "Autarkiegrad"
+      unique_id: autarkiegrad_daily
+      unit_of_measurement: "%"
+      state_class: measurement
+      icon: mdi:home-lightning-bolt
+      state: >
+        {% set pv = states('sensor.daily_pv_generation') | float(0) %}
+        {% set import = states('sensor.daily_imported_energy') | float(0) %}
+        {% set export = states('sensor.daily_exported_energy') | float(0) %}
+        {% set verbrauch = pv + import - export %}
+        {% if verbrauch > 0 %}
+          {{ ((1 - import / verbrauch) * 100) | round(1) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "Eigenverbrauchsquote"
+      unique_id: eigenverbrauchsquote_daily
+      unit_of_measurement: "%"
+      state_class: measurement
+      icon: mdi:solar-power-variant
+      state: >
+        {% set pv = states('sensor.daily_pv_generation') | float(0) %}
+        {% set export = states('sensor.daily_exported_energy') | float(0) %}
+        {% if pv > 0 %}
+          {{ ((1 - export / pv) * 100) | round(1) }}
+        {% else %}
+          0
+        {% endif %}

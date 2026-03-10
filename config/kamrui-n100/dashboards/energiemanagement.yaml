@@ -32,6 +32,7 @@ views:
                 color: "#4CAF50"
                 stroke_width: 2
                 float_precision: 2
+                extend_to: false
                 yaxis_id: price
                 group_by:
                   func: avg
@@ -63,7 +64,13 @@ views:
             unit: EUR/kWh
           - type: markdown
             content: |
-              🕐 Günstigste: **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr** — {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') }} EUR/kWh
+              {% set hour = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour') %}
+              {% set price = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') %}
+              {% if hour and price %}
+              🕐 Günstigste: **{{ as_timestamp(hour) | timestamp_custom('%H:%M') }} Uhr** — {{ price }} EUR/kWh
+              {% else %}
+              🕐 Keine günstigere Stunde mehr heute
+              {% endif %}
       - type: grid
         cards:
           - type: heading
@@ -104,6 +111,7 @@ views:
                 color: "#FF6B35"
                 stroke_width: 2
                 curve: smooth
+                extend_to: false
                 group_by:
                   func: avg
                   duration: 5min
@@ -254,7 +262,27 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Verbrauch
+            heading: Verbrauch & Autarkie
+          - type: gauge
+            entity: sensor.autarkiegrad
+            name: Autarkiegrad
+            unit: "%"
+            min: 0
+            max: 100
+            severity:
+              green: 70
+              yellow: 40
+              red: 0
+          - type: gauge
+            entity: sensor.eigenverbrauchsquote
+            name: Eigenverbrauch
+            unit: "%"
+            min: 0
+            max: 100
+            severity:
+              green: 70
+              yellow: 40
+              red: 0
           - type: gauge
             entity: sensor.load_power
             name: Hausverbrauch
@@ -289,6 +317,7 @@ views:
                 curve: smooth
                 type: area
                 opacity: 0.3
+                extend_to: false
                 group_by:
                   func: avg
                   duration: 5min
