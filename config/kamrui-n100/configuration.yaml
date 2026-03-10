@@ -10,6 +10,7 @@ homeassistant:
   time_zone: Europe/Berlin
   packages:
     sungrow: !include modbus_sungrow.yaml
+    emhass: !include emhass.yaml
 
 # Load frontend themes from the themes folder
 frontend:

@@ -30,6 +30,7 @@ Folgende URLs einzeln einfügen und jeweils "Hinzufügen" klicken:
 |---|---|---|
 | **Cloudflared** | `https://github.com/brenner-tobias/ha-addons` | Cloudflare Tunnel App |
 | **GoSunGrow** | `https://github.com/MickMake/HomeAssistantAddons` | iSolarCloud / Sungrow App |
+| **EMHASS** | `https://github.com/davidusb-geek/emhass-add-on` | Energieoptimierung (LP-Solver) |
 
 Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
@@ -120,7 +121,73 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
   - Password: wie bei InfluxDB vergeben
   - Save & Test
 
-### 3.7 Terminal & SSH (optional, für CLI-Zugriff)
+### 3.7 EMHASS (Energieoptimierung – Simulationsmodus)
+
+> **Repo:** https://github.com/davidusb-geek/emhass-add-on
+> EMHASS (Energy Management for Home Assistant) optimiert Batterie-Lade-/Entladezyklen gegen dynamische Strompreise.
+> In Phase 1 läuft EMHASS nur als Simulation — es berechnet und publiziert, steuert aber nichts.
+
+**App Repository hinzufügen:**
+
+- [ ] App Store → ⋮ → Repositories → `https://github.com/davidusb-geek/emhass-add-on` hinzufügen
+- [ ] Seite neu laden (Ctrl+Shift+R)
+
+**App installieren:**
+
+- [ ] App Store → "emhass" suchen → **Installieren**
+- [ ] App starten
+
+**Add-on konfigurieren (Web-UI: http://homeassistant.local:5001/configuration):**
+
+| Parameter | Wert | Erklärung |
+|---|---|---|
+| `optimization_time_step` | `30` | 30-Min-Intervalle (passend zu Solcast) |
+| `set_use_battery` | `true` | Batterie-Optimierung aktiviert |
+| `set_use_pv` | `true` | PV-Anlage berücksichtigen |
+| `number_of_deferrable_loads` | `0` | Keine steuerbaren Lasten in Phase 1 |
+| `sensor_power_load_no_var_loads` | `sensor.load_power` | Hausverbrauch (mkaiser Modbus) |
+| `sensor_power_photovoltaics` | `sensor.total_dc_power` | PV-Leistung (mkaiser Modbus) |
+| `battery_nominal_energy_capacity` | `12800` | 12,8 kWh SBR128 (in Wh) |
+| `battery_discharge_power_max` | `5000` | Max. Entladeleistung (W) |
+| `battery_charge_power_max` | `5000` | Max. Ladeleistung (W) |
+| `battery_discharge_efficiency` | `0.95` | Entlade-Effizienz 95% |
+| `battery_charge_efficiency` | `0.95` | Lade-Effizienz 95% |
+| `battery_minimum_state_of_charge` | `0.10` | Min. SOC 10% |
+| `battery_maximum_state_of_charge` | `0.95` | Max. SOC 95% |
+| `battery_target_state_of_charge` | `0.50` | Ziel-SOC 50% |
+| `continual_publish` | `true` | Sensoren automatisch aktualisieren |
+
+**HA-Konfiguration (bereits vorbereitet):**
+
+- [ ] `configuration.yaml` enthält bereits: `emhass: !include emhass.yaml` (Package)
+- [ ] Das Package `emhass.yaml` definiert:
+  - `rest_command.emhass_dayahead` — POST mit 1komma5° Preisen + Solcast PV-Forecast
+  - `rest_command.emhass_publish` — Sensoren in HA aktualisieren
+  - `automation.emhass_dayahead_daily` — Trigger täglich um 05:30
+
+**Prüfen:**
+
+- [ ] EMHASS Web-UI: http://homeassistant.local:5001 → Configuration prüfen
+- [ ] Manuell testen: Entwicklerwerkzeuge → Dienste → `rest_command.emhass_dayahead` → Aufrufen
+- [ ] Sensoren prüfen: Entwicklerwerkzeuge → Zustände → nach `emhass` filtern
+  - `sensor.p_pv_forecast` — PV-Prognose
+  - `sensor.p_load_forecast` — Lastprognose
+  - `sensor.p_batt_forecast` — Batterie-Plan (positiv = Laden, negativ = Entladen)
+  - `sensor.p_grid_forecast` — Netz-Plan (positiv = Import, negativ = Export)
+  - `sensor.soc_batt_forecast` — SOC-Verlauf
+  - `sensor.total_cost_fun_value` — Optimierte Tageskosten
+
+> **Wichtig:** In Phase 1 publiziert EMHASS nur Sensoren. Es gibt keine Automationen, die den Wechselrichter steuern.
+> Der Vergleich EMHASS-Plan vs. Heartbeat-Realität zeigt, ob der Eigenbau besser optimiert.
+
+**Preisdaten:**
+
+> Die 1komma5° Preise (Dynamic Pulse inkl. Netzentgelte + MwSt.) werden per `rest_command.emhass_dayahead`
+> als `load_cost_forecast` übergeben. Jeder Stundenwert wird für zwei 30-Min-Slots dupliziert.
+> `prod_price_forecast` ist fest auf 0,082 EUR/kWh (EEG-Einspeisevergütung).
+> Solcast PV-Forecast wird aus `detailedForecast` extrahiert (kW → W × 1000).
+
+### 3.8 Terminal & SSH (optional, für CLI-Zugriff)
 
 - [ ] App Store → "Terminal & SSH" suchen → **Installieren**
 - [ ] App starten → "In Seitenleiste anzeigen" aktivieren
@@ -336,7 +403,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → Recorder konfigurieren (365 Tage)                    ✅ erledigt
 → hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Template-Sensoren ✅
 → ENTSO-e (wartet auf API-Key)
-→ EMHASS (nächste Phase)
+→ EMHASS Add-on + Simulation                         ← NÄCHSTER SCHRITT
 ```
 
 ## Nützliche URLs

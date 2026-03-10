@@ -1,0 +1,51 @@
+# EMHASS Package: REST Commands + Automationen
+# Eingebunden via configuration.yaml → homeassistant.packages.emhass
+
+rest_command:
+  # Day-Ahead Optimierung mit 1komma5° Preisen + Solcast PV-Forecast
+  # EMHASS erwartet 48 Werte (24h × 2 bei 30-Min-Schritten)
+  emhass_dayahead:
+    url: "http://localhost:5001/action/dayahead-optim"
+    method: POST
+    content_type: "application/json"
+    payload: >-
+      {%- set price_sensor = 'sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45' -%}
+      {%- set forecast_raw = state_attr(price_sensor, 'forecast') or [] -%}
+      {%- set ns = namespace(prices=[]) -%}
+      {%- for f in forecast_raw[:24] -%}
+        {%- set ns.prices = ns.prices + [f.price, f.price] -%}
+      {%- endfor -%}
+      {%- set pv_raw = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') or [] -%}
+      {%- set ns2 = namespace(pv=[]) -%}
+      {%- for f in pv_raw[:48] -%}
+        {%- set ns2.pv = ns2.pv + [(f.pv_estimate * 1000) | round(0)] -%}
+      {%- endfor -%}
+      {
+        "load_cost_forecast": {{ ns.prices | to_json }},
+        "prod_price_forecast": [
+          {%- for i in range(ns.prices | length) -%}
+            0.082{% if not loop.last %},{% endif %}
+          {%- endfor -%}
+        ],
+        "pv_power_forecast": {{ ns2.pv | to_json }},
+        "soc_init": {{ states('sensor.battery_level') | float(50) / 100 }},
+        "soc_final": 0.50
+      }
+
+  # Publish: Aktualisiert EMHASS-Sensoren in HA
+  emhass_publish:
+    url: "http://localhost:5001/action/publish-data"
+    method: POST
+
+automation:
+  - id: emhass_dayahead_daily
+    alias: "EMHASS Day-Ahead Optimierung"
+    description: "Tägliche EMHASS-Optimierung um 5:30 mit 1komma5° Preisen + Solcast PV-Forecast"
+    trigger:
+      - platform: time
+        at: "05:30:00"
+    action:
+      - service: rest_command.emhass_dayahead
+      - delay: "00:00:10"
+      - service: rest_command.emhass_publish
+    mode: single
