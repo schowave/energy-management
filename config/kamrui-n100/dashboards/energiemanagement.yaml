@@ -40,6 +40,18 @@ views:
             name: Günstigster Preis
             icon: mdi:cash-check
             unit: EUR/kWh
+          - type: markdown
+            content: >
+              | Uhrzeit | Preis |
+
+              |---------|-------|
+
+              {% for item in state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') %}
+
+              | {{ as_timestamp(item.datetime) | timestamp_custom('%H:%M') }} | {{ '%.4f' | format(item.price) }} EUR/kWh |
+
+              {% endfor %}
+            title: Preis-Forecast
       - type: grid
         cards:
           - type: heading
