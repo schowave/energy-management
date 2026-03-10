@@ -27,3 +27,7 @@ http:
 # InfluxDB: Wird seit HA 2026.9 über UI-Integration konfiguriert
 # Einstellungen → Geräte & Dienste → InfluxDB
 # Host: a0d7b954-influxdb, Port: 8086, Database: homeassistant
+
+recorder:
+  purge_keep_days: 365
+  commit_interval: 5

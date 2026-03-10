@@ -222,25 +222,36 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
   - Entladeleistung: `sensor.battery_discharging_power`
   - Ladeleistung: `sensor.battery_charging_power`
 
-## 9. Backups auf Synology
+## 9. Backups auf Synology ✅
 
-- [ ] Samba/NFS Share auf Synology erstellen (z.B. `ha-backups`)
-- [ ] Einstellungen → System → Speicher → Netzwerkspeicher hinzufügen
-  - Typ: CIFS/SMB
-  - Server: IP der Synology
+- [x] Freigegebener Ordner `ha-backups` auf Synology DS218+ (192.168.1.96)
+- [x] Einstellungen → System → Speicher → Netzwerkspeicher hinzufügen
+  - Name: `Synology_Backup`
+  - Typ: Samba/Windows (CIFS)
+  - Server: `192.168.1.96`
   - Share: `ha-backups`
   - Verwendung: Backup
-- [ ] Einstellungen → System → Backups → Automatische Backups konfigurieren
+- [x] Einstellungen → System → Backups → Automatische Backups einrichten (Benutzerdefiniert)
+  - Zeitplan: Täglich, Systemoptimum (4:45–5:45)
+  - Aufbewahrung: 7 Backups
+  - Daten: Einstellungen, Verlauf, Share-Ordner, alle Apps
+  - Speicherorte: Dieses System + Synology_Backup
+- [x] Synology DSM Integration: Backup-Pfad korrigiert → `ha-backups/integration`
 
-## 10. Recorder konfigurieren
+> **Hinweis:** Die Synology DSM Integration bietet ebenfalls einen Backup-Speicherort an.
+> Freigegebener Ordner: `ha-backups`, Pfad: `integration`. Muss in den DSM-Integrationsoptionen (⚙) korrekt konfiguriert sein, sonst erscheint "Failed to list backups".
 
-- [ ] `configuration.yaml` ergänzen:
+## 10. Recorder konfigurieren ✅
+
+- [x] `configuration.yaml` ergänzen:
   ```yaml
   recorder:
-    purge_keep_days: 90
+    purge_keep_days: 365
     commit_interval: 5
   ```
-- [ ] Home Assistant neustarten
+- [x] Home Assistant neustarten
+
+> **Hinweis:** 365 Tage für volles Jahr im Energy Dashboard. Langzeitdaten zusätzlich in InfluxDB (unbegrenzt).
 
 ---
 
@@ -254,9 +265,9 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → HACS                                                  ✅ erledigt
 → Sungrow Modbus (mkaiser via gridBox)                  ✅ erledigt
 → Energy Dashboard                                      ✅ erledigt
+→ Synology Backup (Sicherheit)                        ✅ erledigt
+→ Recorder konfigurieren (365 Tage)                    ✅ erledigt
 → hacs_1komma5grad → ENTSO-e → Solcast (Datenquellen)
-→ Synology Backup (Sicherheit)
-→ Recorder konfigurieren (90 Tage)
 ```
 
 ## Nützliche URLs
