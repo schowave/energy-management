@@ -155,11 +155,33 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 >
 > **System-ID:** `7fee2e61-1ff6-4eaf-8a8e-7509522abb45`
 
-### 5.2 Dashboard "Energiemanagement" ✅
+### 5.2 ApexCharts Card (HACS Frontend) ✅
+
+- [x] HACS → Frontend → "ApexCharts Card" suchen → **Installieren**
+- [x] Browser refreshen (oder HA neustarten)
+
+> **Repo:** https://github.com/RomRider/apexcharts-card
+> Wird für erweiterte Graphen in den Dashboards genutzt (Overlay, Bar-Charts, data_generator).
+
+### 5.3 Dashboard "1komma5" ✅
+
+- [x] Einstellungen → Dashboards → + Dashboard hinzufügen → "1komma5" (`mdi:lightning-bolt`)
+- [x] Dashboard-Konfiguration: siehe `config/kamrui-n100/dashboards/1komma5.yaml`
+- [x] Abschnitte: Strompreis (inkl. Min/Max/Avg), Preis-Forecast (3-Spalten-Tabelle), Solar, Batterie, Netz, Verbrauch
+
+> Dashboard für 1KOMMA5GRAD Heartbeat-Daten. Wird nach Heartbeat-Kündigung obsolet.
+
+### 5.4 Dashboard "Energiemanagement" ✅
 
 - [x] Einstellungen → Dashboards → + Dashboard hinzufügen → "Energiemanagement" (`mdi:lightning-bolt`)
 - [x] Dashboard-Konfiguration: siehe `config/kamrui-n100/dashboards/energiemanagement.yaml`
-- [x] Abschnitte: Strompreis (inkl. Min/Max/Avg), Solar (Gauge + Verlauf), Batterie (SOC + Lade/Entlade), Netz (Import/Export), Verbrauch (Gauge + Verlauf)
+- [x] Abschnitte:
+  - **Strompreis:** ApexCharts Preisverlauf (History + Forecast als Stufenlinie), Tagesmin/-max, günstigste Stunde
+  - **PV-Erzeugung:** ApexCharts Overlay (PV Real vs. Solcast Forecast + Konfidenzband estimate10/90), Tagesvergleich
+  - **Batterie:** SOC-Gauge, ApexCharts Bar-Chart (Laden grün/Entladen rot), Tageswerte
+  - **Netz:** ApexCharts Bar-Chart (Bezug rot/Einspeisung grün), Tageswerte
+  - **Verbrauch & Autarkie:** Autarkiegrad + Eigenverbrauchsquote Gauges, Hausverbrauch-Gauge + Verlauf
+  - **Solcast Forecast:** Prognose morgen, Peaks, stündliche Vorschau
 
 ## 6. Integrationen einrichten (über UI)
 
@@ -187,9 +209,9 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 - [x] HACS → Integrationen → "Solcast PV Forecast" suchen → **v4.5.0 Herunterladen** (bereits im HACS Default Store)
 - [x] Home Assistant neustarten
-- [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "Solcast PV Forecast"
-- [ ] API-Key eingeben (Solcast Account → API Key)
-- [ ] Prüfen: Neue Sensoren `sensor.solcast_pv_forecast_today` etc.
+- [x] Einstellungen → Geräte & Dienste → Integration hinzufügen → "Solcast PV Forecast"
+- [x] API-Key eingeben (Solcast Account → API Key)
+- [x] Prüfen: Sensoren verfügbar (`sensor.solcast_pv_forecast_aktuelle_leistung`, `sensor.solcast_pv_forecast_prognose_heute`, etc.)
 
 > **Hinweis:** Solcast Home User = max. 10 API-Calls/Tag. Die HA-Integration pollt automatisch — Standard reicht aus.
 > Gesamt: 21 Module × 445 Wp = 9,345 kWp (SH10RT-20, AC: 10 kW)
@@ -226,12 +248,20 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 > Falls Heartbeat-Störungen auftreten → `modbus_sungrow.yaml` Einbindung in `configuration.yaml` auskommentieren und neustarten.
 > Siehe ADR-0006 für Details.
 
-## 7. ~~Template-Sensoren~~ — entfällt
+## 7. Template-Sensoren ✅
 
-> **Entfällt:** Die mkaiser Modbus-Integration liefert bereits saubere Entity-Namen mit eigenen Template-Sensoren.
-> Eine separate Abstraktionsschicht ist nicht mehr nötig (siehe ADR-0008 superseded).
-> Dashboards und EMHASS referenzieren direkt die mkaiser-Entities:
-> `sensor.total_dc_power`, `sensor.battery_level`, `sensor.load_power`, `sensor.import_power`, `sensor.export_power`, etc.
+> Die mkaiser Modbus-Integration liefert bereits saubere Entity-Namen (siehe ADR-0008).
+> Zusätzlich: eigene berechnete KPI-Sensoren in `config/kamrui-n100/template_sensors.yaml`.
+
+- [x] `template_sensors.yaml` erstellt mit:
+  - **`sensor.autarkiegrad`** — `(1 - Netzbezug / Gesamtverbrauch) × 100%` — wie viel % des Verbrauchs aus eigener Erzeugung
+  - **`sensor.eigenverbrauchsquote`** — `(1 - Einspeisung / PV-Erzeugung) × 100%` — wie viel % der PV selbst verbraucht
+- [x] `configuration.yaml` ergänzt: `template: !include template_sensors.yaml`
+- [x] Sensoren im Dashboard "Energiemanagement" als Gauges eingebunden
+
+> **Formeln:**
+> - Gesamtverbrauch = `daily_pv_generation + daily_imported_energy - daily_exported_energy`
+> - Division durch 0 wird abgefangen (nachts/bewölkt → 0%)
 
 ## 8. Energy Dashboard einrichten
 
@@ -304,7 +334,9 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → Energy Dashboard                                      ✅ erledigt
 → Synology Backup (Sicherheit)                        ✅ erledigt
 → Recorder konfigurieren (365 Tage)                    ✅ erledigt
-→ hacs_1komma5grad → ENTSO-e → Solcast (Datenquellen)
+→ hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Template-Sensoren ✅
+→ ENTSO-e (wartet auf API-Key)
+→ EMHASS (nächste Phase)
 ```
 
 ## Nützliche URLs
