@@ -29,11 +29,10 @@ views:
             name: Tagesdurchschnitt
             icon: mdi:approximately-equal
             unit: EUR/kWh
-          - type: entity
-            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: cheapest_upcoming_hour
-            name: Günstigste Stunde
-            icon: mdi:clock-star-four-points
+          - type: markdown
+            content: >
+              **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr**
+            title: Günstigste Stunde
           - type: entity
             entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
             attribute: cheapest_upcoming_price
