@@ -288,22 +288,36 @@ views:
               {% if is_state('binary_sensor.battery_charging', 'on') %}green
               {% elif is_state('binary_sensor.battery_discharging', 'on') %}red
               {% else %}grey{% endif %}
-          - type: custom:mini-graph-card
-            name: Batterie Lade-/Entladeleistung
-            hours_to_show: 24
-            points_per_hour: 4
-            line_width: 2
-            animate: true
-            show:
-              labels: true
-              legend: true
-            entities:
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Batterie Lade-/Entladeleistung
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+            series:
               - entity: sensor.battery_charging_power
                 name: Laden
                 color: "#4CAF50"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
               - entity: sensor.battery_discharging_power
                 name: Entladen
                 color: "#F44336"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
           - type: custom:mushroom-entity-card
             entity: sensor.daily_battery_charge
             name: Geladen heute
@@ -320,22 +334,36 @@ views:
         cards:
           - type: heading
             heading: Netz
-          - type: custom:mini-graph-card
-            name: Netzbezug / Einspeisung
-            hours_to_show: 24
-            points_per_hour: 4
-            line_width: 2
-            animate: true
-            show:
-              labels: true
-              legend: true
-            entities:
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Netzbezug / Einspeisung
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+            series:
               - entity: sensor.import_power
                 name: Bezug
                 color: "#F44336"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
               - entity: sensor.export_power
                 name: Einspeisung
                 color: "#4CAF50"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
           - type: custom:mushroom-entity-card
             entity: sensor.daily_imported_energy
             name: Import heute
@@ -368,19 +396,35 @@ views:
               {% set p = states('sensor.load_power') | float(0) %}
               {% if p < 2000 %}green{% elif p < 3500 %}amber{% else %}red{% endif %}
             entity: sensor.load_power
-          - type: custom:mini-graph-card
-            name: Verbrauch-Verlauf
-            hours_to_show: 24
-            points_per_hour: 4
-            line_width: 2
-            animate: true
-            show:
-              labels: true
-              fill: true
-            entities:
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Verbrauch-Verlauf
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
               - entity: sensor.load_power
                 name: Hausverbrauch
                 color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.3
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
 
       # ── Solcast Forecast ──────────────────────────────
       - type: grid
