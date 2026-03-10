@@ -180,12 +180,13 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
   | Dachfläche | Module | kWp | Azimuth | Tilt | Resource ID |
   |------------|--------|-----|---------|------|-------------|
-  | Ost (3× Dach 22° + 6× Gaube 2°) | 9 | 4,005 | 90 | 10 | `73b7-fe86-06ee-e672` |
-  | West (12× Dach 22°) | 12 | 5,340 | -90 | 22 | `8692-23f6-68c0-7a6b` |
+  | Ost (3× Dach 22° + 6× Gaube 2°) | 9 | 4,005 | 85 | 10 | `73b7-fe86-06ee-e672` |
+  | West (12× Dach 22°) | 12 | 5,340 | 275 | 22 | `8692-23f6-68c0-7a6b` |
 
-- [x] HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/BJReplay/ha-solcast-solar` (Kategorie: Integration)
-- [ ] HACS → Integrationen → "Solcast PV Forecast" suchen → Herunterladen
-- [ ] Home Assistant neustarten
+  > Dach ist ~5° gegen Uhrzeigersinn gedreht: Ost-Seite zeigt leicht nach Süd-Ost (85°), West-Seite leicht nach Nord-West (275°).
+
+- [x] HACS → Integrationen → "Solcast PV Forecast" suchen → **v4.5.0 Herunterladen** (bereits im HACS Default Store)
+- [x] Home Assistant neustarten
 - [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "Solcast PV Forecast"
 - [ ] API-Key eingeben (Solcast Account → API Key)
 - [ ] Prüfen: Neue Sensoren `sensor.solcast_pv_forecast_today` etc.
