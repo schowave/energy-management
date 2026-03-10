@@ -4,52 +4,59 @@
 
 ## Phase 1: Parallelbetrieb (Simulation)
 
-> Heartbeat steuert weiterhin per Modbus. HA liest nur über GoSungrow Cloud-API. Kein Modbus-Konflikt.
+> Heartbeat steuert weiterhin per Modbus. HA liest **parallel über die gridBox** (zweiter Modbus-Client). Kein Konflikt beobachtet.
 
 ```mermaid
 graph TB
     subgraph CLOUD["☁️ Cloud / APIs"]
-        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise</small>"]
-        SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
-        GOSUNGROW["GoSungrow Cloud<br/><small>PV · Batterie · Grid Daten</small>"]
+        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise (wartet auf API-Key)</small>"]
+        SOLCAST["Solcast<br/><small>PV-Prognose 48h (Ost/West)</small>"]
         HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren (kWh)</small>"]
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
     end
 
     subgraph N100P1["🖥️ KAMRUI N100 (Home Assistant OS)"]
-        HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboard · Sensoren</small>"]
-        HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration (BirknerAlex)</small>"]
-        TMPL["📐 Template-Sensoren<br/><small>Abstraktionsschicht</small>"]
+        HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboards · Template-Sensoren</small>"]
+        HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration (BirknerAlex v1.4.0)</small>"]
+        MODBUS["📡 mkaiser Sungrow Modbus<br/><small>Echtzeit-Daten via gridBox</small>"]
+        SOLCAST_INT["☀️ Solcast PV Forecast<br/><small>HACS Integration (BJReplay v4.5.0)</small>"]
+        APEX["📊 ApexCharts Card<br/><small>HACS Frontend</small>"]
         EMHASSP1["🧠 EMHASS App<br/><small>Simulationsmodus · nur berechnen</small>"]
-        INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging</small>"]
-        GRAFANAP1["📊 Grafana App<br/><small>Vergleichs-Dashboard</small>"]
-        MQTTP1["MQTT Broker<br/><small>Mosquitto App</small>"]
+        INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging (365d)</small>"]
+        GRAFANAP1["📊 Grafana App<br/><small>Langzeit-Visualisierung</small>"]
         CFD_P1["🔒 Cloudflared App<br/><small>Tunnel → Cloudflare</small>"]
     end
 
     subgraph LOKAL1["🏠 Lokales Netzwerk"]
         HEARTBEAT["💚 1komma5° Heartbeat<br/><small>steuert per Modbus TCP :502</small>"]
-        SUNGROW1["Sungrow SH10RT<br/><small>Modbus TCP :502</small>"]
+        GRIDBOX["📦 gridBox<br/><small>192.168.1.134 · Modbus Gateway</small>"]
+        SUNGROW1["⚡ Sungrow SH10RT<br/><small>Modbus TCP :502</small>"]
+        SYNOLOGY["🗄️ Synology DS218+<br/><small>NAS · HA-Backups (SMB)</small>"]
     end
 
-    %% Cloud → HA (nur lesend)
-    ENTSOE -->|Börsenpreise| HAP1
-    SOLCAST -->|PV-Forecast| HAP1
-    GOSUNGROW -->|SOC · Power · Grid| HAP1
+    %% Cloud → HA
+    ENTSOE -.->|Börsenpreise (bald)| HAP1
+    SOLCAST -->|PV-Forecast| SOLCAST_INT
+    SOLCAST_INT --> HAP1
     HB_API -->|Preise · kWh| HACS_1K5
     HACS_1K5 --> HAP1
 
-    %% HA → Template → EMHASS
-    HAP1 --> TMPL
-    TMPL -->|generische Sensoren| EMHASSP1
+    %% Lokaler Modbus-Zugriff (nur lesend, parallel zu Heartbeat)
+    MODBUS -->|Modbus TCP :502| GRIDBOX
+    GRIDBOX --- SUNGROW1
+    MODBUS -->|PV · SOC · Power · Grid| HAP1
+
+    %% HA → EMHASS (Simulation)
+    HAP1 -->|Sensordaten + Preise| EMHASSP1
     EMHASSP1 -.->|simulierter Plan| HAP1
     HAP1 --> INFLUXP1
     INFLUXP1 --> GRAFANAP1
 
-    %% Heartbeat steuert (HA hat keinen Modbus-Zugriff)
+    %% Heartbeat steuert parallel
     HEARTBEAT ==>|Modbus TCP| SUNGROW1
 
-    %% Cloudflare Tunnel (Remote-Zugriff)
+    %% Backup + Remote
+    HAP1 -.->|Backup via SMB| SYNOLOGY
     CFD_P1 -->|ausgehender Tunnel| CF
     CF -.->|"ha.schowalter.co<br/>HTTPS"| CFD_P1
 
@@ -58,12 +65,12 @@ graph TB
     classDef haos fill:#14532d,stroke:#22c55e,color:#f1f5f9
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,GOSUNGROW,HB_API,CF cloud
-    class HAP1,HACS_1K5,TMPL,EMHASSP1,INFLUXP1,GRAFANAP1,MQTTP1,CFD_P1 haos
-    class HEARTBEAT,SUNGROW1 lokal
+    class ENTSOE,SOLCAST,HB_API,CF cloud
+    class HAP1,HACS_1K5,MODBUS,SOLCAST_INT,APEX,EMHASSP1,INFLUXP1,GRAFANAP1,CFD_P1 haos
+    class HEARTBEAT,GRIDBOX,SUNGROW1,SYNOLOGY lokal
 ```
 
-> HA hat **keinen Modbus-Zugriff** – Inverterdaten kommen über GoSungrow Cloud-API, Strompreise und Energy-Sensoren (kWh) über die [1komma5grad HACS-Integration](https://github.com/BirknerAlex/hacs_1komma5grad) (→ ADR-0014). EMHASS berechnet, was es tun **würde**, führt aber nichts aus. Heartbeat bleibt alleiniger Steuerer.
+> HA liest Inverterdaten **parallel zu Heartbeat** über die gridBox (Modbus-Gateway, 192.168.1.134). Strompreise kommen von [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) (→ ADR-0014), PV-Prognosen von Solcast. EMHASS berechnet, was es tun **würde**, führt aber nichts aus. Heartbeat bleibt alleiniger Steuerer.
 
 ## Phase 2: Systemarchitektur (nach Umstieg)
 
@@ -73,7 +80,6 @@ graph TB
         ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise</small>"]
         SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
         TIBBER["Tibber / aWATTar<br/><small>Dynamischer Tarif</small>"]
-        GOSUNGROW["GoSungrow Cloud<br/><small>Backup-Monitoring</small>"]
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
     end
 
@@ -103,8 +109,7 @@ graph TB
     ENTSOE -->|Preise| HA
     SOLCAST -->|Forecast| HA
     TIBBER -->|Preise| HA
-    GOSUNGROW -.->|MQTT| MQTT
-    MQTT --> HA
+    HA ==>|Modbus TCP| SUNGROW
 
     %% HA ↔ Apps
     HA -->|Sensordaten| EMHASS
@@ -115,7 +120,6 @@ graph TB
     SYNOLOGY["🗄️ Synology DS218+<br/><small>NAS · HA-Backups</small>"]
 
     %% HA → Lokal
-    HA ==>|Modbus TCP| SUNGROW
     HA -->|REST/MQTT| SHELLY
     HA -.->|Backup via SMB| SYNOLOGY
     METER -.-> HA
@@ -136,7 +140,7 @@ graph TB
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
     classDef hw fill:#450a0a,stroke:#ef4444,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,TIBBER,GOSUNGROW,CF cloud
+    class ENTSOE,SOLCAST,TIBBER,CF cloud
     class HA,EMHASS,MQTT,GRAFANA,INFLUX,CFD haos
     class SUNGROW,METER,SHELLY,SYNOLOGY lokal
     class PV,BATTERIE,WP,HAUS hw
@@ -154,21 +158,20 @@ gantt
 
     section Phase 1 – Simulation (KAMRUI N100)
     KAMRUI N100 + HA OS + Cloudflared       :done, p1hw, 2026-03-01, 8d
-    HACS + hacs_1komma5grad + Mosquitto     :active, p1hacs, after p1hw, 3d
-    ENTSO-e API-Key + Integration           :p1a, after p1hacs, 2d
-    Solcast/Forecast.Solar einrichten       :p1b, after p1a, 2d
-    GoSungrow + Template-Sensoren           :p1c, after p1a, 3d
-    InfluxDB + Grafana + Recorder           :p1d, after p1c, 3d
-    Vergleichs-Dashboard bauen              :p1e, after p1d, 5d
-    EMHASS App Simulationsmodus          :p1f, after p1e, 5d
+    HACS + hacs_1komma5grad + Mosquitto     :done, p1hacs, after p1hw, 3d
+    mkaiser Sungrow Modbus via gridBox      :done, p1mod, after p1hacs, 2d
+    Solcast PV Forecast einrichten          :done, p1b, after p1mod, 2d
+    InfluxDB + Grafana + Recorder 365d      :done, p1d, after p1b, 2d
+    Dashboards + ApexCharts + Template-Sens.:done, p1e, after p1d, 3d
+    ENTSO-e API-Key (wartet)                :active, p1a, 2026-03-10, 5d
+    EMHASS App Simulationsmodus             :p1f, after p1e, 5d
     Daten sammeln & vergleichen             :p1g, after p1f, 42d
 
     section Phase 2 – Umstieg
     Kündigungsfristen prüfen & kündigen     :p2a, after p1f, 7d
     Dynamischen Tarif abschließen           :p2b, after p2a, 7d
-    Heartbeat trennen + Modbus freigeben    :p2c, after p2b, 2d
-    Sungrow Modbus-Integration (mkaiser)    :p2d, after p2c, 3d
-    EMHASS scharf schalten                  :p2e, after p2d, 3d
+    Heartbeat trennen                       :p2c, after p2b, 2d
+    EMHASS scharf schalten                  :p2e, after p2c, 3d
     WP SG-Ready über Shelly mit EMHASS koppeln :p2f, after p2e, 3d
     Feintuning & Monitoring                 :p2g, after p2f, 14d
 ```
@@ -204,12 +207,13 @@ gantt
 | **ENTSO-e** | Börsenpreise | Kostenlos |
 | **Tibber / aWATTar** | Dynamischer Tarif (Phase 2) | ~6 €/Mo Grundgebühr |
 | **Solcast / Forecast.Solar** | PV-Prognose 48h | Kostenlos |
-| **Sungrow Modbus (mkaiser)** | Inverter + Batterie Steuerung (Phase 2) | Kostenlos |
+| **Sungrow Modbus (mkaiser)** | Inverter + Batterie Echtzeit-Daten via gridBox | Kostenlos |
 | **EMHASS** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
 | **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 (Phase 2) | Kostenlos |
 | **1komma5grad HACS** | Heartbeat-Preise + Energy-Sensoren (Phase 1) | Kostenlos |
+| **Solcast PV Forecast** | PV-Prognose 48h (Ost/West, 2 Sites) | Kostenlos |
+| **ApexCharts Card** | Erweiterte Dashboard-Graphen (HACS Frontend) | Kostenlos |
 | **Cloudflared** | Cloudflare Tunnel · Remote-Zugriff via ha.schowalter.co | Kostenlos |
-| **GoSungrow Cloud** | Monitoring via MQTT | Kostenlos |
 | **InfluxDB + Grafana** | Langzeit-Analyse | Kostenlos |
 
 > **Fixkosten-Vergleich:**
@@ -231,9 +235,9 @@ Alle Technologieentscheidungen sind als Architecture Decision Records dokumentie
 | [ADR-0003](adr/0003-emhass-als-energieoptimierer.md) | EMHASS als Energieoptimierer | Akzeptiert |
 | [ADR-0004](adr/0004-entsoe-fuer-boersenpreise.md) | ENTSO-e für Börsenpreise | Akzeptiert |
 | [ADR-0005](adr/0005-solcast-fuer-pv-prognose.md) | Solcast / Forecast.Solar für PV-Prognose | Vorgeschlagen |
-| [ADR-0006](adr/0006-gosungrow-cloud-api-phase1.md) | GoSungrow Cloud-API (Phase 1) | Akzeptiert |
-| [ADR-0007](adr/0007-mkaiser-sungrow-modbus-phase2.md) | mkaiser Sungrow-Modbus (Phase 2) | Vorgeschlagen |
-| [ADR-0008](adr/0008-template-sensoren-abstraktionsschicht.md) | Template-Sensoren als Abstraktionsschicht | Akzeptiert |
+| [ADR-0006](adr/0006-gosungrow-cloud-api-phase1.md) | ~~GoSungrow~~ → mkaiser Sungrow Modbus via gridBox | Superseded |
+| [ADR-0007](adr/0007-mkaiser-sungrow-modbus-phase2.md) | mkaiser Sungrow-Modbus (bereits in Phase 1 aktiv) | Akzeptiert |
+| [ADR-0008](adr/0008-template-sensoren-abstraktionsschicht.md) | ~~Abstraktionsschicht~~ → direkte mkaiser-Entities + KPI-Sensoren | Superseded |
 | [ADR-0009](adr/0009-influxdb-grafana-langzeitmonitoring.md) | InfluxDB + Grafana für Monitoring | Akzeptiert |
 | [ADR-0010](adr/0010-mosquitto-mqtt-broker.md) | Mosquitto als MQTT Broker | Akzeptiert |
 | [ADR-0011](adr/0011-shelly-sg-ready-wp-steuerung.md) | Shelly Relay für SG-Ready WP-Steuerung | Akzeptiert |
