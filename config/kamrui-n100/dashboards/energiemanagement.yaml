@@ -1,6 +1,72 @@
 views:
   - type: sections
     sections:
+      # ── Energiefluss ──────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Energiefluss
+          - type: custom:power-flow-card-plus
+            entities:
+              solar:
+                entity: sensor.total_dc_power
+                display_zero_state: true
+                color:
+                  icon: "#FF6B35"
+                  state: "#FF6B35"
+              battery:
+                entity: sensor.battery_level
+                state_of_charge: sensor.battery_level
+                display_zero_state: true
+                color:
+                  icon: "#4CAF50"
+                  state: "#4CAF50"
+                  circle: "#4CAF50"
+              grid:
+                entity: sensor.energy_grid_import_power_export_power_net_power
+                display_zero_state: true
+                color_value: true
+              home:
+                entity: sensor.load_power
+                display_zero_state: true
+                color:
+                  icon: "#2196F3"
+                  state: "#2196F3"
+            clickable_entities: true
+            display_zero_lines:
+              mode: show
+            use_new_flow_rate_model: true
+            w_decimals: 0
+            kw_decimals: 1
+            min_flow_rate: 0.75
+            max_flow_rate: 6
+            watt_threshold: 0
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:home-lightning-bolt
+                icon_color: green
+                content: "Autarkie {{ states('sensor.autarkiegrad') }}%"
+                entity: sensor.autarkiegrad
+              - type: template
+                icon: mdi:solar-power-variant
+                icon_color: orange
+                content: "Eigen {{ states('sensor.eigenverbrauchsquote') }}%"
+                entity: sensor.eigenverbrauchsquote
+              - type: template
+                icon: mdi:battery
+                icon_color: >-
+                  {% set soc = states('sensor.battery_level') | float(0) %}
+                  {% if soc > 50 %}green{% elif soc > 20 %}amber{% else %}red{% endif %}
+                content: "SOC {{ states('sensor.battery_level') }}%"
+                entity: sensor.battery_level
+              - type: template
+                icon: mdi:currency-eur
+                icon_color: blue
+                content: "{{ states('sensor.current_electricity_market_price') | float(0) | round(2) }} €/kWh"
+                entity: sensor.current_electricity_market_price
+
+      # ── Strompreis ────────────────────────────────────
       - type: grid
         cards:
           - type: heading
@@ -80,22 +146,26 @@ views:
                     new Date(f.time).getTime(),
                     f.price
                   ]);
-          - type: entity
+          - type: custom:mushroom-entity-card
             entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
             name: "1komma5° aktuell"
             icon: mdi:lightning-bolt
-          - type: entity
+            icon_color: green
+          - type: custom:mushroom-entity-card
             entity: sensor.current_electricity_market_price
             name: "ENTSO-e aktuell"
             icon: mdi:currency-eur
-          - type: entity
+            icon_color: orange
+          - type: custom:mushroom-entity-card
             entity: sensor.lowest_energy_price
             name: "ENTSO-e Minimum"
             icon: mdi:arrow-down-bold
-          - type: entity
+            icon_color: green
+          - type: custom:mushroom-entity-card
             entity: sensor.highest_energy_price
             name: "ENTSO-e Maximum"
             icon: mdi:arrow-up-bold
+            icon_color: red
           - type: markdown
             content: |
               {% set hour = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour') %}
@@ -107,20 +177,12 @@ views:
               {% endif %}
               {% set diff = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) - states('sensor.current_electricity_market_price') | float(0) %}
               💰 Aufschlag 1komma5° vs. Börse: **{{ (diff * 100) | round(1) }} ct/kWh**
+
+      # ── PV-Erzeugung ─────────────────────────────────
       - type: grid
         cards:
           - type: heading
             heading: PV-Erzeugung
-          - type: gauge
-            entity: sensor.total_dc_power
-            name: PV aktuell
-            unit: W
-            min: 0
-            max: 10000
-            severity:
-              green: 3000
-              yellow: 1000
-              red: 0
           - type: custom:apexcharts-card
             header:
               show: true
@@ -144,7 +206,7 @@ views:
             series:
               - entity: sensor.total_dc_power
                 name: PV Real
-                color: '#FF6B35'
+                color: "#FF6B35"
                 stroke_width: 2
                 curve: smooth
                 extend_to: false
@@ -154,7 +216,7 @@ views:
                 yaxis_id: power
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Forecast
-                color: '#2196F3'
+                color: "#2196F3"
                 stroke_width: 2
                 curve: smooth
                 yaxis_id: power
@@ -165,7 +227,7 @@ views:
                   ]);
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Optimistisch (90)
-                color: '#2196F3'
+                color: "#2196F3"
                 stroke_width: 0
                 type: area
                 opacity: 0.15
@@ -178,7 +240,7 @@ views:
                   ]);
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Pessimistisch (10)
-                color: '#2196F3'
+                color: "#2196F3"
                 stroke_width: 0
                 type: area
                 opacity: 0.15
@@ -189,32 +251,54 @@ views:
                     new Date(f.period_start).getTime(),
                     f.pv_estimate10 * 1000
                   ]);
-          - type: entity
+          - type: custom:mushroom-entity-card
             entity: sensor.daily_pv_generation
             name: PV heute (real)
             icon: mdi:solar-power
-          - type: entity
+            icon_color: orange
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_heute
             name: PV heute (Prognose)
             icon: mdi:chart-line
-          - type: entity
+            icon_color: blue
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute
             name: PV verbleibend
             icon: mdi:sun-clock
+            icon_color: amber
+
+      # ── Batterie ──────────────────────────────────────
       - type: grid
         cards:
           - type: heading
             heading: Batterie
-          - type: gauge
+          - type: custom:mushroom-template-card
+            primary: "Ladestand: {{ states('sensor.battery_level') }}%"
+            secondary: >-
+              {% if is_state('binary_sensor.battery_charging', 'on') %}
+                Laden {{ states('sensor.battery_charging_power') }} W
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}
+                Entladen {{ states('sensor.battery_discharging_power') }} W
+              {% else %}
+                Idle
+              {% endif %}
+            icon: >-
+              {% set soc = states('sensor.battery_level') | float(0) %}
+              {% if soc > 80 %}mdi:battery-high
+              {% elif soc > 40 %}mdi:battery-medium
+              {% else %}mdi:battery-low{% endif %}
+            icon_color: >-
+              {% set soc = states('sensor.battery_level') | float(0) %}
+              {% if soc > 50 %}green{% elif soc > 20 %}amber{% else %}red{% endif %}
             entity: sensor.battery_level
-            name: Ladestand
-            unit: '%'
-            min: 0
-            max: 100
-            severity:
-              green: 50
-              yellow: 20
-              red: 0
+            badge_icon: >-
+              {% if is_state('binary_sensor.battery_charging', 'on') %}mdi:arrow-up-bold
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}mdi:arrow-down-bold
+              {% else %}mdi:pause{% endif %}
+            badge_color: >-
+              {% if is_state('binary_sensor.battery_charging', 'on') %}green
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}red
+              {% else %}grey{% endif %}
           - type: custom:apexcharts-card
             header:
               show: true
@@ -232,27 +316,31 @@ views:
             series:
               - entity: sensor.battery_charging_power
                 name: Laden
-                color: '#4CAF50'
+                color: "#4CAF50"
                 type: column
                 group_by:
                   func: avg
                   duration: 15min
               - entity: sensor.battery_discharging_power
                 name: Entladen
-                color: '#F44336'
+                color: "#F44336"
                 type: column
                 invert: true
                 group_by:
                   func: avg
                   duration: 15min
-          - type: entity
+          - type: custom:mushroom-entity-card
             entity: sensor.daily_battery_charge
             name: Geladen heute
             icon: mdi:battery-plus
-          - type: entity
+            icon_color: green
+          - type: custom:mushroom-entity-card
             entity: sensor.daily_battery_discharge
             name: Entladen heute
             icon: mdi:battery-minus
+            icon_color: red
+
+      # ── Netz ──────────────────────────────────────────
       - type: grid
         cards:
           - type: heading
@@ -274,61 +362,51 @@ views:
             series:
               - entity: sensor.import_power
                 name: Bezug
-                color: '#F44336'
+                color: "#F44336"
                 type: column
                 group_by:
                   func: avg
                   duration: 15min
               - entity: sensor.export_power
                 name: Einspeisung
-                color: '#4CAF50'
+                color: "#4CAF50"
                 type: column
                 invert: true
                 group_by:
                   func: avg
                   duration: 15min
-          - type: entity
+          - type: custom:mushroom-entity-card
             entity: sensor.daily_imported_energy
             name: Import heute
             icon: mdi:transmission-tower-import
-          - type: entity
+            icon_color: red
+          - type: custom:mushroom-entity-card
             entity: sensor.daily_exported_energy
             name: Export heute
             icon: mdi:transmission-tower-export
+            icon_color: green
+
+      # ── Verbrauch & Autarkie ──────────────────────────
       - type: grid
         cards:
           - type: heading
             heading: Verbrauch & Autarkie
-          - type: gauge
+          - type: custom:mushroom-template-card
+            primary: "Autarkie: {{ states('sensor.autarkiegrad') }}%"
+            secondary: "Eigenverbrauch: {{ states('sensor.eigenverbrauchsquote') }}%"
+            icon: mdi:home-lightning-bolt
+            icon_color: >-
+              {% set a = states('sensor.autarkiegrad') | float(0) %}
+              {% if a > 70 %}green{% elif a > 40 %}amber{% else %}red{% endif %}
             entity: sensor.autarkiegrad
-            name: Autarkiegrad
-            unit: '%'
-            min: 0
-            max: 100
-            severity:
-              green: 70
-              yellow: 40
-              red: 0
-          - type: gauge
-            entity: sensor.eigenverbrauchsquote
-            name: Eigenverbrauch
-            unit: '%'
-            min: 0
-            max: 100
-            severity:
-              green: 70
-              yellow: 40
-              red: 0
-          - type: gauge
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.load_power') }} W"
+            secondary: "Hausverbrauch"
+            icon: mdi:home
+            icon_color: >-
+              {% set p = states('sensor.load_power') | float(0) %}
+              {% if p < 2000 %}green{% elif p < 3500 %}amber{% else %}red{% endif %}
             entity: sensor.load_power
-            name: Hausverbrauch
-            unit: W
-            min: 0
-            max: 5000
-            severity:
-              green: 0
-              yellow: 2000
-              red: 3500
           - type: custom:apexcharts-card
             header:
               show: true
@@ -348,7 +426,7 @@ views:
             series:
               - entity: sensor.load_power
                 name: Hausverbrauch
-                color: '#FF9800'
+                color: "#FF9800"
                 stroke_width: 2
                 curve: smooth
                 type: area
@@ -358,56 +436,44 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: power
+
+      # ── Solcast Forecast ──────────────────────────────
       - type: grid
         cards:
           - type: heading
             heading: Solcast Forecast
-          - type: entity
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_morgen
             name: Prognose morgen
             icon: mdi:weather-sunny
-          - type: entity
+            icon_color: amber
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_spitzenleistung_heute
             name: Peak heute
             icon: mdi:arrow-up-bold
-          - type: entity
+            icon_color: orange
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_spitzenleistung_morgen
             name: Peak morgen
             icon: mdi:arrow-up-bold-outline
-          - type: entity
+            icon_color: orange
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_aktuelle_stunde
             name: Aktuelle Stunde
             icon: mdi:clock-outline
-          - type: entity
+            icon_color: blue
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_prognose_nachste_stunde
-            name: Nächste Stunde
+            name: "Nächste Stunde"
             icon: mdi:clock-fast
-          - type: entity
+            icon_color: blue
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_leistung_in_30_minuten
             name: In 30 Min
             icon: mdi:timer-sand
-          - type: entity
+            icon_color: teal
+          - type: custom:mushroom-entity-card
             entity: sensor.solcast_pv_forecast_leistung_in_1_stunde
             name: In 1 Stunde
             icon: mdi:timer-outline
-      - type: grid
-        cards:
-          - type: tile
-            entity: sensor.average_electricity_price
-          - type: tile
-            entity: sensor.current_electricity_market_price
-          - type: tile
-            entity: sensor.current_percentage_in_electricity_price_range
-          - type: tile
-            entity: sensor.current_percentage_of_highest_electricity_price
-          - type: tile
-            entity: sensor.highest_energy_price
-          - type: tile
-            entity: sensor.lowest_energy_price
-          - type: tile
-            entity: sensor.next_hour_electricity_market_price
-          - type: tile
-            entity: sensor.time_of_highest_price
-          - type: tile
-            entity: sensor.time_of_lowest_price
-        title: entso-e
+            icon_color: teal

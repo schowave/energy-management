@@ -230,7 +230,23 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 > **Repo:** https://github.com/RomRider/apexcharts-card
 > Wird für erweiterte Graphen in den Dashboards genutzt (Overlay, Bar-Charts, data_generator).
 
-### 5.3 Dashboard "1komma5" ✅
+### 5.3 Power Flow Card Plus (HACS Frontend) ✅
+
+- [x] HACS → Frontend → "Power Flow Card Plus" suchen → **Installieren**
+- [x] Browser refreshen (oder HA neustarten)
+
+> **Repo:** https://github.com/flixlix/power-flow-card-plus
+> Animierte Energiefluss-Visualisierung (PV → Batterie → Haus → Netz). Zeigt auf einen Blick wohin der Strom fließt.
+
+### 5.4 Mushroom Cards (HACS Frontend) ✅
+
+- [x] HACS → Frontend → "Mushroom" suchen → **Installieren**
+- [x] Browser refreshen (oder HA neustarten)
+
+> **Repo:** https://github.com/piitaya/lovelace-mushroom
+> Modernes Dashboard-Design: Entity-Cards, Template-Cards mit dynamischen Icons/Farben, Chips für kompakte KPI-Anzeige.
+
+### 5.5 Dashboard "1komma5" ✅
 
 - [x] Einstellungen → Dashboards → + Dashboard hinzufügen → "1komma5" (`mdi:lightning-bolt`)
 - [x] Dashboard-Konfiguration: siehe `config/kamrui-n100/dashboards/1komma5.yaml`
@@ -238,17 +254,18 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 > Dashboard für 1KOMMA5GRAD Heartbeat-Daten. Wird nach Heartbeat-Kündigung obsolet.
 
-### 5.4 Dashboard "Energiemanagement" ✅
+### 5.6 Dashboard "Energiemanagement" ✅
 
 - [x] Einstellungen → Dashboards → + Dashboard hinzufügen → "Energiemanagement" (`mdi:lightning-bolt`)
 - [x] Dashboard-Konfiguration: siehe `config/kamrui-n100/dashboards/energiemanagement.yaml`
 - [x] Abschnitte:
-  - **Strompreis:** ApexCharts Preisverlauf (History + Forecast als Stufenlinie), Tagesmin/-max, günstigste Stunde
-  - **PV-Erzeugung:** ApexCharts Overlay (PV Real vs. Solcast Forecast + Konfidenzband estimate10/90), Tagesvergleich
-  - **Batterie:** SOC-Gauge, ApexCharts Bar-Chart (Laden grün/Entladen rot), Tageswerte
-  - **Netz:** ApexCharts Bar-Chart (Bezug rot/Einspeisung grün), Tageswerte
-  - **Verbrauch & Autarkie:** Autarkiegrad + Eigenverbrauchsquote Gauges, Hausverbrauch-Gauge + Verlauf
-  - **Solcast Forecast:** Prognose morgen, Peaks, stündliche Vorschau
+  - **Energiefluss:** Power Flow Card Plus (PV → Batterie → Haus → Netz animiert) + Mushroom Chips (Autarkie, SOC, Preis)
+  - **Strompreis:** ApexCharts Overlay (1komma5° vs. ENTSO-e Börsenpreis + Forecasts), Aufschlag-Berechnung
+  - **PV-Erzeugung:** ApexCharts Overlay (PV Real vs. Solcast Forecast + Konfidenzband estimate10/90)
+  - **Batterie:** Mushroom Template-Card (dynamisches Icon/Badge je SOC + Lade-/Entladerichtung), ApexCharts Bar-Chart
+  - **Netz:** ApexCharts Bar-Chart (Bezug rot/Einspeisung grün)
+  - **Verbrauch & Autarkie:** Mushroom Template-Cards (Autarkie + Eigenverbrauch, Hausverbrauch), Verlauf
+  - **Solcast Forecast:** Mushroom Entity-Cards (Prognose morgen, Peaks, stündliche Vorschau)
 
 ## 6. Integrationen einrichten (über UI)
 
@@ -416,7 +433,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → Energy Dashboard                                      ✅ erledigt
 → Synology Backup (Sicherheit)                        ✅ erledigt
 → Recorder konfigurieren (365 Tage)                    ✅ erledigt
-→ hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Template-Sensoren ✅
+→ hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Power Flow ✅ → Mushroom ✅ → Template-Sensoren ✅
 → ENTSO-e (wartet auf API-Key)
 → EMHASS Add-on + Simulation                         ← NÄCHSTER SCHRITT
 ```

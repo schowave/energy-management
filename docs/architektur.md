@@ -213,6 +213,8 @@ gantt
 | **1komma5grad HACS** | Heartbeat-Preise + Energy-Sensoren (Phase 1) | Kostenlos |
 | **Solcast PV Forecast** | PV-Prognose 48h (Ost/West, 2 Sites) | Kostenlos |
 | **ApexCharts Card** | Erweiterte Dashboard-Graphen (HACS Frontend) | Kostenlos |
+| **Power Flow Card Plus** | Animierter Energiefluss (HACS Frontend) | Kostenlos |
+| **Mushroom Cards** | Modernes Card-Design (HACS Frontend) | Kostenlos |
 | **Cloudflared** | Cloudflare Tunnel · Remote-Zugriff via ha.schowalter.co | Kostenlos |
 | **InfluxDB + Grafana** | Langzeit-Analyse | Kostenlos |
 

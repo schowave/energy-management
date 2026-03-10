@@ -47,8 +47,10 @@
 - [x] Recorder: 365 Tage Aufbewahrung
 - [x] Energy Dashboard konfiguriert (Solar, Batterie, Netz)
 - [x] ApexCharts Card (HACS Frontend) installiert
+- [x] Power Flow Card Plus (HACS Frontend) installiert — animierter Energiefluss
+- [x] Mushroom Cards (HACS Frontend) installiert — modernes Card-Design
 - [x] Template-Sensoren: Autarkiegrad + Eigenverbrauchsquote
-- [x] Dashboards: "1komma5" (Heartbeat-Daten) + "Energiemanagement" (Modbus + Solcast + Preise)
+- [x] Dashboards: "1komma5" (Heartbeat-Daten) + "Energiemanagement" (Modbus + Solcast + Preise + Flow)
 
 > **KAMRUI N100:** Intel N100 (x86_64, 4C/4T), 16 GB RAM, 512 GB SSD.
 > Home Assistant OS 17.1 installiert. HiGHS-Solver läuft nativ (x86_64).
