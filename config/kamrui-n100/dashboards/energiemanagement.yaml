@@ -11,38 +11,22 @@ views:
             entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
             name: Strompreis
             icon: mdi:currency-eur
-          - type: entity
-            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: price_today_min
-            name: Tagesminimum
-            icon: mdi:arrow-down-bold
-            unit: EUR/kWh
-          - type: entity
-            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: price_today_max
-            name: Tagesmaximum
-            icon: mdi:arrow-up-bold
-            unit: EUR/kWh
-          - type: entity
-            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: price_today_avg
-            name: Tagesdurchschnitt
-            icon: mdi:approximately-equal
-            unit: EUR/kWh
           - type: markdown
             content: |
-              🕐 **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr** — {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') }} EUR/kWh
+              ↓ {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'price_today_min') }} · ↑ {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'price_today_max') }} · ⌀ {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'price_today_avg') }} EUR/kWh
+
+              🕐 Günstigste: **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr** ({{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') }} EUR/kWh)
 
               | Uhrzeit | Preis |
               |:--------|------:|
               {% for item in state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') -%}
               | {{ as_timestamp(item.datetime) | timestamp_custom('%H:%M') }} | {{ '%.2f' | format(item.price) }} ct |
               {% endfor %}
-            title: Preis-Forecast
+            title: Forecast
       - type: grid
         cards:
           - type: heading
-            heading: Solar
+            heading: Solar & Verbrauch
           - type: gauge
             entity: sensor.total_dc_power
             name: PV-Leistung
@@ -53,15 +37,25 @@ views:
               green: 3000
               yellow: 1000
               red: 0
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.total_dc_power
-            name: PV-Verlauf
+          - type: gauge
+            entity: sensor.load_power
+            name: Hausverbrauch
+            unit: W
+            min: 0
+            max: 5000
+            severity:
+              green: 0
+              yellow: 2000
+              red: 3500
           - type: entity
             entity: sensor.daily_pv_generation
             name: PV heute
             icon: mdi:solar-power
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.load_power
+            name: Verbrauch-Verlauf
       - type: grid
         cards:
           - type: heading
@@ -81,11 +75,6 @@ views:
             detail: 1
             entity: sensor.battery_charging_power
             name: Ladeleistung
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.battery_discharging_power
-            name: Entladeleistung
           - type: entity
             entity: sensor.daily_battery_charge
             name: Geladen heute
@@ -116,22 +105,3 @@ views:
             entity: sensor.daily_exported_energy
             name: Export heute
             icon: mdi:transmission-tower-export
-      - type: grid
-        cards:
-          - type: heading
-            heading: Verbrauch
-          - type: gauge
-            entity: sensor.load_power
-            name: Hausverbrauch
-            unit: W
-            min: 0
-            max: 5000
-            severity:
-              green: 0
-              yellow: 2000
-              red: 3500
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.load_power
-            name: Verbrauch-Verlauf
