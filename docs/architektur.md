@@ -9,7 +9,7 @@
 ```mermaid
 graph TB
     subgraph CLOUD["☁️ Cloud / APIs"]
-        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise – wartet auf API-Key</small>"]
+        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise – DE-LU</small>"]
         SOLCAST["Solcast<br/><small>PV-Prognose 48h – Ost/West</small>"]
         HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren kWh</small>"]
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
@@ -20,7 +20,10 @@ graph TB
         HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration – BirknerAlex v1.4.0</small>"]
         MODBUS["📡 mkaiser Sungrow Modbus<br/><small>Echtzeit-Daten via gridBox</small>"]
         SOLCAST_INT["☀️ Solcast PV Forecast<br/><small>HACS Integration – BJReplay v4.5.0</small>"]
+        ENTSOE_INT["📊 ENTSO-e Integration<br/><small>HACS – JaccoR v0.7.5</small>"]
         APEX["📊 ApexCharts Card<br/><small>HACS Frontend</small>"]
+        MUSHROOM["🍄 Mushroom + Power Flow<br/><small>HACS Frontend</small>"]
+        SHELLY_INT["🔌 Shelly Integration<br/><small>Jalousien · Steckdosen · Lichter</small>"]
         EMHASSP1["🧠 EMHASS App<br/><small>Simulationsmodus · nur berechnen</small>"]
         INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging 365d</small>"]
         GRAFANAP1["📊 Grafana App<br/><small>Langzeit-Visualisierung</small>"]
@@ -35,7 +38,8 @@ graph TB
     end
 
     %% Cloud → HA
-    ENTSOE -.->|"Börsenpreise – bald"| HAP1
+    ENTSOE -->|"Börsenpreise"| ENTSOE_INT
+    ENTSOE_INT --> HAP1
     SOLCAST -->|PV-Forecast| SOLCAST_INT
     SOLCAST_INT --> HAP1
     HB_API -->|Preise · kWh| HACS_1K5
@@ -66,7 +70,7 @@ graph TB
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
 
     class ENTSOE,SOLCAST,HB_API,CF cloud
-    class HAP1,HACS_1K5,MODBUS,SOLCAST_INT,APEX,EMHASSP1,INFLUXP1,GRAFANAP1,CFD_P1 haos
+    class HAP1,HACS_1K5,MODBUS,SOLCAST_INT,ENTSOE_INT,APEX,MUSHROOM,SHELLY_INT,EMHASSP1,INFLUXP1,GRAFANAP1,CFD_P1 haos
     class HEARTBEAT,GRIDBOX,SUNGROW1,SYNOLOGY lokal
 ```
 

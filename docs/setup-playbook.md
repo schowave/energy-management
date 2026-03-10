@@ -29,8 +29,8 @@ Folgende URLs einzeln einfügen und jeweils "Hinzufügen" klicken:
 | Repository | URL | Enthält |
 |---|---|---|
 | **Cloudflared** | `https://github.com/brenner-tobias/ha-addons` | Cloudflare Tunnel App |
-| **GoSunGrow** | `https://github.com/MickMake/HomeAssistantAddons` | iSolarCloud / Sungrow App |
 | **EMHASS** | `https://github.com/davidusb-geek/emhass-add-on` | Energieoptimierung (LP-Solver) |
+| ~~GoSunGrow~~ | ~~`https://github.com/MickMake/HomeAssistantAddons`~~ | ~~entfällt – mkaiser Modbus statt GoSungrow (→ ADR-0006)~~ |
 
 Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
@@ -82,7 +82,7 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [x] Integration einrichten: Einstellungen → Geräte & Dienste → MQTT → Konfigurieren
 - [x] Automatisch erkannten Broker bestätigen
 
-> Standardeinstellungen reichen aus. GoSungrow publiziert seine Daten hierüber.
+> Standardeinstellungen reichen aus. Wird für Shelly MQTT und künftige Integrationen genutzt.
 
 ### 3.4 Samba Share (Dateizugriff vom PC) — optional
 
@@ -439,7 +439,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → Synology Backup (Sicherheit)                        ✅ erledigt
 → Recorder konfigurieren (365 Tage)                    ✅ erledigt
 → hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Power Flow ✅ → Mushroom ✅ → Template-Sensoren ✅
-→ ENTSO-e (wartet auf API-Key)
+→ ENTSO-e ✅ → 1komma5° Tagesforecast-Sensor ✅
 → EMHASS Add-on + Simulation                         ← NÄCHSTER SCHRITT
 ```
 
