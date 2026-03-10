@@ -30,25 +30,13 @@ views:
             icon: mdi:approximately-equal
             unit: EUR/kWh
           - type: markdown
-            content: >
-              **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr**
-            title: Günstigste Stunde
-          - type: entity
-            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: cheapest_upcoming_price
-            name: Günstigster Preis
-            icon: mdi:cash-check
-            unit: EUR/kWh
-          - type: markdown
-            content: >
+            content: |
+              🕐 **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr** — {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') }} EUR/kWh
+
               | Uhrzeit | Preis |
-
-              |---------|-------|
-
-              {% for item in state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') %}
-
-              | {{ as_timestamp(item.datetime) | timestamp_custom('%H:%M') }} | {{ '%.4f' | format(item.price) }} EUR/kWh |
-
+              |:--------|------:|
+              {% for item in state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') -%}
+              | {{ as_timestamp(item.datetime) | timestamp_custom('%H:%M') }} | {{ '%.2f' | format(item.price) }} ct |
               {% endfor %}
             title: Preis-Forecast
       - type: grid
