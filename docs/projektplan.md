@@ -39,58 +39,49 @@
 - [x] Home Assistant OS auf USB-Stick flashen, von dort auf interne SSD installieren
 - [x] Grundkonfiguration: Netzwerk, Benutzer
 - [x] **Cloudflared App** → Remote-Zugriff via `https://ha.schowalter.co` (→ ADR-0015)
-- [ ] Apps installieren: Mosquitto, InfluxDB, Grafana
-- [ ] HACS (Home Assistant Community Store) installieren
-- [ ] GoSungrow / MQTT Integration konfigurieren
-- [ ] [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) über HACS installieren (→ ADR-0014)
-- [ ] HA-Backups automatisch auf Synology ablegen (SMB/NFS)
+- [x] Apps installieren: Mosquitto, InfluxDB, Grafana
+- [x] HACS (Home Assistant Community Store) installieren
+- [x] ~~GoSungrow / MQTT~~ → **mkaiser Sungrow Modbus** via gridBox (192.168.1.134) — siehe ADR-0006
+- [x] [hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad) über HACS installieren (→ ADR-0014)
+- [x] HA-Backups automatisch auf Synology ablegen (SMB/CIFS)
+- [x] Recorder: 365 Tage Aufbewahrung
+- [x] Energy Dashboard konfiguriert (Solar, Batterie, Netz)
+- [x] ApexCharts Card (HACS Frontend) installiert
+- [x] Template-Sensoren: Autarkiegrad + Eigenverbrauchsquote
+- [x] Dashboards: "1komma5" (Heartbeat-Daten) + "Energiemanagement" (Modbus + Solcast + Preise)
 
 > **KAMRUI N100:** Intel N100 (x86_64, 4C/4T), 16 GB RAM, 512 GB SSD.
 > Home Assistant OS 17.1 installiert. HiGHS-Solver läuft nativ (x86_64).
 > **Synology DS218+** bleibt als NAS + Backup-Ziel.
 
-### 1.0a Abstraktionsschicht: Template-Sensoren
-- [ ] Template-Sensoren mit **generischen Namen** anlegen, die auf GoSungrow-Entities zeigen
-- [ ] EMHASS, Dashboards und Automationen referenzieren **nur** die Template-Sensoren
-- [ ] Beim Umstieg auf Modbus (Phase 2) → nur Template-Quelle ändern, sonst nichts
+### ~~1.0a Abstraktionsschicht~~ — entfällt ✅
 
-Sensoren für die Abstraktionsschicht:
-
-| Template-Sensor | Phase 1 Quelle (GoSungrow API) | Phase 2 Quelle (Modbus) |
-|---|---|---|
-| `sensor.pv_power` | `gosungrow...p13003` | `sungrow_total_dc_power` |
-| `sensor.battery_soc` | `gosungrow...p13141` | `sungrow_battery_level` |
-| `sensor.battery_charge_power` | `gosungrow...p13126` | `sungrow_battery_charging_power` |
-| `sensor.battery_discharge_power` | `gosungrow...p13150` | `sungrow_battery_discharging_power` |
-| `sensor.grid_import_power` | `gosungrow...p13149` | `sungrow_import_power` |
-| `sensor.grid_export_power` | `gosungrow...p13121` | `sungrow_export_power` |
-| `sensor.load_power` | `gosungrow...p13119` | `sungrow_load_power` |
-| `sensor.battery_power_net` | `gosungrow...battery_power` | `sungrow_battery_power` |
-
-> **Wichtig:** Die Modbus-Entity-Namen in der Tabelle sind Beispiele – die exakten Namen ergeben sich
-> aus der mkaiser-Integration. Beim Umstieg einfach nachschlagen und in den Templates ersetzen.
->
-> **Steuerungs-Entities** (Batterie-Lademodus, SOC-Grenzen, Zeitpläne) gibt es nur über Modbus –
-> die kommen in Phase 2 neu dazu und brauchen keine Migration.
+> **Entfällt:** GoSungrow wurde übersprungen, mkaiser Modbus liefert direkt saubere Entity-Namen.
+> Dashboards und EMHASS referenzieren direkt die mkaiser-Entities:
+> `sensor.total_dc_power`, `sensor.battery_level`, `sensor.load_power`, `sensor.import_power`, `sensor.export_power`, etc.
+> Zusätzlich: eigene KPI-Sensoren in `template_sensors.yaml` (Autarkiegrad, Eigenverbrauchsquote).
 
 ### 1.1 Börsenpreise als Sensor (nur lesend)
-- [ ] **ENTSO-e Transparency Platform** Integration installieren (kostenlos, nur Registrierung nötig)
-  - Liefert stündliche Day-Ahead Börsenpreise für DE/AT
-  - Kein Stromvertrag nötig, reine Marktdaten-API
-  - https://transparency.entsoe.eu/ → kostenlosen API-Key beantragen
-- [ ] Stündliche Börsenpreise als Sensor in HA verfügbar machen
+- [x] **1komma5° Dynamic Pulse Preis** bereits verfügbar via hacs_1komma5grad (Brutto-Spotpreis inkl. Netzentgelte + MwSt.)
+  - `sensor.electricity_price_*` mit Forecast-Attributen
+  - Kann als Preissensor für EMHASS-Simulation genutzt werden
+- [x] **ENTSO-e Transparency Platform** — Account erstellt, API-Zugang beantragt (10. März 2026)
+  - [ ] **Warten:** API-Key wird innerhalb von 3 Werktagen freigeschaltet
+  - [ ] Token generieren und Integration einrichten
+  - [ ] Stündliche Börsenpreise als Sensor in HA verfügbar machen
 - [ ] **Dynamischer Endpreis-Sensor** (Template-Sensor): Börsenpreis + Netzentgelte + Steuern + Abgaben + Aufschlag
   - Damit EMHASS gegen einen realistischen dynamischen Endpreis optimiert
   - Aufschläge aus Tibber/aWATTar Tarifbedingungen entnehmen
 - [ ] **Festpreis-Sensor** (als Baseline): Aktueller Arbeitspreis des lokalen Grundversorgers (z.B. ~35 ct/kWh)
   - Einfacher `input_number` Helper in HA reicht
 
-### 1.2 PV-Prognose
-- [ ] **Solcast** oder **Forecast.Solar** Integration einrichten
-- [ ] Anlagendaten hinterlegen (Ausrichtung, Neigung, kWp)
-- [ ] Prüfen ob Prognosedaten plausibel sind
+### 1.2 PV-Prognose ✅
+- [x] **Solcast PV Forecast** (BJReplay v4.5.0) über HACS installiert
+- [x] Zwei Rooftop Sites konfiguriert: Ost (9 Module, 4 kWp, Az 85°) + West (12 Module, 5,3 kWp, Az -85°)
+- [x] Prognosedaten im Dashboard "Energiemanagement" visualisiert (ApexCharts: Real vs. Forecast + Konfidenzband)
+- [x] Plausibilität geprüft: Forecast liegt nah an realen Werten
 
-### 1.3 EMHASS im Simulationsmodus
+### 1.3 EMHASS im Simulationsmodus ← **NÄCHSTER SCHRITT**
 - [ ] **EMHASS App** in HA OS installieren (auf dem KAMRUI N100)
   - Linear-Programming-Optimierer mit **HiGHS-Solver** (x86 nativ)
   - Kombiniert: Strompreise + PV-Prognose + Verbrauchsmuster
@@ -98,11 +89,12 @@ Sensoren für die Abstraktionsschicht:
   - Doku speziell für Sungrow: [LibreHEMS](https://www.librehems.com)
 - [ ] **Anlagen-Parameter exakt konfigurieren** (für validen Vergleich entscheidend!):
   - Batteriekapazität: 12.8 kWh
-  - Max. Lade-/Entladeleistung (aus Sungrow Datenblatt)
+  - Max. Lade-/Entladeleistung: 5000 W (aus mkaiser config)
   - Wechselrichter-Effizienz (~97%)
   - Min/Max SOC Grenzen
-- [ ] Strompreis- und PV-Sensoren anbinden (Endpreis-Sensor aus 1.1!)
-- [ ] Verbrauchsdaten über **GoSungrow Cloud-API** (bereits vorhanden) einspeisen
+- [ ] Strompreis-Sensor anbinden: **1komma5° Dynamic Pulse** (vorläufig), später ENTSO-e + Aufschläge
+- [ ] PV-Prognose anbinden: **Solcast** (`sensor.solcast_pv_forecast_prognose_heute`)
+- [ ] Verbrauchsdaten über **mkaiser Modbus** (`sensor.load_power`, `sensor.daily_*`)
 - [ ] EMHASS berechnet Day-Ahead-Plan → **nur anzeigen, nicht ausführen**
 - [ ] **EMHASS-Plan in erwartete Kosten umrechnen** (Template-Sensoren):
   - Erwarteter SOC-Verlauf über den Tag
@@ -116,34 +108,21 @@ Sensoren für die Abstraktionsschicht:
 > EMHASS ist für genau diesen Use Case (Heim-Batterie + dynamischer Tarif) gebaut.
 > evcc wäre nur relevant bei einem späteren E-Auto mit Wallbox – dann als Ergänzung zu EMHASS.
 
-### 1.4 Heartbeat-Tracking (Entscheidungen nachvollziehen)
+### 1.4 Heartbeat-Tracking (Entscheidungen nachvollziehen) ✅
 
-**1komma5grad HACS-Integration (→ ADR-0014):**
-- [ ] **[hacs_1komma5grad](https://github.com/BirknerAlex/hacs_1komma5grad)** über HACS installieren
-  - Neue Heartbeat API (`app.1komma5grad.com`) — nicht das archivierte Legacy-Repo (derlangemarkus)
-  - Liefert: **Dynamic Pulse Strompreis** (aktuell + Forecast), Energy-Sensoren (kWh)
-- [ ] Verfügbare Sensoren der Integration:
-  - **Strompreis** (aktueller Dynamic Pulse Preis inkl. Netzentgelte + MwSt.) + Forecast-Attribute
-  - **Grid Import/Export** (kWh) — für HA Energy Dashboard
-  - **Solar Production** (kWh)
-  - **Battery In/Out** (kWh)
-  - **Heat Pump** (kWh) — falls von Heartbeat erfasst (bei Novelan unwahrscheinlich)
-- [ ] Heartbeat-Preissensor mit ENTSO-e-Börsenpreis vergleichen (Aufschlag/Marge sichtbar machen)
+- [x] **hacs_1komma5grad** (BirknerAlex v1.4.0) installiert → 19 Entitäten (→ ADR-0014)
+  - Strompreis (Dynamic Pulse inkl. Netzentgelte + MwSt.) + Forecast-Attribute
+  - Grid Import/Export, Solar, Batterie, EV, Wärmepumpe (kWh)
+- [x] Dashboard "1komma5" mit Preisverlauf, Forecast-Tabelle (3-Spalten), Solar, Batterie, Netz, Verbrauch
+- [x] Preisberechnung dokumentiert: warum Heartbeat-Preis irreführend niedrig ist (→ ADR-0014)
+- [ ] Heartbeat-Preissensor mit ENTSO-e-Börsenpreis vergleichen (wartet auf API-Key)
 
-**GoSungrow für granulare Power-Daten (ergänzend):**
-- [ ] Folgende Sensoren im HA Recorder / InfluxDB langfristig loggen:
-  - **Börsenpreis** (ENTSO-e, stündlich)
-  - **Battery SOC** (GoSungrow: `p13141`)
-  - **Battery Charge/Discharge Power** (GoSungrow: `p13126` / `p13150`)
-  - **Grid Import/Export Power** (GoSungrow: `p13149` / `p13121`)
-  - **PV-Erzeugung** (GoSungrow: `p13003`)
-  - **Load Power** (GoSungrow: `p13119`)
-- [ ] HA Recorder `purge_keep_days` hochsetzen (z.B. 90 Tage)
-- [ ] InfluxDB + Grafana für langfristige Analyse
-
-> **Zwei Datenquellen, zwei Zwecke:**
-> GoSungrow liefert granulare **Power-Daten** (Watt, sekündlich) — ideal für EMHASS und detaillierte Analyse.
-> hacs_1komma5grad liefert **Preisdaten** (Dynamic Pulse) und aggregierte **Energy-Daten** (kWh) — ideal für Kostenvergleich und HA Energy Dashboard.
+**Datenquellen (aktuell):**
+- [x] **mkaiser Modbus** — granulare Power-Daten (W) in Echtzeit via gridBox
+- [x] **hacs_1komma5grad** — Preisdaten (Dynamic Pulse) + aggregierte Energy-Daten (kWh)
+- [x] **Solcast** — PV-Prognose (30-Min-Intervalle, estimate + estimate10/90)
+- [x] HA Recorder: 365 Tage Aufbewahrung
+- [x] InfluxDB + Grafana für langfristige Analyse
 
 ### 1.5 Vergleichs-Dashboard (3 Szenarien)
 - [ ] Dashboard bauen mit **Zeitstrahl-Überlagerung**:
@@ -223,10 +202,8 @@ Sensoren für die Abstraktionsschicht:
 
 ### 2.2 Batteriesteuerung (Sungrow SH10RT)
 - [ ] Heartbeat vom Netz trennen
-- [ ] **mkaiser Sungrow-SHx-Modbus-Integration** einrichten
-- [ ] Modbus TCP Zugriff auf Wechselrichter (Port 502) testen
-- [ ] **Template-Sensoren umstellen**: GoSungrow-Entities → Modbus-Entities (siehe Tabelle in 1.0a)
-- [ ] Prüfen ob EMHASS, Dashboards, Automationen weiterhin funktionieren (sollten, da sie nur Templates referenzieren)
+- [x] **mkaiser Sungrow-SHx-Modbus-Integration** bereits eingerichtet (Phase 1, via gridBox)
+- [x] Modbus TCP Zugriff auf Wechselrichter getestet und stabil
 - [ ] Neue Steuerungs-Entities einrichten (nur über Modbus verfügbar):
   - Batterie-Lademodus (Forced Charge, Self-Consumption, etc.)
   - Lade-/Entladezeiten und -zeitpläne
