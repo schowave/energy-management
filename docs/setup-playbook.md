@@ -355,6 +355,11 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [x] `template_sensors.yaml` erstellt mit:
   - **`sensor.autarkiegrad`** — `(1 - Netzbezug / Gesamtverbrauch) × 100%` — wie viel % des Verbrauchs aus eigener Erzeugung
   - **`sensor.eigenverbrauchsquote`** — `(1 - Einspeisung / PV-Erzeugung) × 100%` — wie viel % der PV selbst verbraucht
+  - **`sensor.1komma5_tagesforecast`** — Trigger-basierter Sensor, speichert täglich um 00:05 den 1komma5°-Tagesforecast
+    - Trigger: `time 00:05` + State-Change von `unknown`/`unavailable` (nach HA-Restart)
+    - Condition: Quell-Sensor muss verfügbar sein
+    - Attribute: `midnight_price` (Preis um 00:00), `forecast_json` (24h Forecast als Liste)
+    - Zweck: Forecast-Linie im Strompreis-Chart für den ganzen Tag (nicht nur Zukunft)
 - [x] `configuration.yaml` ergänzt: `template: !include template_sensors.yaml`
 - [x] Sensoren im Dashboard "Energiemanagement" als Gauges eingebunden
 

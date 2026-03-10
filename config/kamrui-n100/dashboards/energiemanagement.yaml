@@ -94,7 +94,7 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-              - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+              - entity: sensor.1komma5_tagesforecast
                 name: "1komma5° Forecast"
                 color: "#4CAF50"
                 stroke_width: 1
@@ -103,11 +103,17 @@ views:
                 opacity: 0.5
                 yaxis_id: price
                 data_generator: |
-                  const forecast = entity.attributes.forecast || [];
-                  return forecast.map(f => [
+                  const mp = parseFloat(entity.attributes.midnight_price) || 0;
+                  const raw = entity.attributes.forecast_json || [];
+                  const fc = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const points = [[today.getTime(), mp]];
+                  fc.forEach(f => points.push([
                     new Date(f.datetime).getTime(),
                     f.price
-                  ]);
+                  ]));
+                  return points;
               - entity: sensor.current_electricity_market_price
                 name: "ENTSO-e Börse"
                 color: "#FF9800"

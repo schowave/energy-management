@@ -1,3 +1,4 @@
+# ── Tägliche Kennzahlen ────────────────────────
 - sensor:
     - name: "Autarkiegrad"
       unique_id: autarkiegrad_daily
@@ -28,3 +29,30 @@
         {% else %}
           0
         {% endif %}
+
+# ── 1komma5° Tagesforecast (Trigger-basiert) ──
+# Speichert den Forecast um 00:05, damit er im Chart
+# für den ganzen Tag sichtbar bleibt (nicht nur Zukunft).
+- trigger:
+    - platform: time
+      at: "00:05:00"
+    - platform: state
+      entity_id: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+      from: "unknown"
+    - platform: state
+      entity_id: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+      from: "unavailable"
+  condition:
+    - condition: template
+      value_template: >-
+        {{ states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') not in ['unknown', 'unavailable'] }}
+  sensor:
+    - name: "1komma5 Tagesforecast"
+      unique_id: onekomma5_forecast_today
+      icon: mdi:lightning-bolt
+      state: "{{ now().strftime('%Y-%m-%d') }}"
+      attributes:
+        midnight_price: >-
+          {{ states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) }}
+        forecast_json: >-
+          {{ (state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') or []) | to_json }}
