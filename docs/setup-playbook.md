@@ -173,10 +173,25 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "ENTSO-e Transparency Platform"
 - [ ] API-Key eingeben, Bidding Zone: DE-LU
 
-### 6.2 Solcast / Forecast.Solar (PV-Prognose)
+### 6.2 Solcast PV-Prognose ✅
 
-- [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "Forecast.Solar" (oder Solcast via HACS)
-- [ ] Anlagendaten hinterlegen: Ausrichtung, Neigung, kWp
+- [x] Solcast Home User Account erstellen: https://solcast.com/
+- [x] Zwei Rooftop Sites konfiguriert:
+
+  | Dachfläche | Module | kWp | Azimuth | Tilt | Resource ID |
+  |------------|--------|-----|---------|------|-------------|
+  | Ost (3× Dach 22° + 6× Gaube 2°) | 9 | 4,005 | 90 | 10 | `73b7-fe86-06ee-e672` |
+  | West (12× Dach 22°) | 12 | 5,340 | -90 | 22 | `8692-23f6-68c0-7a6b` |
+
+- [x] HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/BJReplay/ha-solcast-solar` (Kategorie: Integration)
+- [ ] HACS → Integrationen → "Solcast PV Forecast" suchen → Herunterladen
+- [ ] Home Assistant neustarten
+- [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "Solcast PV Forecast"
+- [ ] API-Key eingeben (Solcast Account → API Key)
+- [ ] Prüfen: Neue Sensoren `sensor.solcast_pv_forecast_today` etc.
+
+> **Hinweis:** Solcast Home User = max. 10 API-Calls/Tag. Die HA-Integration pollt automatisch — Standard reicht aus.
+> Gesamt: 21 Module × 445 Wp = 9,345 kWp (SH10RT-20, AC: 10 kW)
 
 ### 6.3 Sungrow Inverterdaten (Phase 1)
 
