@@ -29,6 +29,7 @@ Folgende URLs einzeln einfügen und jeweils "Hinzufügen" klicken:
 | Repository | URL | Enthält |
 |---|---|---|
 | **Cloudflared** | `https://github.com/brenner-tobias/ha-addons` | Cloudflare Tunnel App |
+| **GoSunGrow** | `https://github.com/MickMake/HomeAssistantAddons` | iSolarCloud / Sungrow App |
 
 Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
@@ -73,14 +74,19 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 **External URL setzen:**
 - [x] Einstellungen → System → Netzwerk → External URL: `https://ha.schowalter.co`
 
-### 3.3 Mosquitto MQTT Broker
+### 3.3 Mosquitto MQTT Broker ✅
 
-- [ ] App Store → "Mosquitto broker" suchen → **Installieren**
-- [ ] App starten
-- [ ] Integration einrichten: Einstellungen → Geräte & Dienste → MQTT → Konfigurieren
-- [ ] Automatisch erkannten Broker bestätigen
+- [x] App Store → "Mosquitto broker" suchen → **Installieren**
+- [x] App starten
+- [x] Integration einrichten: Einstellungen → Geräte & Dienste → MQTT → Konfigurieren
+- [x] Automatisch erkannten Broker bestätigen
 
-### 3.4 Samba Share (Dateizugriff vom PC)
+> Standardeinstellungen reichen aus. GoSungrow publiziert seine Daten hierüber.
+
+### 3.4 Samba Share (Dateizugriff vom PC) — optional
+
+> **Optional:** Nicht nötig wenn Konfiguration über Git-Repo + File Editor gepflegt wird.
+> Samba ist nur sinnvoll wenn man vom PC direkt auf die HA-Dateien zugreifen möchte.
 
 - [ ] App Store → "Samba share" suchen → **Installieren**
 - [ ] App Config: Benutzername + Passwort setzen
@@ -89,49 +95,44 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ### 3.5 InfluxDB
 
-- [ ] App Store → "InfluxDB" suchen → **Installieren**
-- [ ] App starten → "In Seitenleiste anzeigen" aktivieren
-- [ ] InfluxDB UI öffnen → Datenbank `homeassistant` anlegen (InfluxDB 1.x) oder Bucket erstellen (2.x)
-- [ ] `configuration.yaml` ergänzen (InfluxDB 1.x Beispiel):
-  ```yaml
-  influxdb:
-    host: a0d7b0f9-influxdb
-    port: 8086
-    database: homeassistant
-    max_retries: 3
-    default_measurement: state
-    include:
-      domains:
-        - sensor
-        - binary_sensor
-    exclude:
-      domains:
-        - automation
-        - persistent_notification
-  ```
-- [ ] Home Assistant neustarten
+- [x] App Store → "InfluxDB" suchen → **Installieren**
+- [x] App starten → "In Seitenleiste anzeigen" aktivieren
+- [x] InfluxDB UI öffnen → Admin → Databases → Datenbank `homeassistant` anlegen
+- [x] Einstellungen → Geräte & Dienste → Integration hinzufügen → "InfluxDB"
+  - Version: **InfluxDB 1.x** (passend zum Add-on)
+  - URL: `http://a0d7b954-influxdb:8086` (Hostname aus App → Info)
+  - Datenbank: `homeassistant`
+  - Benutzername: `homeassistant` (vorher in InfluxDB Admin → Users anlegen)
+  - Passwort: wie vergeben
+  - SSL: deaktiviert
+- [x] Home Assistant neustarten
 
-### 3.6 Grafana
+> **Hinweis:** Seit HA 2026.9 wird InfluxDB über die UI-Integration konfiguriert, nicht mehr per YAML.
 
-- [ ] App Store → "Grafana" suchen → **Installieren**
-- [ ] App starten → "In Seitenleiste anzeigen" aktivieren
-- [ ] Grafana öffnen → InfluxDB als Datenquelle hinzufügen:
-  - URL: `http://a0d7b0f9-influxdb:8086`
+### 3.6 Grafana ✅
+
+- [x] App Store → "Grafana" suchen → **Installieren**
+- [x] App starten → "In Seitenleiste anzeigen" aktivieren
+- [x] Grafana öffnen → Connections → Data sources → Add data source → **InfluxDB**
+  - URL: `http://a0d7b954-influxdb:8086`
   - Database: `homeassistant`
+  - User: `homeassistant`
+  - Password: wie bei InfluxDB vergeben
+  - Save & Test
 
 ### 3.7 Terminal & SSH (optional, für CLI-Zugriff)
 
 - [ ] App Store → "Terminal & SSH" suchen → **Installieren**
 - [ ] App starten → "In Seitenleiste anzeigen" aktivieren
 
-## 4. HACS installieren
+## 4. HACS installieren ✅
 
-- [ ] App Store → ⋮ → Repositories → `https://github.com/hacs/addons` hinzufügen
-- [ ] App Store → "Get HACS" suchen → **Installieren** → **Starten**
-- [ ] App Logs prüfen für Anweisungen
-- [ ] Home Assistant neustarten
-- [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "HACS"
-- [ ] GitHub-Konto verknüpfen (Device Code Flow)
+- [x] App Store → ⋮ → Repositories → `https://github.com/hacs/addons` hinzufügen
+- [x] App Store → "Get HACS" suchen → **Installieren** → **Starten**
+- [x] App Logs prüfen für Anweisungen
+- [x] Home Assistant neustarten
+- [x] Einstellungen → Geräte & Dienste → Integration hinzufügen → "HACS"
+- [x] GitHub-Konto verknüpfen (Device Code Flow)
 
 ## 5. HACS-Integrationen installieren
 
@@ -156,27 +157,56 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "Forecast.Solar" (oder Solcast via HACS)
 - [ ] Anlagendaten hinterlegen: Ausrichtung, Neigung, kWp
 
-### 6.3 GoSungrow (Inverterdaten Phase 1)
+### 6.3 Sungrow Inverterdaten (Phase 1)
 
-- [ ] GoSungrow Integration einrichten (MQTT oder REST)
-- [ ] Prüfen ob Sensoren verfügbar: SOC, PV Power, Grid, Load
+> ~~GoSungrow Cloud-API~~ — funktioniert nicht mehr (AppKey-Problem seit Nov 2023, nicht gefixt).
+> Stattdessen: **mkaiser Sungrow Modbus-Integration** (lokal, Echtzeit, alle Daten).
+> Siehe aktualisierter ADR-0006.
 
-## 7. Template-Sensoren anlegen
+**Quelle:** https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant
 
-- [ ] `templates.yaml` aus dem Repo übernehmen: `config/kamrui-n100/templates.yaml`
-- [ ] In `configuration.yaml` referenzieren:
+- [x] `modbus_sungrow.yaml` (Release 2026-03-09) vom GitHub-Repo herunterladen → nach `/config/` kopieren
+- [x] `secrets.yaml` auf dem N100 ergänzen:
   ```yaml
-  template: !include templates.yaml
+  sungrow_modbus_host_ip: "192.168.1.134"  # gridBox (stabil), NICHT WiNet-S2 (192.168.1.191, instabil)
+  sungrow_modbus_port: "502"
+  sungrow_modbus_device_address: 1
+  sungrow_modbus_wait_milliseconds: 200   # konservativ wg. parallelem Heartbeat
+  sungrow_modbus_battery_max_power: 5000
   ```
-- [ ] Home Assistant neustarten
-- [ ] Prüfen: Entwicklerwerkzeuge → Zustände → nach `sensor.pv_power`, `sensor.battery_soc` etc. suchen
+- [x] `configuration.yaml` ergänzen:
+  ```yaml
+  homeassistant:
+    packages:
+      sungrow: !include modbus_sungrow.yaml
+  ```
+- [x] Home Assistant neustarten
+- [x] Prüfen: Entwicklerwerkzeuge → Zustände → nach `sungrow` filtern → Inverter erkannt (SH10RT-20)
+- [ ] **Wichtig:** Über mehrere Tage 1komma5° App beobachten (Heartbeat-Tab), ob Steuerung weiterhin funktioniert
+
+> **Netzwerk-Info:** WiNet-S2 (`192.168.1.191`) und gridBox (`192.168.1.134`) antworten beide auf Modbus TCP Port 502.
+> **WiNet-S2 ist instabil** (Verbindung bricht nach ~20s ab). Die **gridBox ist stabil** und wird als Modbus-Gateway genutzt.
+> Falls Heartbeat-Störungen auftreten → `modbus_sungrow.yaml` Einbindung in `configuration.yaml` auskommentieren und neustarten.
+> Siehe ADR-0006 für Details.
+
+## 7. ~~Template-Sensoren~~ — entfällt
+
+> **Entfällt:** Die mkaiser Modbus-Integration liefert bereits saubere Entity-Namen mit eigenen Template-Sensoren.
+> Eine separate Abstraktionsschicht ist nicht mehr nötig (siehe ADR-0008 superseded).
+> Dashboards und EMHASS referenzieren direkt die mkaiser-Entities:
+> `sensor.total_dc_power`, `sensor.battery_level`, `sensor.load_power`, `sensor.import_power`, `sensor.export_power`, etc.
 
 ## 8. Energy Dashboard einrichten
 
 - [ ] Einstellungen → Dashboards → Energie
-- [ ] Grid Import/Export: hacs_1komma5grad kWh-Sensoren oder GoSungrow-Sensoren
-- [ ] Solar: PV kWh-Sensor
-- [ ] Batterie: Battery In/Out kWh-Sensoren
+- [ ] **Stromnetz:**
+  - Verbrauch (Import): `sensor.daily_imported_energy` oder `sensor.total_imported_energy`
+  - Einspeisung (Export): `sensor.daily_exported_energy` oder `sensor.total_exported_energy`
+- [ ] **Solar:**
+  - Solarproduktion: `sensor.daily_pv_generation` oder `sensor.total_pv_generation`
+- [ ] **Batterie:**
+  - Batterie-Energie: `sensor.battery_discharging_power_signed` (positiv = Entladen, negativ = Laden)
+  - Oder separat: `sensor.daily_battery_charge` / `sensor.daily_battery_discharge`
 
 ## 9. Backups auf Synology
 
@@ -205,11 +235,12 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 ```
 HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → File Editor → Cloudflared (Grundlagen + Remote)       ✅ erledigt
-→ Mosquitto → Samba → Terminal (Infrastruktur)
-→ InfluxDB → Grafana (Monitoring)
-→ HACS → hacs_1komma5grad (Integrationen)
-→ ENTSO-e → Solcast → GoSungrow (Datenquellen)
-→ Template-Sensoren → Energy Dashboard (Abstraktionsschicht)
+→ Mosquitto → (Samba optional) → Terminal               ✅ Mosquitto erledigt
+→ InfluxDB → Grafana (Monitoring)                       ✅ erledigt
+→ HACS                                                  ✅ erledigt
+→ Sungrow Modbus (mkaiser via gridBox)                  ✅ erledigt
+→ Energy Dashboard                                      ⬜ nächster Schritt
+→ hacs_1komma5grad → ENTSO-e → Solcast (Datenquellen)
 → Synology Backup (Sicherheit)
 → Recorder konfigurieren (90 Tage)
 ```

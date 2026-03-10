@@ -1,12 +1,6 @@
-# Home Assistant – KAMRUI N100 (HAOS)
+
 # Loads default set of integrations. Do not remove.
 default_config:
-
-# Cloudflare Tunnel (Cloudflared Add-on) → ha.schowalter.co
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 172.30.33.0/24
 
 homeassistant:
   name: Home
@@ -14,9 +8,8 @@ homeassistant:
   currency: EUR
   country: DE
   time_zone: Europe/Berlin
-
-# Template-Sensoren (Abstraktionsschicht → ADR-0008)
-template: !include templates.yaml
+  packages:
+    sungrow: !include modbus_sungrow.yaml
 
 # Load frontend themes from the themes folder
 frontend:
@@ -25,3 +18,12 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
+
+# InfluxDB: Wird seit HA 2026.9 über UI-Integration konfiguriert
+# Einstellungen → Geräte & Dienste → InfluxDB
+# Host: a0d7b954-influxdb, Port: 8086, Database: homeassistant

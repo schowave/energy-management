@@ -1,3 +1,4 @@
 .DS_Store
 .idea/
 .shelly-cloud.env
+**/secrets.yaml
