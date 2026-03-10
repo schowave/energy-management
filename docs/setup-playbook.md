@@ -198,15 +198,29 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ## 8. Energy Dashboard einrichten
 
-- [ ] Einstellungen → Dashboards → Energie
-- [ ] **Stromnetz:**
-  - Verbrauch (Import): `sensor.daily_imported_energy` oder `sensor.total_imported_energy`
-  - Einspeisung (Export): `sensor.daily_exported_energy` oder `sensor.total_exported_energy`
-- [ ] **Solar:**
-  - Solarproduktion: `sensor.daily_pv_generation` oder `sensor.total_pv_generation`
-- [ ] **Batterie:**
-  - Batterie-Energie: `sensor.battery_discharging_power_signed` (positiv = Entladen, negativ = Laden)
-  - Oder separat: `sensor.daily_battery_charge` / `sensor.daily_battery_discharge`
+- [x] Einstellungen → Dashboards → Energie
+
+### 8.1 Stromnetz (Netzanschluss) ✅
+
+- [x] **Verbrauch (Import):** `sensor.daily_imported_energy`
+- [x] **Einspeisung (Export):** `sensor.daily_exported_energy`
+- [x] Leistungsmessung: Zwei Sensoren
+  - Importleistung: `sensor.import_power`
+  - Exportleistung: `sensor.export_power`
+
+### 8.2 Solar (PV-Module) ✅
+
+- [x] **Energie der PV-Erzeugung:** `sensor.total_pv_generation`
+- [x] **Leistung der PV-Erzeugung:** `sensor.total_dc_power`
+- [x] Prognose: leer lassen (Solcast/Forecast.Solar kommt später)
+
+### 8.3 Batterie ✅
+
+- [x] **In die Batterie geladene Energie:** `sensor.daily_battery_charge`
+- [x] **Aus der Batterie entladene Energie:** `sensor.daily_battery_discharge`
+- [x] Leistungsmessung: Zwei Sensoren
+  - Entladeleistung: `sensor.battery_discharging_power`
+  - Ladeleistung: `sensor.battery_charging_power`
 
 ## 9. Backups auf Synology
 
@@ -239,7 +253,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → InfluxDB → Grafana (Monitoring)                       ✅ erledigt
 → HACS                                                  ✅ erledigt
 → Sungrow Modbus (mkaiser via gridBox)                  ✅ erledigt
-→ Energy Dashboard                                      ⬜ nächster Schritt
+→ Energy Dashboard                                      ✅ erledigt
 → hacs_1komma5grad → ENTSO-e → Solcast (Datenquellen)
 → Synology Backup (Sicherheit)
 → Recorder konfigurieren (90 Tage)
