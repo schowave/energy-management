@@ -4,10 +4,73 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: PV-Erzeugung (Live vs. Prognose)
+            heading: Strompreis
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Preisverlauf heute
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              tooltip:
+                shared: true
+            yaxis:
+              - id: price
+                min: 0
+                apex_config:
+                  title:
+                    text: EUR/kWh
+                  labels:
+                    formatter: |
+                      EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
+            series:
+              - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+                name: Strompreis
+                color: "#4CAF50"
+                stroke_width: 2
+                float_precision: 2
+                yaxis_id: price
+                group_by:
+                  func: avg
+                  duration: 5min
+              - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+                name: Forecast
+                color: "#2196F3"
+                stroke_width: 2
+                curve: stepline
+                float_precision: 2
+                yaxis_id: price
+                data_generator: |
+                  const forecast = entity.attributes.forecast || [];
+                  return forecast.map(f => [
+                    new Date(f.datetime).getTime(),
+                    f.price
+                  ]);
+          - type: entity
+            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+            attribute: price_today_min
+            name: Tagesminimum
+            icon: mdi:arrow-down-bold
+            unit: EUR/kWh
+          - type: entity
+            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+            attribute: price_today_max
+            name: Tagesmaximum
+            icon: mdi:arrow-up-bold
+            unit: EUR/kWh
+          - type: markdown
+            content: |
+              🕐 Günstigste: **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr** — {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') }} EUR/kWh
+      - type: grid
+        cards:
+          - type: heading
+            heading: PV-Erzeugung
           - type: gauge
             entity: sensor.total_dc_power
-            name: PV-Leistung aktuell
+            name: PV aktuell
             unit: W
             min: 0
             max: 10000
@@ -15,15 +78,73 @@ views:
               green: 3000
               yellow: 1000
               red: 0
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.total_dc_power
-            name: PV-Verlauf
-          - type: entity
-            entity: sensor.solcast_pv_forecast_aktuelle_leistung
-            name: Solcast aktuell
-            icon: mdi:solar-power-variant
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: PV Real vs. Solcast Forecast
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 300
+              legend:
+                show: true
+              tooltip:
+                shared: true
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.total_dc_power
+                name: PV Real
+                color: "#FF6B35"
+                stroke_width: 2
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Forecast
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                yaxis_id: power
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate * 1000
+                  ]);
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Optimistisch (90)
+                color: "#2196F3"
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                curve: smooth
+                yaxis_id: power
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate90 * 1000
+                  ]);
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Pessimistisch (10)
+                color: "#2196F3"
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                curve: smooth
+                yaxis_id: power
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate10 * 1000
+                  ]);
           - type: entity
             entity: sensor.daily_pv_generation
             name: PV heute (real)
@@ -34,12 +155,148 @@ views:
             icon: mdi:chart-line
           - type: entity
             entity: sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute
-            name: PV verbleibend heute
+            name: PV verbleibend
             icon: mdi:sun-clock
       - type: grid
         cards:
           - type: heading
-            heading: Solcast Prognose
+            heading: Batterie
+          - type: gauge
+            entity: sensor.battery_level
+            name: Ladestand
+            unit: "%"
+            min: 0
+            max: 100
+            severity:
+              green: 50
+              yellow: 20
+              red: 0
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Batterie Lade-/Entladeleistung
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+            series:
+              - entity: sensor.battery_charging_power
+                name: Laden
+                color: "#4CAF50"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.battery_discharging_power
+                name: Entladen
+                color: "#F44336"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: entity
+            entity: sensor.daily_battery_charge
+            name: Geladen heute
+            icon: mdi:battery-plus
+          - type: entity
+            entity: sensor.daily_battery_discharge
+            name: Entladen heute
+            icon: mdi:battery-minus
+      - type: grid
+        cards:
+          - type: heading
+            heading: Netz
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Netzbezug / Einspeisung
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+            series:
+              - entity: sensor.import_power
+                name: Bezug
+                color: "#F44336"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.export_power
+                name: Einspeisung
+                color: "#4CAF50"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: entity
+            entity: sensor.daily_imported_energy
+            name: Import heute
+            icon: mdi:transmission-tower-import
+          - type: entity
+            entity: sensor.daily_exported_energy
+            name: Export heute
+            icon: mdi:transmission-tower-export
+      - type: grid
+        cards:
+          - type: heading
+            heading: Verbrauch
+          - type: gauge
+            entity: sensor.load_power
+            name: Hausverbrauch
+            unit: W
+            min: 0
+            max: 5000
+            severity:
+              green: 0
+              yellow: 2000
+              red: 3500
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Verbrauch-Verlauf
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.load_power
+                name: Hausverbrauch
+                color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.3
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+      - type: grid
+        cards:
+          - type: heading
+            heading: Solcast Forecast
           - type: entity
             entity: sensor.solcast_pv_forecast_prognose_morgen
             name: Prognose morgen
@@ -68,84 +325,3 @@ views:
             entity: sensor.solcast_pv_forecast_leistung_in_1_stunde
             name: In 1 Stunde
             icon: mdi:timer-outline
-      - type: grid
-        cards:
-          - type: heading
-            heading: Batterie
-          - type: gauge
-            entity: sensor.battery_level
-            name: Ladestand
-            unit: "%"
-            min: 0
-            max: 100
-            severity:
-              green: 50
-              yellow: 20
-              red: 0
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.battery_charging_power
-            name: Ladeleistung
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.battery_discharging_power
-            name: Entladeleistung
-          - type: entity
-            entity: sensor.battery_power
-            name: Batterie-Leistung (netto)
-            icon: mdi:battery-charging
-          - type: entity
-            entity: sensor.daily_battery_charge
-            name: Geladen heute
-            icon: mdi:battery-plus
-          - type: entity
-            entity: sensor.daily_battery_discharge
-            name: Entladen heute
-            icon: mdi:battery-minus
-      - type: grid
-        cards:
-          - type: heading
-            heading: Netz
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.import_power
-            name: Netzbezug
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.export_power
-            name: Einspeisung
-          - type: entity
-            entity: sensor.meter_active_power
-            name: Zähler (netto)
-            icon: mdi:meter-electric
-          - type: entity
-            entity: sensor.daily_imported_energy
-            name: Import heute
-            icon: mdi:transmission-tower-import
-          - type: entity
-            entity: sensor.daily_exported_energy
-            name: Export heute
-            icon: mdi:transmission-tower-export
-      - type: grid
-        cards:
-          - type: heading
-            heading: Verbrauch
-          - type: gauge
-            entity: sensor.load_power
-            name: Hausverbrauch
-            unit: W
-            min: 0
-            max: 5000
-            severity:
-              green: 0
-              yellow: 2000
-              red: 3500
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.load_power
-            name: Verbrauch-Verlauf
