@@ -11,27 +11,16 @@ views:
               solar:
                 entity: sensor.total_dc_power
                 display_zero_state: true
-                color:
-                  icon: "#FF6B35"
-                  state: "#FF6B35"
               battery:
-                entity: sensor.battery_level
+                entity: sensor.energy_battery_battery_discharging_power_battery_charging_power_net_power
                 state_of_charge: sensor.battery_level
                 display_zero_state: true
-                color:
-                  icon: "#4CAF50"
-                  state: "#4CAF50"
-                  circle: "#4CAF50"
               grid:
                 entity: sensor.energy_grid_import_power_export_power_net_power
                 display_zero_state: true
-                color_value: true
               home:
                 entity: sensor.load_power
                 display_zero_state: true
-                color:
-                  icon: "#2196F3"
-                  state: "#2196F3"
             clickable_entities: true
             display_zero_lines:
               mode: show
