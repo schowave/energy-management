@@ -1,0 +1,151 @@
+views:
+  - type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: PV-Erzeugung (Live vs. Prognose)
+          - type: gauge
+            entity: sensor.total_dc_power
+            name: PV-Leistung aktuell
+            unit: W
+            min: 0
+            max: 10000
+            severity:
+              green: 3000
+              yellow: 1000
+              red: 0
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.total_dc_power
+            name: PV-Verlauf
+          - type: entity
+            entity: sensor.solcast_pv_forecast_aktuelle_leistung
+            name: Solcast aktuell
+            icon: mdi:solar-power-variant
+          - type: entity
+            entity: sensor.daily_pv_generation
+            name: PV heute (real)
+            icon: mdi:solar-power
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_heute
+            name: PV heute (Prognose)
+            icon: mdi:chart-line
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute
+            name: PV verbleibend heute
+            icon: mdi:sun-clock
+      - type: grid
+        cards:
+          - type: heading
+            heading: Solcast Prognose
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_morgen
+            name: Prognose morgen
+            icon: mdi:weather-sunny
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_spitzenleistung_heute
+            name: Peak heute
+            icon: mdi:arrow-up-bold
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_spitzenleistung_morgen
+            name: Peak morgen
+            icon: mdi:arrow-up-bold-outline
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_aktuelle_stunde
+            name: Aktuelle Stunde
+            icon: mdi:clock-outline
+          - type: entity
+            entity: sensor.solcast_pv_forecast_prognose_nachste_stunde
+            name: Nächste Stunde
+            icon: mdi:clock-fast
+          - type: entity
+            entity: sensor.solcast_pv_forecast_leistung_in_30_minuten
+            name: In 30 Min
+            icon: mdi:timer-sand
+          - type: entity
+            entity: sensor.solcast_pv_forecast_leistung_in_1_stunde
+            name: In 1 Stunde
+            icon: mdi:timer-outline
+      - type: grid
+        cards:
+          - type: heading
+            heading: Batterie
+          - type: gauge
+            entity: sensor.battery_level
+            name: Ladestand
+            unit: "%"
+            min: 0
+            max: 100
+            severity:
+              green: 50
+              yellow: 20
+              red: 0
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.battery_charging_power
+            name: Ladeleistung
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.battery_discharging_power
+            name: Entladeleistung
+          - type: entity
+            entity: sensor.battery_power
+            name: Batterie-Leistung (netto)
+            icon: mdi:battery-charging
+          - type: entity
+            entity: sensor.daily_battery_charge
+            name: Geladen heute
+            icon: mdi:battery-plus
+          - type: entity
+            entity: sensor.daily_battery_discharge
+            name: Entladen heute
+            icon: mdi:battery-minus
+      - type: grid
+        cards:
+          - type: heading
+            heading: Netz
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.import_power
+            name: Netzbezug
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.export_power
+            name: Einspeisung
+          - type: entity
+            entity: sensor.meter_active_power
+            name: Zähler (netto)
+            icon: mdi:meter-electric
+          - type: entity
+            entity: sensor.daily_imported_energy
+            name: Import heute
+            icon: mdi:transmission-tower-import
+          - type: entity
+            entity: sensor.daily_exported_energy
+            name: Export heute
+            icon: mdi:transmission-tower-export
+      - type: grid
+        cards:
+          - type: heading
+            heading: Verbrauch
+          - type: gauge
+            entity: sensor.load_power
+            name: Hausverbrauch
+            unit: W
+            min: 0
+            max: 5000
+            severity:
+              green: 0
+              yellow: 2000
+              red: 3500
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.load_power
+            name: Verbrauch-Verlauf
