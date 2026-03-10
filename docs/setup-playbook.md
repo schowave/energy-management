@@ -136,13 +136,30 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ## 5. HACS-Integrationen installieren
 
-### 5.1 hacs_1komma5grad (Heartbeat Preise + Energy)
+### 5.1 hacs_1komma5grad (Heartbeat Preise + Energy) ✅
 
-- [ ] HACS → Integrationen → Repository durchsuchen → "1KOMMA5GRAD"
-- [ ] Herunterladen → Home Assistant neustarten
-- [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "1KOMMA5GRAD"
-- [ ] Mit `app.1komma5grad.com` Zugangsdaten anmelden
-- [ ] Prüfen: Neue Sensoren unter Einstellungen → Geräte & Dienste → 1KOMMA5GRAD
+- [x] HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/BirknerAlex/hacs_1komma5grad` (Kategorie: Integration)
+- [x] HACS → Integrationen → "1KOMMA5GRAD" suchen → **v1.4.0 Herunterladen**
+- [x] Home Assistant neustarten
+- [x] Einstellungen → Geräte & Dienste → Integration hinzufügen → "1KOMMA5GRAD"
+- [x] Mit `app.1komma5grad.com` Zugangsdaten anmelden
+- [x] Prüfen: 19 Entitäten erkannt (Preise, Grid, Solar, Batterie, EV, Wärmepumpe)
+
+> **Wichtige Sensoren:**
+> - `sensor.electricity_price_*` — dynamische Heartbeat-Strompreise (inkl. Netzkosten + MwSt.)
+>   - Attribute: `forecast` (stündliche Prognose), `price_today_min/max/avg`, `cheapest_upcoming_hour`
+> - Energiesensoren (kWh) für Grid, Solar, Batterie, EV, Wärmepumpe → Energy Dashboard kompatibel
+> - `switch.heartbeat_automatic_mode` — EMS Ein/Aus
+>
+> **Voraussetzung:** Neues Heartbeat API (`app.1komma5grad.com` Login, nicht `my.1komma5.io`)
+>
+> **System-ID:** `7fee2e61-1ff6-4eaf-8a8e-7509522abb45`
+
+### 5.2 Dashboard "Energiemanagement" ✅
+
+- [x] Einstellungen → Dashboards → + Dashboard hinzufügen → "Energiemanagement" (`mdi:lightning-bolt`)
+- [x] Dashboard-Konfiguration: siehe `config/kamrui-n100/dashboards/energiemanagement.yaml`
+- [x] Abschnitte: Strompreis (inkl. Min/Max/Avg), Solar (Gauge + Verlauf), Batterie (SOC + Lade/Entlade), Netz (Import/Export), Verbrauch (Gauge + Verlauf)
 
 ## 6. Integrationen einrichten (über UI)
 
