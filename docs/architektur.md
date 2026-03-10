@@ -212,7 +212,8 @@ gantt
 | **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 (Phase 2) | Kostenlos |
 | **1komma5grad HACS** | Heartbeat-Preise + Energy-Sensoren (Phase 1) | Kostenlos |
 | **Solcast PV Forecast** | PV-Prognose 48h (Ost/West, 2 Sites) | Kostenlos |
-| **ApexCharts Card** | Erweiterte Dashboard-Graphen (HACS Frontend) | Kostenlos |
+| **ApexCharts Card** | Forecast-Overlays: Preis + PV (HACS Frontend) | Kostenlos |
+| **Mini Graph Card** | Sparkline-Charts: Batterie, Netz, Verbrauch (HACS Frontend) | Kostenlos |
 | **Power Flow Card Plus** | Animierter Energiefluss (HACS Frontend) | Kostenlos |
 | **Mushroom Cards** | Modernes Card-Design (HACS Frontend) | Kostenlos |
 | **Cloudflared** | Cloudflare Tunnel · Remote-Zugriff via ha.schowalter.co | Kostenlos |
