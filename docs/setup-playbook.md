@@ -165,7 +165,11 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 ### 6.1 ENTSO-e (Börsenpreise)
 
-- [ ] API-Key beantragen: https://transparency.entsoe.eu/ → Registrieren
+- [x] Account erstellen: https://transparency.entsoe.eu/ → Register (E-Mail: schowalter.david@gmail.com)
+- [x] Einstellungen: Country: Germany (DE), Time Zone: CET/CEST
+- [x] API-Zugang beantragt: E-Mail an `transparency@entsoe.eu` mit Betreff "RESTful API access" (10. März 2026)
+- [ ] **Warten:** API-Zugang wird innerhalb von 3 Werktagen freigeschaltet
+- [ ] Token generieren: My Account → Web API Security Token
 - [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "ENTSO-e Transparency Platform"
 - [ ] API-Key eingeben, Bidding Zone: DE-LU
 
