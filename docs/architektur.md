@@ -9,20 +9,20 @@
 ```mermaid
 graph TB
     subgraph CLOUD["☁️ Cloud / APIs"]
-        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise (wartet auf API-Key)</small>"]
-        SOLCAST["Solcast<br/><small>PV-Prognose 48h (Ost/West)</small>"]
-        HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren (kWh)</small>"]
+        ENTSOE["ENTSO-e<br/><small>Day-Ahead Börsenpreise – wartet auf API-Key</small>"]
+        SOLCAST["Solcast<br/><small>PV-Prognose 48h – Ost/West</small>"]
+        HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren kWh</small>"]
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
     end
 
-    subgraph N100P1["🖥️ KAMRUI N100 (Home Assistant OS)"]
+    subgraph N100P1["🖥️ KAMRUI N100 – Home Assistant OS"]
         HAP1["🏠 Home Assistant<br/><small>Monitoring · Dashboards · Template-Sensoren</small>"]
-        HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration (BirknerAlex v1.4.0)</small>"]
+        HACS_1K5["📦 hacs_1komma5grad<br/><small>HACS Integration – BirknerAlex v1.4.0</small>"]
         MODBUS["📡 mkaiser Sungrow Modbus<br/><small>Echtzeit-Daten via gridBox</small>"]
-        SOLCAST_INT["☀️ Solcast PV Forecast<br/><small>HACS Integration (BJReplay v4.5.0)</small>"]
+        SOLCAST_INT["☀️ Solcast PV Forecast<br/><small>HACS Integration – BJReplay v4.5.0</small>"]
         APEX["📊 ApexCharts Card<br/><small>HACS Frontend</small>"]
         EMHASSP1["🧠 EMHASS App<br/><small>Simulationsmodus · nur berechnen</small>"]
-        INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging (365d)</small>"]
+        INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging 365d</small>"]
         GRAFANAP1["📊 Grafana App<br/><small>Langzeit-Visualisierung</small>"]
         CFD_P1["🔒 Cloudflared App<br/><small>Tunnel → Cloudflare</small>"]
     end
@@ -31,22 +31,22 @@ graph TB
         HEARTBEAT["💚 1komma5° Heartbeat<br/><small>steuert per Modbus TCP :502</small>"]
         GRIDBOX["📦 gridBox<br/><small>192.168.1.134 · Modbus Gateway</small>"]
         SUNGROW1["⚡ Sungrow SH10RT<br/><small>Modbus TCP :502</small>"]
-        SYNOLOGY["🗄️ Synology DS218+<br/><small>NAS · HA-Backups (SMB)</small>"]
+        SYNOLOGY["🗄️ Synology DS218+<br/><small>NAS · HA-Backups SMB</small>"]
     end
 
     %% Cloud → HA
-    ENTSOE -.->|Börsenpreise (bald)| HAP1
+    ENTSOE -.->|"Börsenpreise – bald"| HAP1
     SOLCAST -->|PV-Forecast| SOLCAST_INT
     SOLCAST_INT --> HAP1
     HB_API -->|Preise · kWh| HACS_1K5
     HACS_1K5 --> HAP1
 
-    %% Lokaler Modbus-Zugriff (nur lesend, parallel zu Heartbeat)
+    %% Lokaler Modbus-Zugriff – nur lesend, parallel zu Heartbeat
     MODBUS -->|Modbus TCP :502| GRIDBOX
     GRIDBOX --- SUNGROW1
     MODBUS -->|PV · SOC · Power · Grid| HAP1
 
-    %% HA → EMHASS (Simulation)
+    %% HA → EMHASS Simulation
     HAP1 -->|Sensordaten + Preise| EMHASSP1
     EMHASSP1 -.->|simulierter Plan| HAP1
     HAP1 --> INFLUXP1
@@ -83,9 +83,9 @@ graph TB
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
     end
 
-    subgraph SERVER["🖥️ KAMRUI N100 (Home Assistant OS)"]
+    subgraph SERVER["🖥️ KAMRUI N100 – Home Assistant OS"]
         HA["🏠 Home Assistant<br/><small>Automationen · Dashboard · Sensoren</small>"]
-        EMHASS["🧠 EMHASS<br/><small>LP Optimizer · HiGHS Solver (x86)</small>"]
+        EMHASS["🧠 EMHASS<br/><small>LP Optimizer · HiGHS Solver x86</small>"]
         MQTT["MQTT Broker<br/><small>Mosquitto</small>"]
         GRAFANA["📊 Grafana<br/><small>Langzeit-Visualisierung</small>"]
         INFLUX["📈 InfluxDB<br/><small>Langzeit-Speicher</small>"]
