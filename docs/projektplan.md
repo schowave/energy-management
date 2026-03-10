@@ -65,10 +65,10 @@
 - [x] **1komma5° Dynamic Pulse Preis** bereits verfügbar via hacs_1komma5grad (Brutto-Spotpreis inkl. Netzentgelte + MwSt.)
   - `sensor.electricity_price_*` mit Forecast-Attributen
   - Kann als Preissensor für EMHASS-Simulation genutzt werden
-- [x] **ENTSO-e Transparency Platform** — Account erstellt, API-Zugang beantragt (10. März 2026)
-  - [ ] **Warten:** API-Key wird innerhalb von 3 Werktagen freigeschaltet
-  - [ ] Token generieren und Integration einrichten
-  - [ ] Stündliche Börsenpreise als Sensor in HA verfügbar machen
+- [x] **ENTSO-e Transparency Platform** — eingerichtet (HACS, JaccoR v0.7.5)
+  - Bidding Zone: DE-LU, Period: PT60M, MwSt.: 19%, Energieeinheit: kWh
+  - `sensor.current_electricity_market_price` — Brutto-Börsenpreis (EUR/kWh)
+  - Weitere: `sensor.average_electricity_price`, `sensor.lowest/highest_energy_price`, `sensor.next_hour_electricity_market_price`, etc.
 - [ ] **Dynamischer Endpreis-Sensor** (Template-Sensor): Börsenpreis + Netzentgelte + Steuern + Abgaben + Aufschlag
   - Damit EMHASS gegen einen realistischen dynamischen Endpreis optimiert
   - Aufschläge aus Tibber/aWATTar Tarifbedingungen entnehmen
@@ -115,7 +115,7 @@
   - Grid Import/Export, Solar, Batterie, EV, Wärmepumpe (kWh)
 - [x] Dashboard "1komma5" mit Preisverlauf, Forecast-Tabelle (3-Spalten), Solar, Batterie, Netz, Verbrauch
 - [x] Preisberechnung dokumentiert: warum Heartbeat-Preis irreführend niedrig ist (→ ADR-0014)
-- [ ] Heartbeat-Preissensor mit ENTSO-e-Börsenpreis vergleichen (wartet auf API-Key)
+- [ ] Heartbeat-Preissensor mit ENTSO-e-Börsenpreis vergleichen
 
 **Datenquellen (aktuell):**
 - [x] **mkaiser Modbus** — granulare Power-Daten (W) in Echtzeit via gridBox

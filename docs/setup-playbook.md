@@ -257,10 +257,25 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [x] Account erstellen: https://transparency.entsoe.eu/ → Register (E-Mail: schowalter.david@gmail.com)
 - [x] Einstellungen: Country: Germany (DE), Time Zone: CET/CEST
 - [x] API-Zugang beantragt: E-Mail an `transparency@entsoe.eu` mit Betreff "RESTful API access" (10. März 2026)
-- [ ] **Warten:** API-Zugang wird innerhalb von 3 Werktagen freigeschaltet
-- [ ] Token generieren: My Account → Web API Security Token
-- [ ] Einstellungen → Geräte & Dienste → Integration hinzufügen → "ENTSO-e Transparency Platform"
-- [ ] API-Key eingeben, Bidding Zone: DE-LU
+- [x] API-Key erhalten
+- [x] Token generieren: My Account → Web API Security Token → "Generate"
+- [x] HACS → Integrationen → "ENTSO-e" suchen → **v0.7.5 Herunterladen** (bereits im HACS Default Store)
+- [x] Home Assistant neustarten
+- [x] Einstellungen → Geräte & Dienste → Integration hinzufügen → "ENTSO-e Transparency Platform"
+- [x] API-Key eingeben, Bidding Zone: **DE-LU**, Period: PT60M, MwSt.: 0,19, Energieeinheit: kWh, calculation_mode: publish
+- [x] Prüfen: 9 Entitäten erkannt
+
+> **Repo:** https://github.com/JaccoR/hass-entso-e (bereits im HACS Default Store)
+> Liefert stündliche Day-Ahead Börsenpreise (EUR/kWh, Brutto inkl. 19% MwSt.) für die Bidding Zone DE-LU.
+>
+> **Sensoren (9 Entitäten):**
+> - `sensor.current_electricity_market_price` — aktueller Börsenpreis (EUR/kWh, Brutto)
+> - `sensor.average_electricity_price` — Tagesdurchschnitt
+> - `sensor.lowest_energy_price` / `sensor.highest_energy_price` — Tagesextreme
+> - `sensor.next_hour_electricity_market_price` — nächste Stunde
+> - `sensor.time_of_lowest_price` / `sensor.time_of_highest_price` — Zeitpunkte
+> - `sensor.current_percentage_in_electricity_price_range` — Position im Tagesbereich (%)
+> - `sensor.current_percentage_of_highest_electricity_price` — Anteil am Höchstpreis (%)
 
 ### 6.2 Solcast PV-Prognose ✅
 
@@ -405,6 +420,13 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → ENTSO-e (wartet auf API-Key)
 → EMHASS Add-on + Simulation                         ← NÄCHSTER SCHRITT
 ```
+
+## API-Zugang (für Claude / Entwicklung)
+
+- Langlebiger Zugriffstoken in `.ha_token` (gitignored)
+- API-Basis: `https://ha.schowalter.co/api/`
+- Alle Entitäten abrufbar: `curl -H "Authorization: Bearer $(cat .ha_token)" https://ha.schowalter.co/api/states`
+- Entity-Referenz: [ha-entities.md](ha-entities.md) (656 Entitäten, kategorisiert nach Integration)
 
 ## Nützliche URLs
 

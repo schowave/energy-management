@@ -8,15 +8,17 @@ views:
           - type: custom:apexcharts-card
             header:
               show: true
-              title: Preisverlauf heute
+              title: "Preisverlauf: 1komma5° vs. ENTSO-e Börse"
             graph_span: 24h
             span:
               start: day
             apex_config:
               chart:
-                height: 250
+                height: 280
               tooltip:
                 shared: true
+              legend:
+                show: true
             yaxis:
               - id: price
                 min: 0
@@ -28,7 +30,7 @@ views:
                       EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
             series:
               - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-                name: Strompreis
+                name: "1komma5° Real"
                 color: "#4CAF50"
                 stroke_width: 2
                 float_precision: 2
@@ -38,11 +40,12 @@ views:
                   func: avg
                   duration: 5min
               - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-                name: Forecast
-                color: "#2196F3"
-                stroke_width: 2
+                name: "1komma5° Forecast"
+                color: "#4CAF50"
+                stroke_width: 1
                 curve: stepline
                 float_precision: 2
+                opacity: 0.5
                 yaxis_id: price
                 data_generator: |
                   const forecast = entity.attributes.forecast || [];
@@ -50,27 +53,60 @@ views:
                     new Date(f.datetime).getTime(),
                     f.price
                   ]);
+              - entity: sensor.current_electricity_market_price
+                name: "ENTSO-e Börse"
+                color: "#FF9800"
+                stroke_width: 2
+                curve: stepline
+                float_precision: 2
+                extend_to: false
+                yaxis_id: price
+                group_by:
+                  func: avg
+                  duration: 60min
+              - entity: sensor.average_electricity_price
+                name: "ENTSO-e Forecast"
+                color: "#FF9800"
+                stroke_width: 1
+                curve: stepline
+                float_precision: 2
+                opacity: 0.5
+                yaxis_id: price
+                data_generator: |
+                  const today = entity.attributes.prices_today || [];
+                  const tomorrow = entity.attributes.prices_tomorrow || [];
+                  const all = [...today, ...tomorrow];
+                  return all.map(f => [
+                    new Date(f.time).getTime(),
+                    f.price
+                  ]);
           - type: entity
             entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: price_today_min
-            name: Tagesminimum
+            name: "1komma5° aktuell"
+            icon: mdi:lightning-bolt
+          - type: entity
+            entity: sensor.current_electricity_market_price
+            name: "ENTSO-e aktuell"
+            icon: mdi:currency-eur
+          - type: entity
+            entity: sensor.lowest_energy_price
+            name: "ENTSO-e Minimum"
             icon: mdi:arrow-down-bold
-            unit: EUR/kWh
           - type: entity
-            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
-            attribute: price_today_max
-            name: Tagesmaximum
+            entity: sensor.highest_energy_price
+            name: "ENTSO-e Maximum"
             icon: mdi:arrow-up-bold
-            unit: EUR/kWh
           - type: markdown
             content: |
               {% set hour = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour') %}
               {% set price = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') %}
               {% if hour and price %}
-              🕐 Günstigste: **{{ as_timestamp(hour) | timestamp_custom('%H:%M') }} Uhr** — {{ price }} EUR/kWh
+              🕐 Günstigste (1k5): **{{ as_timestamp(hour) | timestamp_custom('%H:%M') }} Uhr** — {{ price }} EUR/kWh
               {% else %}
               🕐 Keine günstigere Stunde mehr heute
               {% endif %}
+              {% set diff = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) - states('sensor.current_electricity_market_price') | float(0) %}
+              💰 Aufschlag 1komma5° vs. Börse: **{{ (diff * 100) | round(1) }} ct/kWh**
       - type: grid
         cards:
           - type: heading
@@ -108,7 +144,7 @@ views:
             series:
               - entity: sensor.total_dc_power
                 name: PV Real
-                color: "#FF6B35"
+                color: '#FF6B35'
                 stroke_width: 2
                 curve: smooth
                 extend_to: false
@@ -118,7 +154,7 @@ views:
                 yaxis_id: power
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Forecast
-                color: "#2196F3"
+                color: '#2196F3'
                 stroke_width: 2
                 curve: smooth
                 yaxis_id: power
@@ -129,7 +165,7 @@ views:
                   ]);
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Optimistisch (90)
-                color: "#2196F3"
+                color: '#2196F3'
                 stroke_width: 0
                 type: area
                 opacity: 0.15
@@ -142,7 +178,7 @@ views:
                   ]);
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Pessimistisch (10)
-                color: "#2196F3"
+                color: '#2196F3'
                 stroke_width: 0
                 type: area
                 opacity: 0.15
@@ -172,7 +208,7 @@ views:
           - type: gauge
             entity: sensor.battery_level
             name: Ladestand
-            unit: "%"
+            unit: '%'
             min: 0
             max: 100
             severity:
@@ -196,14 +232,14 @@ views:
             series:
               - entity: sensor.battery_charging_power
                 name: Laden
-                color: "#4CAF50"
+                color: '#4CAF50'
                 type: column
                 group_by:
                   func: avg
                   duration: 15min
               - entity: sensor.battery_discharging_power
                 name: Entladen
-                color: "#F44336"
+                color: '#F44336'
                 type: column
                 invert: true
                 group_by:
@@ -238,14 +274,14 @@ views:
             series:
               - entity: sensor.import_power
                 name: Bezug
-                color: "#F44336"
+                color: '#F44336'
                 type: column
                 group_by:
                   func: avg
                   duration: 15min
               - entity: sensor.export_power
                 name: Einspeisung
-                color: "#4CAF50"
+                color: '#4CAF50'
                 type: column
                 invert: true
                 group_by:
@@ -266,7 +302,7 @@ views:
           - type: gauge
             entity: sensor.autarkiegrad
             name: Autarkiegrad
-            unit: "%"
+            unit: '%'
             min: 0
             max: 100
             severity:
@@ -276,7 +312,7 @@ views:
           - type: gauge
             entity: sensor.eigenverbrauchsquote
             name: Eigenverbrauch
-            unit: "%"
+            unit: '%'
             min: 0
             max: 100
             severity:
@@ -312,7 +348,7 @@ views:
             series:
               - entity: sensor.load_power
                 name: Hausverbrauch
-                color: "#FF9800"
+                color: '#FF9800'
                 stroke_width: 2
                 curve: smooth
                 type: area
@@ -354,3 +390,24 @@ views:
             entity: sensor.solcast_pv_forecast_leistung_in_1_stunde
             name: In 1 Stunde
             icon: mdi:timer-outline
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.average_electricity_price
+          - type: tile
+            entity: sensor.current_electricity_market_price
+          - type: tile
+            entity: sensor.current_percentage_in_electricity_price_range
+          - type: tile
+            entity: sensor.current_percentage_of_highest_electricity_price
+          - type: tile
+            entity: sensor.highest_energy_price
+          - type: tile
+            entity: sensor.lowest_energy_price
+          - type: tile
+            entity: sensor.next_hour_electricity_market_price
+          - type: tile
+            entity: sensor.time_of_highest_price
+          - type: tile
+            entity: sensor.time_of_lowest_price
+        title: entso-e

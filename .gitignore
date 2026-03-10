@@ -2,3 +2,4 @@
 .idea/
 .shelly-cloud.env
 **/secrets.yaml
+.ha_token

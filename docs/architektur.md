@@ -163,8 +163,8 @@ gantt
     Solcast PV Forecast einrichten          :done, p1b, after p1mod, 2d
     InfluxDB + Grafana + Recorder 365d      :done, p1d, after p1b, 2d
     Dashboards + ApexCharts + Template-Sens.:done, p1e, after p1d, 3d
-    ENTSO-e API-Key (wartet)                :active, p1a, 2026-03-10, 5d
-    EMHASS App Simulationsmodus             :p1f, after p1e, 5d
+    ENTSO-e Transparency Platform            :done, p1a, 2026-03-10, 1d
+    EMHASS App Simulationsmodus             :active, p1f, after p1e, 5d
     Daten sammeln & vergleichen             :p1g, after p1f, 42d
 
     section Phase 2 – Umstieg
