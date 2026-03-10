@@ -36,11 +36,12 @@ views:
           - type: markdown
             content: |
               🕐 Günstigste: **{{ as_timestamp(state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour')) | timestamp_custom('%H:%M') }} Uhr** — {{ state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') }} EUR/kWh
-
-              | Uhrzeit | Preis |
-              |:--------|------:|
-              {% for item in state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') -%}
-              | {{ as_timestamp(item.datetime) | timestamp_custom('%H:%M') }} | {{ '%.2f' | format(item.price) }} ct |
+              {% set forecast = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') %}
+              {% set third = (forecast | length / 3) | round(0, 'ceil') | int %}
+              | Zeit | ct | | Zeit | ct | | Zeit | ct |
+              |:-----|---:|-|:-----|---:|-|:-----|---:|
+              {% for i in range(third) -%}
+              | {{ as_timestamp(forecast[i].datetime) | timestamp_custom('%H:%M') }} | {{ '%.2f' | format(forecast[i].price) }} |{% if i + third < forecast | length %} | {{ as_timestamp(forecast[i + third].datetime) | timestamp_custom('%H:%M') }} | {{ '%.2f' | format(forecast[i + third].price) }} |{% else %} | | |{% endif %}{% if i + 2 * third < forecast | length %} | {{ as_timestamp(forecast[i + 2 * third].datetime) | timestamp_custom('%H:%M') }} | {{ '%.2f' | format(forecast[i + 2 * third].price) }} |{% else %} | | |{% endif %}
               {% endfor %}
       - type: grid
         cards:

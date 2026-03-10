@@ -181,7 +181,7 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
   | Dachfläche | Module | kWp | Azimuth | Tilt | Resource ID |
   |------------|--------|-----|---------|------|-------------|
   | Ost (3× Dach 22° + 6× Gaube 2°) | 9 | 4,005 | 85 | 10 | `73b7-fe86-06ee-e672` |
-  | West (12× Dach 22°) | 12 | 5,340 | 275 | 22 | `8692-23f6-68c0-7a6b` |
+  | West (12× Dach 22°) | 12 | 5,340 | -85 | 22 | `8692-23f6-68c0-7a6b` |
 
   > Dach ist ~5° gegen Uhrzeigersinn gedreht: Ost-Seite zeigt leicht nach Süd-Ost (85°), West-Seite leicht nach Nord-West (275°).
 
