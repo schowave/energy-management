@@ -1,0 +1,50 @@
+# Jalousie-Automationen
+- id: jalousien_abends_schliessen
+  alias: "Jalousien abends schließen"
+  description: >-
+    Schließt alle Jalousien 1 Stunde nach Sonnenuntergang.
+    Ausnahmen: Schlafzimmer DG, Kinderzimmer 1+2, Küche.
+  trigger:
+    - platform: sun
+      event: sunset
+      offset: "+01:00:00"
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id:
+          # DG
+          - cover.dg_bad_jalousie
+          - cover.dg_buero_jalousie
+          - cover.dg_schlafen_jalousie_2
+          # EG
+          - cover.eg_diele_jalousie_1
+          - cover.eg_diele_jalousie_2
+          - cover.eg_essen_jalousie
+          - cover.eg_wc_jalousie
+          - cover.eg_wohnen_jalousie_1
+          - cover.eg_wohnen_jalousie_2
+          # OG
+          - cover.og_ankleide_jalousie_1
+          - cover.og_ankleide_jalousie_2
+          - cover.og_bad_jalousie_1
+          - cover.og_bad_jalousie_2
+          - cover.og_flur_jalousie
+    # Warten bis Wohnzimmer/Esszimmer geschlossen sind
+    - wait_for_trigger:
+        - platform: state
+          entity_id:
+            - cover.eg_wohnen_jalousie_1
+            - cover.eg_wohnen_jalousie_2
+            - cover.eg_essen_jalousie
+          to: "closed"
+      timeout: "00:02:00"
+    # Wohnzimmer + Esszimmer leicht öffnen (Spalt für Frischluft)
+    - service: cover.set_cover_position
+      target:
+        entity_id:
+          - cover.eg_wohnen_jalousie_1
+          - cover.eg_wohnen_jalousie_2
+          - cover.eg_essen_jalousie
+      data:
+        position: 2
+  mode: single
