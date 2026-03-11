@@ -381,6 +381,94 @@ views:
             icon: mdi:transmission-tower-export
             icon_color: green
 
+      # ── Wärmepumpe ─────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Wärmepumpe"
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) | round(0) }} W"
+            secondary: "Novelan LICV 8.2"
+            icon: mdi:heat-pump-outline
+            icon_color: >-
+              {% set p = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) %}
+              {% if p < 100 %}grey{% elif p < 2000 %}blue{% else %}red{% endif %}
+            entity: sensor.kg_technik_waermepumpe_3em_leistung
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: WP-Leistung (3-Phasen)
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.kg_technik_waermepumpe_3em_leistung
+                name: Gesamt
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.kg_technik_waermepumpe_3em_phase_a_leistung
+                name: Phase A
+                color: "#F44336"
+                stroke_width: 1
+                curve: smooth
+                opacity: 0.5
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.kg_technik_waermepumpe_3em_phase_b_leistung
+                name: Phase B
+                color: "#4CAF50"
+                stroke_width: 1
+                curve: smooth
+                opacity: 0.5
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.kg_technik_waermepumpe_3em_phase_c_leistung
+                name: Phase C
+                color: "#FF9800"
+                stroke_width: 1
+                curve: smooth
+                opacity: 0.5
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_waermepumpe_3em_energie
+            name: Energie gesamt
+            icon: mdi:counter
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_waermepumpe_3em_temperatur
+            name: Gerätetemperatur
+            icon: mdi:thermometer
+            icon_color: amber
+
       # ── Verbrauch & Autarkie ──────────────────────────
       - type: grid
         cards:
