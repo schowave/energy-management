@@ -55,115 +55,211 @@
 
 ## myUplink / Novelan Entitäten
 
-105 Entitäten erkannt (Filter: entity_id/friendly_name/attributes enthalten "myuplink", "licv" oder "novelan").
+> **Gerät:** Novelan LICV 8.2R1/3 (Luft-Wasser-Wärmepumpe, Luxtronik 2.x Steuerung)
+> **Integration:** myUplink (offizielle HA-Integration, OAuth2)
+> **Präfix:** `licv_8_2r1_3` in allen Entity-IDs
+>
+> **Abkürzungsverzeichnis (Luxtronik):**
+> | Kürzel | Bedeutung |
+> |--------|-----------|
+> | **HUP** | Heizungsumwälzpumpe — Hauptumwälzpumpe im Heizkreis |
+> | **BUP** | Brauchwasser-Umwälzpumpe — Ladepumpe für den Warmwasserspeicher |
+> | **ZUP** | Zusatzumwälzpumpe — Sekundäre Umwälzpumpe (z.B. für Pufferspeicher) |
+> | **ZIP** | Zirkulationspumpe — Hält warmes Wasser in der Leitung vor (Komfort) |
+> | **VD1** | Verdichter 1 — Kompressor der Wärmepumpe |
+> | **VBO** | Ventilator/Brunnen/Sole-Umwälzpumpe — Bei Luft-WP: Verdampfer-Ventilator |
+> | **MOT** | Mischkreis-Motor — Stellmotor für Mischventil (regelt Vorlauftemperatur MK1) |
+> | **ASD** | Abtau/Soledruck/Durchfluss — Abtauvorgang des Verdampfers bei Vereisung |
+> | **HD** | Hochdruckpressostat — Sicherheitsabschaltung bei zu hohem Kältemitteldruck |
+> | **EVU** | Energieversorgungs-Unternehmen — Sperre/Freigabe durch den Netzbetreiber |
+> | **ZWE** | Zusätzlicher Wärmeerzeuger — Heizstab als Backup bei niedrigen Außentemperaturen |
+> | **SST** | Solarspeicher-Thermostat — Zweiter Zuheizer oder Solareinbindung |
 
-| Entity ID | Friendly Name | State | Unit |
+### Schalter (switch) — Steuerung
+
+| Entity ID | Beschreibung | State |
+|---|---|---|
+| `switch.licv_8_2r1_3_extra_dhw` | **Extra Warmwasser (Extra DHW)** — Zeitgesteuerter WW-Boost: heizt den Speicher für exakt 2 Stunden (`duration_extra_dhw` = 7200s) auf die Temperatur `number.…_desired_value` (aktuell 48°C, einstellbar 30–65°C). Verdichter moduliert normal. Schaltet sich nach Ablauf automatisch ab, auch wenn Zieltemperatur nicht erreicht wurde. Typischer Einsatz: vor dem Duschen aktivieren oder per EMHASS bei PV-Überschuss triggern | on |
+| `switch.licv_8_2r1_3_high_speed_charge` | **Schnellladung (High-Speed Charge)** — Bedarfsgesteuerte WW-Eilladung: Verdichter läuft mit **maximaler Leistung ohne Modulation** bis der normale WW-Sollwert (`targ_value` = 55°C) erreicht ist. Dauer abhängig von der Temperaturdifferenz, typisch 30–60 Min. Schaltet sich bei Erreichen des Sollwerts automatisch ab. Nutzen: schnellstmöglich WW bereitstellen, z.B. nach längerer Abwesenheit. **Achtung:** Zieht maximale Leistung, daher weniger geeignet für PV-Optimierung als Extra DHW | off |
+| `switch.licv_8_2r1_3_heating_blocked` | **Heizung sperren (Heating blocked)** — Sperrt den kompletten Heizkreis. Die WP produziert keine Heizwärme mehr, Umwälzpumpen stoppen. Nutzen für EMHASS: bei sehr teurem Strom oder negativen Preisen die Heizung vorübergehend sperren. **Vorsicht:** Bei Frost kann das Gebäude auskühlen, besser über Offset steuern | off |
+| `switch.licv_8_2r1_3_dhw_blocked` | **Warmwasser sperren (DHW blocked)** — Sperrt die Warmwasserbereitung komplett. Die WP heizt den WW-Speicher nicht nach. Nutzen: WW-Bereitung in teure Stunden verhindern. **Vorsicht:** WW-Temperatur sinkt bei Nutzung ab, Legionellengefahr bei längerer Sperrung unter 55°C | off |
+| `switch.licv_8_2r1_3_cooling_blocked` | **Kühlung sperren (Cooling blocked)** — Sperrt die Kühlfunktion der WP (passive/aktive Kühlung). Relevant im Sommer, wenn die WP über den Heizkreis kühlen kann. Aktuell `cooling_enabled` = 0, daher ohne Funktion | off |
+| `switch.licv_8_2r1_3_pool_blocked` | **Pool sperren (Pool blocked)** — Sperrt die Poolheizung. Nicht genutzt (kein Pool angeschlossen, `pool_enabled` = 0) | off |
+| `switch.licv_8_2r1_3_secondary_return` | **Sekundärer Rücklauf (Secondary return)** — Aktiviert ein Umschaltventil für einen sekundären Rücklauf-Kreislauf. Wird bei Anlagen mit Pufferspeicher oder getrenntem Heiz-/WW-Kreislauf genutzt, um den Rücklauf über einen anderen Pfad zu führen | off |
+
+### Sollwerte (number) — Temperaturen & Offsets
+
+| Entity ID | Beschreibung | Wert | Min | Max | Step |
+|---|---|---|---|---|---|
+| `number.licv_8_2r1_3_desired_value` | **WW-Zieltemperatur Extra DHW** — Solltemperatur, die bei aktiviertem Extra-DHW-Boost angefahren wird. Nur relevant wenn `switch.…_extra_dhw` = on. Höherer Wert = mehr Energie im Speicher, aber auch längere Laufzeit und höherer Verbrauch | 48.0°C | 30.0 | 65.0 | 0.5 |
+| `number.licv_8_2r1_3_targ_value` | **WW-Zieltemperatur Normal** — Standard-Warmwasser-Sollwert im Normalbetrieb. Die WP startet WW-Bereitung wenn die Speichertemperatur unter die Hysterese fällt (ca. 5°C unter Sollwert). Wird auch von High-Speed Charge als Ziel verwendet | 55.0°C | 48.0 | 65.0 | 0.5 |
+| `number.licv_8_2r1_3_sollwert_heizen` | **Sollwert Heizung** — Feste Vorlauf-Solltemperatur für den Hauptheizkreis. Nur aktiv wenn `modus_heizen` = "Setpoint". Ersetzt dann die Heizkurvenberechnung komplett. Nutzen für EMHASS: bei PV-Überschuss auf z.B. 40°C setzen um thermisch vorzuladen | 35.0°C | 15.0 | 75.0 | 0.1 |
+| `number.licv_8_2r1_3_sollwert_mk1_heizen` | **Sollwert Mischkreis 1** — Feste Vorlauf-Solltemperatur für MK1 (z.B. Fußbodenheizung). Nur aktiv wenn `modus_mk1_heizen` = "Setpoint". MK1 hat typisch niedrigere Vorlauftemperaturen als der Hauptheizkreis | 35.0°C | 20.0 | 65.0 | 0.1 |
+| `number.licv_8_2r1_3_sollwert_warmw` | **Sollwert Warmwasser (SG-Ready)** — WW-Solltemperatur wenn `modus_warmw` = "Setpoint". Überschreibt dann `targ_value` für die externe Steuerung. Nutzen: dynamisch zwischen 40°C (Sparmode) und 55°C (PV-Überschuss) wechseln | 40.0°C | 30.0 | 75.0 | 0.1 |
+| `number.licv_8_2r1_3_heating_limit` | **Heizgrenze (Außentemperatur)** — Ab dieser Außentemperatur (Durchschnitt) schaltet die Heizung ab. 20°C bedeutet: bei >20°C Außentemperatur wird nicht mehr geheizt. Sinnvoller Bereich: 15–20°C je nach Gebäudedämmung | 20.0°C | 5.0 | 30.0 | 1.0 |
+| `number.licv_8_2r1_3_offset_heizen` | **Offset Heizung** — Parallelverschiebung der Heizkurve für den Hauptheizkreis in °C. Nur aktiv wenn `modus_heizen` = "Offset". +5 = Vorlauf 5°C wärmer als Heizkurve berechnet (mehr heizen), -5 = 5°C kühler (weniger heizen). **Idealer Hebel für PV-Optimierung:** Heizkurve bleibt erhalten, nur verschoben | 0.0 | -20.0 | +20.0 | 0.1 |
+| `number.licv_8_2r1_3_offset_mk1_heizen` | **Offset Mischkreis 1** — Parallelverschiebung der Heizkurve für MK1. Nur aktiv wenn `modus_mk1_heizen` = "Offset". Kleinerer Bereich als Hauptheizkreis, da Fußbodenheizung träger reagiert | 0.0 | -5.0 | +5.0 | 0.1 |
+| `number.licv_8_2r1_3_offset_overall_heizen` | **Offset Gesamt-Heizung** — Globaler Offset, der auf **alle** Heizkreise gleichzeitig wirkt. Nur aktiv wenn `modus_overall_heizen` = "Offset". Praktisch wenn beide Kreise gleich verschoben werden sollen | 0.0 | -5.0 | +5.0 | 0.1 |
+| `number.licv_8_2r1_3_offset_overall_heizen_2` | **Offset Gesamt-Heizung 2** — Zweiter globaler Offset (Parallel-Parameter, wird von myUplink als Duplikat exponiert). Gleiche Funktion wie `offset_overall_heizen` | 0.0 | -5.0 | +5.0 | 0.1 |
+| `number.licv_8_2r1_3_offset_warmw` | **Offset Warmwasser** — Verschiebung des WW-Sollwerts in °C. Nur aktiv wenn `modus_warmw` = "Offset". +5 = WW wird 5°C wärmer als normal gehalten. Nutzen: bei PV-Überschuss Offset erhöhen, WW als thermischen Speicher nutzen | 0.0 | -20.0 | +20.0 | 0.1 |
+| `number.licv_8_2r1_3_offset_warmw_2` | **Offset Warmwasser 2** — Zweiter WW-Offset (Parallel-Parameter, Duplikat von myUplink) | 0.0 | -20.0 | +20.0 | 0.1 |
+| `number.licv_8_2r1_3_temperature` | **Temperatur +/- (Raumeinfluss)** — Globale Parallelverschiebung der Heizkurve, wirkt direkt auf den Luxtronik-Regler. Unabhängig von SG-Ready-Modus, immer aktiv. Wird typisch über das WP-Display eingestellt, kann aber auch remote geändert werden | 0.0 | -5.0 | +5.0 | 0.5 |
+
+### Betriebsmodi (select) — Modi & Steuerungsart
+
+#### Hauptbetriebsarten
+
+> Steuern den Grundbetrieb der einzelnen Kreise. Im Normalbetrieb auf "Automatic" lassen.
+
+| Entity ID | Beschreibung | Wert | Optionen |
 |---|---|---|---|
-| `binary_sensor.licv_8_2r1_3_alarm` | LICV 8.2R1/3 Alarm | off |  |
-| `binary_sensor.licv_8_2r1_3_asd` | LICV 8.2R1/3 ASD | off |  |
-| `binary_sensor.licv_8_2r1_3_bup_dhw_pump` | LICV 8.2R1/3 BUP - DHW pump | off |  |
-| `binary_sensor.licv_8_2r1_3_el_heater` | LICV 8.2R1/3 el. heater | off |  |
-| `binary_sensor.licv_8_2r1_3_evu` | LICV 8.2R1/3 EVU | on |  |
-| `binary_sensor.licv_8_2r1_3_evu_2` | LICV 8.2R1/3 EVU 2 | off |  |
-| `binary_sensor.licv_8_2r1_3_hd` | LICV 8.2R1/3 HD | off |  |
-| `binary_sensor.licv_8_2r1_3_hup` | LICV 8.2R1/3 HUP | off |  |
-| `binary_sensor.licv_8_2r1_3_konnektivitat` | LICV 8.2R1/3 Konnektivität | on |  |
-| `binary_sensor.licv_8_2r1_3_mot` | LICV 8.2R1/3 MOT | on |  |
-| `binary_sensor.licv_8_2r1_3_vbo` | LICV 8.2R1/3 VBO | off |  |
-| `binary_sensor.licv_8_2r1_3_vd1` | LICV 8.2R1/3 VD1 | off |  |
-| `binary_sensor.licv_8_2r1_3_zip` | LICV 8.2R1/3 ZIP | off |  |
-| `binary_sensor.licv_8_2r1_3_zup` | LICV 8.2R1/3 ZUP | off |  |
-| `binary_sensor.licv_8_2r1_3_zwe_1` | LICV 8.2R1/3 ZWE 1 | off |  |
-| `binary_sensor.licv_8_2r1_3_zwe_2_sst` | LICV 8.2R1/3 ZWE 2 - SST | off |  |
-| `number.licv_8_2r1_3_desired_value` | LICV 8.2R1/3 desired value | 48.0 |  |
-| `number.licv_8_2r1_3_heating_limit` | LICV 8.2R1/3 heating limit | 20.0 |  |
-| `number.licv_8_2r1_3_offset_heizen` | LICV 8.2R1/3 Offset Heizen | 0.0 |  |
-| `number.licv_8_2r1_3_offset_mk1_heizen` | LICV 8.2R1/3 Offset MK1 Heizen | 0.0 |  |
-| `number.licv_8_2r1_3_offset_overall_heizen` | LICV 8.2R1/3 Offset Overall Heizen | 0.0 |  |
-| `number.licv_8_2r1_3_offset_overall_heizen_2` | LICV 8.2R1/3 Offset Overall Heizen | 0.0 |  |
-| `number.licv_8_2r1_3_offset_warmw` | LICV 8.2R1/3 Offset Warmw. | 0.0 |  |
-| `number.licv_8_2r1_3_offset_warmw_2` | LICV 8.2R1/3 Offset Warmw. | 0.0 |  |
-| `number.licv_8_2r1_3_sollwert_heizen` | LICV 8.2R1/3 Sollwert Heizen | 35.0 |  |
-| `number.licv_8_2r1_3_sollwert_mk1_heizen` | LICV 8.2R1/3 Sollwert MK1 Heizen | 35.0 |  |
-| `number.licv_8_2r1_3_sollwert_warmw` | LICV 8.2R1/3 Sollwert Warmw. | 40.0 |  |
-| `number.licv_8_2r1_3_targ_value` | LICV 8.2R1/3 targ.value | 55.0 |  |
-| `number.licv_8_2r1_3_temperature` | LICV 8.2R1/3 temperature + - | 0.0 |  |
-| `select.licv_8_2r1_3_lpc_mode` | LICV 8.2R1/3 LPC mode | No limit |  |
-| `select.licv_8_2r1_3_mode_of_operation` | LICV 8.2R1/3 mode of operation | Automatic |  |
-| `select.licv_8_2r1_3_mode_of_operation_2` | LICV 8.2R1/3 mode of operation | Automatic |  |
-| `select.licv_8_2r1_3_mode_of_operation_3` | LICV 8.2R1/3 mode of operation | Heat |  |
-| `select.licv_8_2r1_3_mode_of_operation_4` | LICV 8.2R1/3 mode of operation | Heat |  |
-| `select.licv_8_2r1_3_mode_of_operation_5` | LICV 8.2R1/3 mode of operation | Off |  |
-| `select.licv_8_2r1_3_modus_heizen` | LICV 8.2R1/3 Modus Heizen | Off |  |
-| `select.licv_8_2r1_3_modus_mk1_heizen` | LICV 8.2R1/3 Modus MK1 Heizen | Off |  |
-| `select.licv_8_2r1_3_modus_overall_heizen` | LICV 8.2R1/3 Modus Overall Heizen | Individual |  |
-| `select.licv_8_2r1_3_modus_warmw` | LICV 8.2R1/3 Modus Warmw. | Off |  |
-| `select.licv_8_2r1_3_power_control_mode` | LICV 8.2R1/3 Power control mode | Individually |  |
-| `select.licv_8_2r1_3_smart_mode` | LICV 8.2R1/3 Smart mode | Default |  |
-| `sensor.licv_8_2r1_3_ao_1` | LICV 8.2R1/3 AO 1 | 10.0 | V |
-| `sensor.licv_8_2r1_3_ao_2` | LICV 8.2R1/3 AO 2 | 10.0 | V |
-| `sensor.licv_8_2r1_3_cooling_enabled` | LICV 8.2R1/3 Cooling enabled | 0.0 |  |
-| `sensor.licv_8_2r1_3_coverage_hp` | LICV 8.2R1/3 coverage HP | 38.5 | °C |
-| `sensor.licv_8_2r1_3_dhw` | LICV 8.2R1/3 DHW | 38.4 | °C |
-| `sensor.licv_8_2r1_3_dhw_2` | LICV 8.2R1/3 DHW | 38.4 | °C |
-| `sensor.licv_8_2r1_3_dhw_demand_border` | LICV 8.2R1/3 DHW Demand border | 365.0 |  |
-| `sensor.licv_8_2r1_3_dhw_target` | LICV 8.2R1/3 DHW target | 38.5 | °C |
-| `sensor.licv_8_2r1_3_dhw_temp_max` | LICV 8.2R1/3 DHW temp. max. | 65.0 | °C |
-| `sensor.licv_8_2r1_3_domestic_hot_water` | LICV 8.2R1/3 domestic hot water | 513.7 | kWh |
-| `sensor.licv_8_2r1_3_domestic_hot_water_2` | LICV 8.2R1/3 domestic hot water | 1547.8 | kWh |
-| `sensor.licv_8_2r1_3_duration_extra_dhw` | LICV 8.2R1/3 duration extra DHW | 7200.0 |  |
-| `sensor.licv_8_2r1_3_error` | LICV 8.2R1/3 error | 51.0 |  |
-| `sensor.licv_8_2r1_3_error_number` | LICV 8.2R1/3 error number | 0.0 |  |
-| `sensor.licv_8_2r1_3_flow` | LICV 8.2R1/3 flow | 26.2 | °C |
-| `sensor.licv_8_2r1_3_flow_rate` | LICV 8.2R1/3 flow rate | 0.0 | l/h |
-| `sensor.licv_8_2r1_3_hd` | LICV 8.2R1/3 HD | 11.34 | bar |
-| `sensor.licv_8_2r1_3_heat_generator_status` | LICV 8.2R1/3 Heat generator status | 0.0 |  |
-| `sensor.licv_8_2r1_3_heat_source_inlet` | LICV 8.2R1/3 heat source inlet | 15.2 | °C |
-| `sensor.licv_8_2r1_3_heating` | LICV 8.2R1/3 heating | 7069.9 | kWh |
-| `sensor.licv_8_2r1_3_heating_2` | LICV 8.2R1/3 heating | 18066.7 | kWh |
-| `sensor.licv_8_2r1_3_heating_capacity` | LICV 8.2R1/3 Heating capacity | 0.0 | kW |
-| `sensor.licv_8_2r1_3_heating_demand_border` | LICV 8.2R1/3 Heating demand border | 235.0 |  |
-| `sensor.licv_8_2r1_3_impulse_vd1` | LICV 8.2R1/3 impulse VD1 | 1111.0 |  |
-| `sensor.licv_8_2r1_3_integration` | LICV 8.2R1/3 integration | 1.0 |  |
-| `sensor.licv_8_2r1_3_level_heizen` | LICV 8.2R1/3 Level Heizen | 0.0 |  |
-| `sensor.licv_8_2r1_3_level_mk1_heizen` | LICV 8.2R1/3 Level MK1 Heizen | 0.0 |  |
-| `sensor.licv_8_2r1_3_level_overall_heizen` | LICV 8.2R1/3 Level Overall Heizen | 0.0 |  |
-| `sensor.licv_8_2r1_3_level_warmw` | LICV 8.2R1/3 Level Warmw. | 0.0 |  |
-| `sensor.licv_8_2r1_3_max_flow_temp` | LICV 8.2R1/3 max. flow temp. | 60.0 | °C |
-| `sensor.licv_8_2r1_3_maximaler_vorlauf_mk_1` | LICV 8.2R1/3 Maximaler Vorlauf MK 1 | 45.0 | °C |
-| `sensor.licv_8_2r1_3_min_return_targ_temp` | LICV 8.2R1/3 min return targ.temp | 15.0 | °C |
-| `sensor.licv_8_2r1_3_minimaler_vorlauf_mk_1` | LICV 8.2R1/3 Minimaler Vorlauf MK 1 | 20.0 | °C |
-| `sensor.licv_8_2r1_3_mix_circ1_flow` | LICV 8.2R1/3 mix circ1 flow | 75.0 | °C |
-| `sensor.licv_8_2r1_3_mix_circ1_target` | LICV 8.2R1/3 mix circ1 target | 25.6 | °C |
-| `sensor.licv_8_2r1_3_nd` | LICV 8.2R1/3 ND | 11.35 | bar |
-| `sensor.licv_8_2r1_3_operat_hours_heat` | LICV 8.2R1/3 operat. hours heat. | 3028.0 | h |
-| `sensor.licv_8_2r1_3_operating_hours_dhw` | LICV 8.2R1/3 operating hours DHW | 306.0 | h |
-| `sensor.licv_8_2r1_3_operating_hours_hp` | LICV 8.2R1/3 operating hours HP | 3336.0 | h |
-| `sensor.licv_8_2r1_3_operating_hours_vd1` | LICV 8.2R1/3 operating hours VD1 | 3336.0 | h |
-| `sensor.licv_8_2r1_3_operating_hours_zwe1` | LICV 8.2R1/3 operating hours ZWE1 | 696.0 | h |
-| `sensor.licv_8_2r1_3_operation_mode` | LICV 8.2R1/3 operation mode | 5.0 |  |
-| `sensor.licv_8_2r1_3_outdoor_temp` | LICV 8.2R1/3 outdoor temp. | 14.9 | °C |
-| `sensor.licv_8_2r1_3_outdoor_temp_o` | LICV 8.2R1/3 outdoor temp. ø | 11.7 | °C |
-| `sensor.licv_8_2r1_3_pc_limit` | LICV 8.2R1/3 PC limit | 30.0 | kW |
-| `sensor.licv_8_2r1_3_pool_enabled` | LICV 8.2R1/3 Pool enabled | 0.0 |  |
-| `sensor.licv_8_2r1_3_power_consumption` | LICV 8.2R1/3 Power Consumption | 0.0 | kW |
-| `sensor.licv_8_2r1_3_power_consumption_min` | LICV 8.2R1/3 Power consumption min | 6.0 |  |
-| `sensor.licv_8_2r1_3_return` | LICV 8.2R1/3 return | 26.2 | °C |
-| `sensor.licv_8_2r1_3_return_target` | LICV 8.2R1/3 return target | 25.6 | °C |
-| `sensor.licv_8_2r1_3_return_temp_limit` | LICV 8.2R1/3 return temp. limit. | 50.0 | °C |
-| `sensor.licv_8_2r1_3_status_dhw` | LICV 8.2R1/3 Status DHW | 1.0 |  |
-| `sensor.licv_8_2r1_3_status_heating` | LICV 8.2R1/3 Status Heating | 1.0 |  |
-| `sensor.licv_8_2r1_3_total` | LICV 8.2R1/3 total | 7583.6 | kWh |
-| `sensor.licv_8_2r1_3_total_heat_quant_hs` | LICV 8.2R1/3 total heat quant. HS | 19614.5 | kWh |
-| `sensor.licv_8_2r1_3_tvl_calc_max` | LICV 8.2R1/3 TVL calc max | 28.8 | °C |
-| `switch.licv_8_2r1_3_cooling_blocked` | LICV 8.2R1/3 Cooling blocked | off |  |
-| `switch.licv_8_2r1_3_dhw_blocked` | LICV 8.2R1/3 DHW blocked | off |  |
-| `switch.licv_8_2r1_3_extra_dhw` | LICV 8.2R1/3 Extra DHW | off |  |
-| `switch.licv_8_2r1_3_heating_blocked` | LICV 8.2R1/3 Heating blocked | off |  |
-| `switch.licv_8_2r1_3_high_speed_charge` | LICV 8.2R1/3 high-speed charge | off |  |
-| `switch.licv_8_2r1_3_pool_blocked` | LICV 8.2R1/3 Pool blocked | off |  |
-| `switch.licv_8_2r1_3_secondary_return` | LICV 8.2R1/3 secondary return | off |  |
-| `update.licv_8_2r1_3_firmware` | LICV 8.2R1/3 Firmware | off |  |
+| `select.licv_8_2r1_3_mode_of_operation` | **Betriebsart Heizung** — Hauptbetriebsmodus des Heizkreises. **Automatic:** WP heizt nach Heizkurve und Außentemperatur. **Party:** Heizt für einige Stunden auf erhöhtem Niveau (z.B. bei Besuch), kehrt danach zu Automatic zurück. **Holiday:** Reduzierter Betrieb auf Frostschutz-Niveau für Abwesenheit. **Add. heat gen.:** Nur Heizstab (ZWE) aktiv, Verdichter aus — für Notbetrieb/Service. **Off:** Heizung komplett aus | Automatic | Automatic, Party, Holiday, Add. heat gen., Off |
+| `select.licv_8_2r1_3_mode_of_operation_2` | **Betriebsart Warmwasser** — Hauptbetriebsmodus der WW-Bereitung. Gleiche Optionen wie Heizung. **Automatic:** WW-Bereitung nach Sollwert und Hysterese. **Party:** Erhöhte WW-Temperatur für einige Stunden. **Add. heat gen.:** Nur Heizstab für WW. **Off:** Keine WW-Bereitung | Automatic | Automatic, Party, Holiday, Add. heat gen., Off |
+| `select.licv_8_2r1_3_mode_of_operation_3` | **Betriebsart Mischkreis 1** — Modus für MK1 (z.B. Fußbodenheizung). **Off:** MK1 deaktiviert. **On:** MK1 läuft dauerhaft (Umwälzpumpe an). **Heat:** MK1 heizt nach Heizkurve/Sollwert (Normalmodus) | Heat | Off, On, Heat |
+| `select.licv_8_2r1_3_mode_of_operation_4` | **Betriebsart Kühlung** — Kühlmodus der WP. **Off:** Keine Kühlung. **On:** Kühlung dauerhaft aktiv. **Heat:** Nur Heizen (Standardeinstellung, Kühlung deaktiviert). Kühlung nutzt den Heizkreis invers — Kältemittelkreis wird umgekehrt, Fußbodenheizung wird zur Flächenkühlung | Heat | Off, On, Heat |
+| `select.licv_8_2r1_3_mode_of_operation_5` | **Betriebsart Pool** — Poolheizung (nicht angeschlossen). **Off:** Deaktiviert | Off | Off, On, Heat |
+
+#### SG-Ready / Smart-Grid-Steuerung
+
+> Diese Parameter steuern, **wie** die WP auf externe Signale reagiert (z.B. von EMHASS oder einem Energiemanagement-System).
+> Das SG-Ready-Protokoll definiert 4 Stufen: **Blocked** (EVU-Sperre, Netz überlastet) → **Normal** (Standardbetrieb) → **Encouraged** (PV-Überschuss/günstiger Strom, mehr heizen empfohlen) → **Ordered** (Zwangseinschaltung, maximale Leistung, inkl. Heizstab).
+
+| Entity ID | Beschreibung | Wert | Optionen |
+|---|---|---|---|
+| `select.licv_8_2r1_3_power_control_mode` | **SG-Ready Leistungsvorgabe** — Zentrale SG-Ready-Stufe, entspricht den 4 Kontaktstufen am EVU-Eingang. **Individually:** Kein globaler SG-Ready-Modus, jeder Kreis wird über die einzelnen Modus-Selektoren gesteuert. **Blocked:** EVU-Sperre — WP wird abgeschaltet (nur Frostschutz bleibt aktiv). Netzbetreiber kann dies bei Netzüberlastung erzwingen (bis zu 2h/Tag). **Normal:** Normalbetrieb nach Heizkurve, keine externe Beeinflussung. **Encouraged:** WP erhöht Sollwerte und nutzt thermische Speicher (Gebäude + WW) aktiv — ideal bei PV-Überschuss oder günstigem Börsenstrom. **Ordered:** Zwangseinschaltung mit maximaler Leistung, **Heizstab wird zugeschaltet** — nur bei massivem Überschuss oder negativen Strompreisen sinnvoll | Individually | Individually, Blocked, Normal, Encouraged, Ordered |
+| `select.licv_8_2r1_3_modus_overall_heizen` | **SG-Ready Gesamt-Heizung** — Bestimmt ob alle Heizkreise global oder individuell extern gesteuert werden. **Individual:** Jeder Heizkreis (`modus_heizen`, `modus_mk1_heizen`) hat eigene SG-Ready-Einstellungen. **Offset:** Alle Heizkreise nutzen den `offset_overall_heizen`-Wert als globale Heizkurvenverschiebung. **Level:** Alle Heizkreise nutzen eine gemeinsame Leistungsstufe | Individual | Individual, Offset, Level |
+| `select.licv_8_2r1_3_modus_heizen` | **SG-Ready Heizkreis** — Bestimmt die Art der externen Steuerung für den Hauptheizkreis. **Off:** Keine externe Beeinflussung, WP heizt nach eigener Heizkurve. **Setpoint:** `sollwert_heizen` wird direkt als Vorlauftemperatur verwendet (Heizkurve ignoriert). **Offset:** `offset_heizen` verschiebt die Heizkurve parallel nach oben/unten (Heizkurve bleibt erhalten, **empfohlen für EMHASS**). **Level:** Leistungsstufe wird extern vorgegeben | Off | Off, Setpoint, Offset, Level |
+| `select.licv_8_2r1_3_modus_mk1_heizen` | **SG-Ready Mischkreis 1** — Wie `modus_heizen`, aber für MK1. Nutzt `sollwert_mk1_heizen` (Setpoint), `offset_mk1_heizen` (Offset) oder `level_mk1_heizen` (Level) als Eingangswert | Off | Off, Setpoint, Offset, Level |
+| `select.licv_8_2r1_3_modus_warmw` | **SG-Ready Warmwasser** — Externe Steuerungsart für WW-Bereitung. **Off:** WW nach internem Sollwert. **Setpoint:** `sollwert_warmw` als fester WW-Sollwert. **Offset:** `offset_warmw` verschiebt den WW-Sollwert (z.B. +5°C bei PV-Überschuss → WW als thermischer Speicher). **Level:** Leistungsstufe für WW-Bereitung | Off | Off, Setpoint, Offset, Level |
+| `select.licv_8_2r1_3_smart_mode` | **Smart-Modus (Komfortprofil)** — Globales Komfortprofil, beeinflusst alle Sollwerte gleichzeitig. **Default:** Normalbetrieb, alle Sollwerte wie eingestellt. **Away:** Abwesenheitsmodus — Raumtemperatur-Sollwert abgesenkt (z.B. -3°C), WW-Temperatur reduziert. Sinnvoll für Arbeitstage. **Vacation:** Urlaubsmodus — Minimalbetrieb auf Frostschutz-Niveau, WW stark reduziert. Für mehrtägige Abwesenheit | Default | Default, Away, Vacation |
+| `select.licv_8_2r1_3_lpc_mode` | **Leistungsbegrenzung (LPC = Leistungs-Power-Control)** — Begrenzt die maximale elektrische Aufnahme der WP auf den Wert in `pc_limit` (aktuell 30 kW). **No limit:** Keine Begrenzung, WP nutzt volle Leistung. **Soft limit:** WP drosselt sanft auf den Grenzwert, Verdichter moduliert herunter. **Hard limit:** WP schaltet sofort ab wenn Grenzwert überschritten wird. Nutzen: bei begrenztem PV-Überschuss die WP-Leistung deckeln | No limit | No limit, Soft limit, Hard limit |
+
+### Temperatursensoren
+
+| Entity ID | Beschreibung | Wert | Unit |
+|---|---|---|---|
+| `sensor.licv_8_2r1_3_outdoor_temp` | **Außentemperatur** — Aktueller Messwert am Außentemperaturfühler der WP. Wird für die Heizkurvenberechnung verwendet. Kann von HA-Wetterdaten abweichen (Einbauort, Sonneneinstrahlung) | 14.6 | °C |
+| `sensor.licv_8_2r1_3_outdoor_temp_o` | **Außentemperatur Durchschnitt (ø)** — Gedämpfter 24h-Mittelwert der Außentemperatur. Die Heizkurve nutzt diesen geglätteten Wert, damit kurzfristige Temperaturspitzen nicht zu ständigem Ein-/Ausschalten führen. Auch relevant für die Heizgrenze | 11.5 | °C |
+| `sensor.licv_8_2r1_3_flow` | **Vorlauftemperatur (TVL)** — Temperatur des Heizwassers, das die WP Richtung Heizkreis verlässt. Bei aktivem Heizbetrieb typisch 25–55°C je nach Heizkurve und Außentemperatur. Differenz zu Rücklauf = Spreizung (Indikator für Wärmeübertragung) | 58.8 | °C |
+| `sensor.licv_8_2r1_3_return` | **Rücklauftemperatur (TRL)** — Temperatur des Heizwassers, das von den Heizkörpern/Fußbodenheizung zurückkommt. Niedrigere Rücklauftemperatur = bessere Wärmeabgabe im Gebäude = höherer COP | 56.3 | °C |
+| `sensor.licv_8_2r1_3_return_target` | **Rücklauf-Solltemperatur** — Von der Heizkurve berechneter Zielwert für den Rücklauf. Der Luxtronik-Regler nutzt den Rücklauf (nicht Vorlauf) als Regelgröße | 25.7 | °C |
+| `sensor.licv_8_2r1_3_dhw` | **Warmwassertemperatur (WW)** — Aktuelle Temperatur im Warmwasserspeicher (oberer Fühler). Wenn diese unter den Sollwert minus Hysterese fällt, startet die WW-Bereitung | 44.7 | °C |
+| `sensor.licv_8_2r1_3_dhw_2` | **Warmwassertemperatur 2** — Zweiter WW-Fühler, bei myUplink als Duplikat exponiert (identischer Wert). Manche Speicher haben zwei Fühler (oben/unten) | 44.7 | °C |
+| `sensor.licv_8_2r1_3_dhw_target` | **WW-Solltemperatur (aktiv)** — Der aktuell aktive WW-Sollwert, den die WP als Ziel verwendet. Kann von `targ_value` abweichen wenn SG-Ready oder Komfortprofil aktiv | 55.0 | °C |
+| `sensor.licv_8_2r1_3_dhw_temp_max` | **WW-Maximaltemperatur** — Absoluter oberer Grenzwert für den WW-Speicher. Sicherheitsabschaltung: WW-Bereitung stoppt bei diesem Wert. Auch für Verbrühschutz relevant | 65.0 | °C |
+| `sensor.licv_8_2r1_3_heat_source_inlet` | **Wärmequelleneintritt** — Temperatur der Außenluft am Verdampfer-Eingang. Bei Luft-WP = Luftansaugtemperatur. Kann durch Windchill oder Sonneneinstrahlung von `outdoor_temp` abweichen. Direkter Einfluss auf den COP | 14.3 | °C |
+| `sensor.licv_8_2r1_3_coverage_hp` | **Deckungsgrad WP (Bivalenzpunkt)** — Vorlauftemperatur, bis zu der die WP allein (ohne Heizstab) den Wärmebedarf decken kann. Darüber muss der Heizstab (ZWE1) zugeschaltet werden. Hängt von Außentemperatur und Heizlast ab | 37.5 | °C |
+| `sensor.licv_8_2r1_3_mix_circ1_flow` | **Vorlauf Mischkreis 1 (Ist)** — Aktuelle Vorlauftemperatur im MK1 nach dem Mischventil. Der Mischkreis-Motor (MOT) regelt das Mischventil, um diese Temperatur auf den Sollwert zu bringen | 75.0 | °C |
+| `sensor.licv_8_2r1_3_mix_circ1_target` | **Sollwert Mischkreis 1** — Von der Heizkurve berechnete Ziel-Vorlauftemperatur für MK1. Der MOT-Stellmotor steuert das Mischventil um diesen Wert zu erreichen | 25.7 | °C |
+| `sensor.licv_8_2r1_3_max_flow_temp` | **Max. Vorlauftemperatur** — Obere Grenze für den Vorlauf des Hauptheizkreises. Sicherheitsparameter, WP schaltet ab wenn dieser Wert überschritten wird | 60.0 | °C |
+| `sensor.licv_8_2r1_3_maximaler_vorlauf_mk_1` | **Max. Vorlauf MK1** — Obere Grenze für den Vorlauf des Mischkreises 1. Bei Fußbodenheizung typisch 45°C um Estrich-/Bodenbelagschäden zu vermeiden | 45.0 | °C |
+| `sensor.licv_8_2r1_3_minimaler_vorlauf_mk_1` | **Min. Vorlauf MK1** — Untere Grenze für den Vorlauf des Mischkreises 1. Verhindert Taupunktunterschreitung bei Kühlung | 20.0 | °C |
+| `sensor.licv_8_2r1_3_min_return_targ_temp` | **Min. Rücklauf-Solltemperatur** — Untere Grenze für den Rücklauf-Sollwert. Schützt vor zu niedrigem Rücklauf (Frostschutz, Kondensatbildung) | 15.0 | °C |
+| `sensor.licv_8_2r1_3_return_temp_limit` | **Rücklauftemperatur-Grenze** — Maximaler Rücklauf. Sicherheitsabschaltung wenn Rücklauf diesen Wert überschreitet (z.B. bei Mischventil-Fehler) | 50.0 | °C |
+| `sensor.licv_8_2r1_3_tvl_calc_max` | **Berechneter max. Vorlauf (TVL calc)** — Von der Heizkurve berechnete maximale Vorlauftemperatur für die aktuelle Außentemperatur. Zeigt, was die Heizkurve bei der aktuellen Witterung als Maximum vorgibt | 28.9 | °C |
+
+### Leistung & Verbrauch
+
+| Entity ID | Beschreibung | Wert | Unit |
+|---|---|---|---|
+| `sensor.licv_8_2r1_3_heating_capacity` | **Heizleistung (thermisch)** — Aktuelle thermische Leistungsabgabe der WP in kW. Berechnet aus Volumenstrom × Spreizung (Vorlauf - Rücklauf) × spezifische Wärmekapazität. Zusammen mit `power_consumption` ergibt sich der COP: `heating_capacity / power_consumption`. Für genauere COP-Berechnung den Shelly 3EM statt `power_consumption` nutzen | 0.0 | kW |
+| `sensor.licv_8_2r1_3_power_consumption` | **Stromaufnahme (elektrisch)** — Elektrische Leistungsaufnahme der WP laut internem Sensor. **Weniger genau als Shelly 3EM** am WP-Anschluss, da myUplink nur periodisch aktualisiert (ca. alle 5 Min.). Für COP-Trending OK, für exakte Verbrauchsmessung besser Shelly nutzen | 0.0 | kW |
+| `sensor.licv_8_2r1_3_power_consumption_min` | **Min. Leistungsaufnahme** — Unterste Modulationsstufe des Verdichters (Hersteller-Parameter). Wert ist ein interner Index, kein kW-Wert | 9.0 | — |
+| `sensor.licv_8_2r1_3_pc_limit` | **Leistungsbegrenzung (PC limit)** — Eingestellte maximale elektrische Leistungsaufnahme. Wird von `lpc_mode` genutzt. 30 kW = effektiv keine Begrenzung bei einer 8 kW WP | 30.0 | kW |
+| `sensor.licv_8_2r1_3_flow_rate` | **Volumenstrom** — Durchflussmenge im Heizkreis. 0 l/h = Umwälzpumpe steht, WP im Standby. Normaler Betrieb: 800–2000 l/h je nach Heizbedarf. Zu niedriger Durchfluss führt zu hoher Spreizung und Sicherheitsabschaltung | 0.0 | l/h |
+
+### Kältekreis (Diagnose)
+
+| Entity ID | Beschreibung | Wert | Unit |
+|---|---|---|---|
+| `sensor.licv_8_2r1_3_hd` | **Hochdruck (HD)** — Druck auf der Hochdruckseite des Kältemittelkreises (nach Verdichter, vor Kondensator). Normalbereich: 15–30 bar je nach Betriebspunkt. Bei zu hohem Druck (>38 bar) löst der Hochdruckpressostat (HD) aus und schaltet den Verdichter ab. Zu hoher HD deutet auf Durchflussproblem oder Überladung hin | 10.54 | bar |
+| `sensor.licv_8_2r1_3_nd` | **Niederdruck (ND)** — Druck auf der Niederdruckseite des Kältemittelkreises (nach Verdampfer, vor Verdichter). Normalbereich: 3–8 bar. Zu niedriger ND deutet auf Kältemittelmangel, vereisten Verdampfer oder zu wenig Wärmequelle hin | 10.34 | bar |
+| `sensor.licv_8_2r1_3_ao_1` | **Analogausgang 1 (AO1)** — Steuerspannung 0–10V für den **Verdichter** (Inverter-Drehzahl). 10V = maximale Drehzahl/Leistung, 0V = aus. Zeigt indirekt die aktuelle Modulation: 5V ≈ 50% Leistung, 10V = 100% | 10.0 | V |
+| `sensor.licv_8_2r1_3_ao_2` | **Analogausgang 2 (AO2)** — Steuerspannung 0–10V für den **Verdampfer-Ventilator**. Regelt die Luftmenge über den Verdampfer. Höhere Spannung = mehr Luft = mehr Wärmequelle. Im Standby 0V | 10.0 | V |
+
+### Energiezähler (kumulativ, state_class: total_increasing)
+
+> Alle Werte sind **thermische** Energie (Wärmeabgabe), nicht elektrischer Verbrauch.
+> Die "_2"-Varianten beinhalten zusätzlich die Energie des Heizstabs (ZWE1, 696h Betrieb).
+
+| Entity ID | Beschreibung | Wert | Unit |
+|---|---|---|---|
+| `sensor.licv_8_2r1_3_heating` | **Thermische Energie Heizung (nur WP)** — Kumulierte Wärmeenergie für Heizung, ausschließlich durch den Verdichter erzeugt. Für COP-Langzeitberechnung: `heating / (elektrischer Verbrauch Heizung)` | 7069.9 | kWh |
+| `sensor.licv_8_2r1_3_heating_2` | **Thermische Energie Heizung (WP + Heizstab)** — Kumulierte Heizenergie inkl. Heizstab. Differenz `heating_2 - heating` = Heizstab-Anteil (hier: ~11.000 kWh = 61% Heizstab!) | 18066.7 | kWh |
+| `sensor.licv_8_2r1_3_domestic_hot_water` | **Thermische Energie WW (nur WP)** — Kumulierte Wärmeenergie für Warmwasser, nur Verdichter | 515.5 | kWh |
+| `sensor.licv_8_2r1_3_domestic_hot_water_2` | **Thermische Energie WW (WP + Heizstab)** — Kumulierte WW-Energie inkl. Heizstab. Differenz zeigt Heizstab-Anteil bei WW-Bereitung | 1554.6 | kWh |
+| `sensor.licv_8_2r1_3_total` | **Thermische Energie Gesamt (nur WP)** — Summe `heating + domestic_hot_water`. Gesamte durch den Verdichter erzeugte Wärme | 7585.4 | kWh |
+| `sensor.licv_8_2r1_3_total_heat_quant_hs` | **Thermische Energie Gesamt (WP + Heizstab)** — Summe `heating_2 + domestic_hot_water_2`. Gesamte erzeugte Wärme inkl. aller Zuheizer | 19621.3 | kWh |
+
+### Betriebsstunden
+
+| Entity ID | Beschreibung | Wert | Unit |
+|---|---|---|---|
+| `sensor.licv_8_2r1_3_operat_hours_heat` | **Betriebsstunden Heizung** — Gesamtlaufzeit des Verdichters im Heizbetrieb. Zusammen mit `operating_hours_dhw` ergibt sich die Verteilung Heizen vs. WW | 3028.0 | h |
+| `sensor.licv_8_2r1_3_operating_hours_dhw` | **Betriebsstunden WW** — Gesamtlaufzeit des Verdichters im WW-Betrieb | 307.0 | h |
+| `sensor.licv_8_2r1_3_operating_hours_hp` | **Betriebsstunden WP gesamt** — Gesamtlaufzeit der Wärmepumpe (Heizung + WW). Sollte ≈ `operat_hours_heat + operating_hours_dhw` sein | 3337.0 | h |
+| `sensor.licv_8_2r1_3_operating_hours_vd1` | **Betriebsstunden Verdichter 1 (VD1)** — Laufzeit des Kompressors. Bei Single-Verdichter identisch mit `operating_hours_hp`. Wichtig für Wartungsintervalle (Hersteller empfiehlt Service alle ~10.000h) | 3337.0 | h |
+| `sensor.licv_8_2r1_3_operating_hours_zwe1` | **Betriebsstunden Heizstab (ZWE1)** — Laufzeit des Zusatz-Wärmeerzeugers 1 (elektrischer Heizstab). 696h bei 3337h WP-Gesamt = Heizstab läuft ~21% der Zeit — relativ hoch, deutet auf häufige Tiefsttemperaturphasen oder zu hoch eingestellte Sollwerte hin | 696.0 | h |
+| `sensor.licv_8_2r1_3_impulse_vd1` | **Starts Verdichter 1** — Anzahl Einschaltvorgänge des Kompressors. Hohe Taktzahl (>3 Starts/h) deutet auf Überdimensionierung oder fehlenden Pufferspeicher hin. 1112 Starts bei 3337h = Ø 3h pro Lauf — guter Wert | 1112.0 | — |
+
+### Status & Diagnose
+
+| Entity ID | Beschreibung | Wert | Unit |
+|---|---|---|---|
+| `sensor.licv_8_2r1_3_status_heating` | **Status Heizung** — Betriebszustand Heizkreis: **0**=Aus, **1**=Bereit (Standby, Sollwert erreicht), **2**=Aktiv (Verdichter läuft für Heizung), **3**=Abtauung, **5**=Gesperrt | 1.0 | — |
+| `sensor.licv_8_2r1_3_status_dhw` | **Status Warmwasser** — Betriebszustand WW: **0**=Aus, **1**=Bereit (Sollwert erreicht), **2**=Aktiv (WW-Bereitung läuft), **3**=Abtauung, **5**=Gesperrt | 2.0 | — |
+| `sensor.licv_8_2r1_3_operation_mode` | **Betriebsmodus (numerisch)** — Interner Luxtronik-Betriebsmodus-Code: **0**=Heizen, **1**=WW, **2**=Kühlen, **3**=Abtauen, **4**=Schwimmbad, **5**=Bereitschaft (Standby — aktueller Wert), **6**=EVU-Sperre, **7**=Fehler | 5.0 | — |
+| `sensor.licv_8_2r1_3_heat_generator_status` | **Status Wärmeerzeuger** — Status des zusätzlichen Wärmeerzeugers (Heizstab): **0**=Aus (Heizstab nicht aktiv), **1**=Heizstab für Heizung, **2**=Heizstab für WW | 0.0 | — |
+| `sensor.licv_8_2r1_3_error` | **Fehlercode** — Letzter aufgetretener Fehlercode im Luxtronik-Fehlerspeicher. **0**=kein Fehler. Wert 51 bedeutet "Niederdruckstörung" in der Luxtronik-Fehlerliste. Bei error_number=0 ist der Fehler nicht mehr aktiv (historisch) | 51.0 | — |
+| `sensor.licv_8_2r1_3_error_number` | **Fehlernummer** — Laufende Fehlernummer für aktive Störungen. **0**=kein aktiver Fehler. Werte >0 zeigen eine aktive Störung an, die ggf. Reset/Service erfordert | 0.0 | — |
+| `sensor.licv_8_2r1_3_cooling_enabled` | **Kühlung aktiviert** — Konfigurationsparameter: **0**=Kühlfunktion deaktiviert (in WP-Konfiguration nicht freigeschaltet), **1**=Kühlung verfügbar | 0.0 | — |
+| `sensor.licv_8_2r1_3_pool_enabled` | **Pool aktiviert** — **0**=Pool-Funktion deaktiviert (kein Pool angeschlossen) | 0.0 | — |
+| `sensor.licv_8_2r1_3_heating_demand_border` | **Heizbedarfsgrenze** — Interner Luxtronik-Schwellwert: Summenwert aus Außentemperatur-Integral, ab dem die Heizung anspringt. Niedrigerer Wert = Heizung startet schneller. Wird von der Luxtronik-Steuerung automatisch berechnet | 237.0 | — |
+| `sensor.licv_8_2r1_3_dhw_demand_border` | **WW-Bedarfsgrenze** — Interner Schwellwert für WW-Anforderung. Höherer Wert als Heizung, da WW-Bereitung Priorität hat und weniger oft anspringt | 650.0 | — |
+| `sensor.licv_8_2r1_3_duration_extra_dhw` | **Dauer Extra-Warmwasser** — Konfigurierte Laufzeit des Extra-DHW-Boost in Sekunden. **7200s = 2 Stunden** (Werkseinstellung). Dieser Wert ist ein Konfigurations-Sensor, keine Restlaufzeit | 7200.0 | s |
+| `sensor.licv_8_2r1_3_integration` | **Integrations-Kennung** — myUplink-interner Parameter: **1**=System korrekt in myUplink integriert und verbunden | 1.0 | — |
+
+### SG-Ready Level-Feedback (read-only)
+
+> Zeigen die aktuell **vom SG-Ready-System angeforderten Leistungsstufen** pro Kreis.
+> Werte: **0**=keine Vorgabe, **1**=reduziert, **2**=normal, **3**=erhöht (Encouraged), **4**=maximal (Ordered).
+> Nur relevant wenn der jeweilige `modus_*` auf "Level" steht.
+
+| Entity ID | Beschreibung | Wert |
+|---|---|---|
+| `sensor.licv_8_2r1_3_level_heizen` | **Level Heizung** — Aktuell angeforderter SG-Ready-Level für den Hauptheizkreis | 0.0 |
+| `sensor.licv_8_2r1_3_level_mk1_heizen` | **Level MK1** — Aktuell angeforderter SG-Ready-Level für Mischkreis 1 | 0.0 |
+| `sensor.licv_8_2r1_3_level_overall_heizen` | **Level Gesamt-Heizung** — Aktuell angeforderter globaler SG-Ready-Level | 0.0 |
+| `sensor.licv_8_2r1_3_level_warmw` | **Level Warmwasser** — Aktuell angeforderter SG-Ready-Level für WW-Bereitung | 0.0 |
+
+### Binary Sensors — Komponentenstatus
+
+> Zeigen den Echtzeit-Betriebszustand der einzelnen WP-Komponenten. **on** = aktiv/läuft, **off** = inaktiv/steht.
+
+| Entity ID | Beschreibung | State |
+|---|---|---|
+| `binary_sensor.licv_8_2r1_3_alarm` | **Alarm** — Aktive Störungsmeldung. on = WP hat eine Störung erkannt und ggf. Betrieb eingestellt. Fehlercode in `sensor.…_error` prüfen | off |
+| `binary_sensor.licv_8_2r1_3_asd` | **ASD (Abtau/Soledruck/Durchfluss)** — Abtauvorgang aktiv. Bei Luft-WP: Verdampfer wird enteist, indem der Kältekreis kurzzeitig umgekehrt wird (Heißgas-Abtauung). Tritt bei Außentemperaturen um 0°C und hoher Luftfeuchtigkeit häufiger auf. Während der Abtauung wird kurzzeitig dem Heizkreis Wärme entzogen | off |
+| `binary_sensor.licv_8_2r1_3_bup_dhw_pump` | **BUP — Warmwasser-Ladepumpe** — Umwälzpumpe, die heißes Wasser vom Kondensator in den WW-Speicher transportiert. on = WW-Bereitung findet gerade statt | off |
+| `binary_sensor.licv_8_2r1_3_el_heater` | **Heizstab (elektrisch)** — Elektrischer Zuheizer (Heizstab/Heizpatrone) aktiv. Wird zugeschaltet wenn Verdichter allein den Wärmebedarf nicht decken kann (unter Bivalenzpunkt) oder bei SG-Ready "Ordered". **Hoher Stromverbrauch** (~3–9 kW), verschlechtert COP drastisch | off |
+| `binary_sensor.licv_8_2r1_3_evu` | **EVU-Freigabe** — Signal vom Energieversorger. **on = WP freigegeben** (Normalbetrieb). off = EVU-Sperre aktiv (Netzbetreiber hat WP gesperrt, max. 2h/Tag bei Wärmepumpen-Tarif). Während EVU-Sperre läuft nur Frostschutz | on |
+| `binary_sensor.licv_8_2r1_3_evu_2` | **EVU-Sperre 2** — Zweiter EVU-Kontakt für erweiterte Sperrzeitfenster oder separate Tarifschaltung. Bei dir nicht genutzt | off |
+| `binary_sensor.licv_8_2r1_3_hd` | **HD — Hochdruckpressostat** — Sicherheitsabschaltung: on = Hochdruck im Kältekreis zu hoch, Verdichter wurde abgeschaltet. Ursachen: Durchflussprobleme, verstopfter Filter, defekte Umwälzpumpe, zu wenig Wärmeabnahme. Sollte im Normalbetrieb immer off sein | off |
+| `binary_sensor.licv_8_2r1_3_hup` | **HUP — Heizungsumwälzpumpe** — Hauptumwälzpumpe im Heizkreis. on = Heizwasser zirkuliert durch Heizkörper/Fußbodenheizung. Läuft auch im Standby nach, um Wärme zu verteilen | off |
+| `binary_sensor.licv_8_2r1_3_konnektivitat` | **Konnektivität** — Verbindungsstatus zur myUplink-Cloud. on = WP ist online und sendet Daten. off = Verbindung unterbrochen (WLAN/Internet-Problem am WP-Gateway) | on |
+| `binary_sensor.licv_8_2r1_3_mot` | **MOT — Mischkreis-Motor** — Stellmotor für das Mischventil im MK1. on = Motor stellt gerade das Mischventil (regelt Vorlauftemperatur MK1 durch Beimischung von Rücklaufwasser). Kann dauerhaft on sein wenn der MK1 aktiv regelt | on |
+| `binary_sensor.licv_8_2r1_3_vbo` | **VBO — Ventilator/Brunnen/Sole-Pumpe** — Bei Luft-WP: Verdampfer-Ventilator. on = Ventilator läuft, Außenluft wird über den Verdampfer geblasen. Läuft immer wenn der Verdichter aktiv ist, teilweise auch beim Abtauen | off |
+| `binary_sensor.licv_8_2r1_3_vd1` | **VD1 — Verdichter 1** — Kompressor der Wärmepumpe. on = Verdichter läuft, Kältemittel wird komprimiert, Wärme wird erzeugt. **Zentraler Indikator** ob die WP gerade aktiv heizt. Bei Inverter-WP moduliert die Drehzahl (siehe AO1) | off |
+| `binary_sensor.licv_8_2r1_3_zip` | **ZIP — Zirkulationspumpe** — WW-Zirkulationspumpe. on = Warmwasser zirkuliert in der Leitung, damit sofort warmes Wasser an den Zapfstellen verfügbar ist. Läuft typisch nach Zeitprogramm (z.B. morgens 6–8 Uhr) | off |
+| `binary_sensor.licv_8_2r1_3_zup` | **ZUP — Zusatzumwälzpumpe** — Sekundäre Umwälzpumpe (z.B. für Pufferspeicher oder zweiten Heizkreis). on = Pumpe läuft | off |
+| `binary_sensor.licv_8_2r1_3_zwe_1` | **ZWE1 — Zusatz-Wärmeerzeuger 1 (Heizstab)** — Elektrischer Heizstab aktiv. Identisch mit `el_heater`, von Luxtronik als separater Ausgang geführt. on = Heizstab heizt (hoher Stromverbrauch!) | off |
+| `binary_sensor.licv_8_2r1_3_zwe_2_sst` | **ZWE2/SST — Zusatz-Wärmeerzeuger 2 / Solarspeicher-Thermostat** — Zweiter Zuheizer oder Solareinbindung. Bei Anlagen mit Solarthermie: Schaltausgang für Solarregelung. Ohne Solar: zweiter Heizstab oder nicht belegt | off |
+
+### Firmware
+
+| Entity ID | Beschreibung | State |
+|---|---|---|
+| `update.licv_8_2r1_3_firmware` | **Firmware-Update** — Verfügbarkeit eines WP-Firmware-Updates über myUplink. off = kein Update verfügbar, on = Update bereit. Firmware-Updates können neue Parameter freischalten oder Bugs beheben. Update über myUplink-App oder WP-Display durchführen | off |
 
 ## automation
 
