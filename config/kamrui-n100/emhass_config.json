@@ -15,7 +15,7 @@
   "battery_stress_segments": 10,
   "battery_target_state_of_charge": 0.5,
   "compute_curtailment": false,
-  "continual_publish": true,
+  "continual_publish": false,
   "costfun": "profit",
   "delta_forecast_daily": 1,
   "end_timesteps_of_each_deferrable_load": [0],

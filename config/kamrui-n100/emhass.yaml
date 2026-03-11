@@ -5,9 +5,10 @@ rest_command:
   # Day-Ahead Optimierung mit ENTSO-e Börsenpreisen + Solcast PV-Forecast
   # 48 Werte (24h × 2 bei 30-Min-Schritten)
   emhass_dayahead:
-    url: "http://localhost:5000/action/dayahead-optim"
+    url: "http://5b918bf2-emhass:5000/action/dayahead-optim"
     method: POST
     content_type: "application/json"
+    timeout: 120
     payload: >-
       {%- set prices_today = state_attr('sensor.average_electricity_price', 'prices_today') or [] -%}
       {%- set ns = namespace(prices=[]) -%}
@@ -33,7 +34,7 @@ rest_command:
 
   # Publish: Aktualisiert EMHASS-Sensoren in HA
   emhass_publish:
-    url: "http://localhost:5000/action/publish-data"
+    url: "http://5b918bf2-emhass:5000/action/publish-data"
     method: POST
 
 automation:
