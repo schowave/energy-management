@@ -55,25 +55,26 @@
 
 ## myUplink / Novelan Entitäten
 
-> **Gerät:** Novelan LICV 8.2R1/3 (Luft-Wasser-Wärmepumpe, Luxtronik 2.x Steuerung)
-> **Integration:** myUplink (offizielle HA-Integration, OAuth2)
-> **Präfix:** `licv_8_2r1_3` in allen Entity-IDs
->
-> **Abkürzungsverzeichnis (Luxtronik):**
-> | Kürzel | Bedeutung |
-> |--------|-----------|
-> | **HUP** | Heizungsumwälzpumpe — Hauptumwälzpumpe im Heizkreis |
-> | **BUP** | Brauchwasser-Umwälzpumpe — Ladepumpe für den Warmwasserspeicher |
-> | **ZUP** | Zusatzumwälzpumpe — Sekundäre Umwälzpumpe (z.B. für Pufferspeicher) |
-> | **ZIP** | Zirkulationspumpe — Hält warmes Wasser in der Leitung vor (Komfort) |
-> | **VD1** | Verdichter 1 — Kompressor der Wärmepumpe |
-> | **VBO** | Ventilator/Brunnen/Sole-Umwälzpumpe — Bei Luft-WP: Verdampfer-Ventilator |
-> | **MOT** | Mischkreis-Motor — Stellmotor für Mischventil (regelt Vorlauftemperatur MK1) |
-> | **ASD** | Abtau/Soledruck/Durchfluss — Abtauvorgang des Verdampfers bei Vereisung |
-> | **HD** | Hochdruckpressostat — Sicherheitsabschaltung bei zu hohem Kältemitteldruck |
-> | **EVU** | Energieversorgungs-Unternehmen — Sperre/Freigabe durch den Netzbetreiber |
-> | **ZWE** | Zusätzlicher Wärmeerzeuger — Heizstab als Backup bei niedrigen Außentemperaturen |
-> | **SST** | Solarspeicher-Thermostat — Zweiter Zuheizer oder Solareinbindung |
+**Gerät:** Novelan LICV 8.2R1/3 (Luft-Wasser-Wärmepumpe, Luxtronik 2.x Steuerung)
+**Integration:** myUplink (offizielle HA-Integration, OAuth2)
+**Präfix:** `licv_8_2r1_3` in allen Entity-IDs
+
+#### Abkürzungsverzeichnis (Luxtronik)
+
+| Kürzel | Bedeutung |
+|--------|-----------|
+| **HUP** | Heizungsumwälzpumpe — Hauptumwälzpumpe im Heizkreis |
+| **BUP** | Brauchwasser-Umwälzpumpe — Ladepumpe für den Warmwasserspeicher |
+| **ZUP** | Zusatzumwälzpumpe — Sekundäre Umwälzpumpe (z.B. für Pufferspeicher) |
+| **ZIP** | Zirkulationspumpe — Hält warmes Wasser in der Leitung vor (Komfort) |
+| **VD1** | Verdichter 1 — Kompressor der Wärmepumpe |
+| **VBO** | Ventilator/Brunnen/Sole-Umwälzpumpe — Bei Luft-WP: Verdampfer-Ventilator |
+| **MOT** | Mischkreis-Motor — Stellmotor für Mischventil (regelt Vorlauftemperatur MK1) |
+| **ASD** | Abtau/Soledruck/Durchfluss — Abtauvorgang des Verdampfers bei Vereisung |
+| **HD** | Hochdruckpressostat — Sicherheitsabschaltung bei zu hohem Kältemitteldruck |
+| **EVU** | Energieversorgungs-Unternehmen — Sperre/Freigabe durch den Netzbetreiber |
+| **ZWE** | Zusätzlicher Wärmeerzeuger — Heizstab als Backup bei niedrigen Außentemperaturen |
+| **SST** | Solarspeicher-Thermostat — Zweiter Zuheizer oder Solareinbindung |
 
 ### Schalter (switch) — Steuerung
 
