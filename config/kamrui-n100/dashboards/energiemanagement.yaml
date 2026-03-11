@@ -400,6 +400,7 @@ views:
                 color: "#F44336"
                 stroke_width: 2
                 curve: stepline
+                float_precision: 2
                 extend_to: false
                 yaxis_id: cost
                 group_by:
@@ -409,6 +410,7 @@ views:
                 name: "Einspeisevergütung"
                 color: "#4CAF50"
                 stroke_width: 2
+                float_precision: 2
                 curve: stepline
                 extend_to: false
                 yaxis_id: cost
