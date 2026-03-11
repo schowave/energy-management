@@ -407,6 +407,72 @@ views:
               {% set p = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) %}
               {% if p < 100 %}grey{% elif p < 2000 %}blue{% else %}red{% endif %}
             entity: sensor.kg_technik_waermepumpe_3em_leistung
+          - type: custom:mushroom-template-card
+            primary: "Extra Warmwasser"
+            secondary: >-
+              {% if is_state('switch.licv_8_2r1_3_extra_dhw', 'on') %}
+                Läuft · WW {{ states('sensor.licv_8_2r1_3_dhw') }}°C → {{ states('number.licv_8_2r1_3_desired_value') }}°C
+              {% else %}
+                Aus · WW aktuell {{ states('sensor.licv_8_2r1_3_dhw') }}°C
+              {% endif %}
+            icon: mdi:water-boiler
+            icon_color: >-
+              {% if is_state('switch.licv_8_2r1_3_extra_dhw', 'on') %}orange{% else %}grey{% endif %}
+            entity: switch.licv_8_2r1_3_extra_dhw
+            tap_action:
+              action: toggle
+              confirmation:
+                text: "Extra Warmwasser umschalten?"
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_flow
+            name: Vorlauf
+            icon: mdi:thermometer-chevron-up
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_return
+            name: Rücklauf
+            icon: mdi:thermometer-chevron-down
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_dhw
+            name: Warmwasser
+            icon: mdi:water-thermometer
+            icon_color: orange
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_outdoor_temp
+            name: Außentemperatur
+            icon: mdi:home-thermometer-outline
+            icon_color: green
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_heating_capacity
+            name: Heizleistung
+            icon: mdi:fire
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_power_consumption
+            name: Stromaufnahme (myUplink)
+            icon: mdi:flash
+            icon_color: amber
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_heating
+            name: Heizung gesamt
+            icon: mdi:counter
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_domestic_hot_water
+            name: Warmwasser gesamt
+            icon: mdi:counter
+            icon_color: orange
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_operat_hours_heat
+            name: Betriebsstunden Heizen
+            icon: mdi:clock-outline
+            icon_color: grey
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_operating_hours_dhw
+            name: Betriebsstunden WW
+            icon: mdi:clock-outline
+            icon_color: grey
           - type: custom:apexcharts-card
             header:
               show: true
@@ -502,56 +568,6 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: power
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_flow
-            name: Vorlauf
-            icon: mdi:thermometer-chevron-up
-            icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_return
-            name: Rücklauf
-            icon: mdi:thermometer-chevron-down
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_dhw
-            name: Warmwasser
-            icon: mdi:water-thermometer
-            icon_color: orange
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_outdoor_temp
-            name: Außentemperatur
-            icon: mdi:home-thermometer-outline
-            icon_color: green
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_heating_capacity
-            name: Heizleistung
-            icon: mdi:fire
-            icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_power_consumption
-            name: Stromaufnahme (myUplink)
-            icon: mdi:flash
-            icon_color: amber
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_heating
-            name: Heizung gesamt
-            icon: mdi:counter
-            icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_domestic_hot_water
-            name: Warmwasser gesamt
-            icon: mdi:counter
-            icon_color: orange
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_operat_hours_heat
-            name: Betriebsstunden Heizen
-            icon: mdi:clock-outline
-            icon_color: grey
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_operating_hours_dhw
-            name: Betriebsstunden WW
-            icon: mdi:clock-outline
-            icon_color: grey
 
       # ── Verbrauch & Autarkie ──────────────────────────
       - type: grid
