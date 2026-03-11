@@ -434,7 +434,34 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 > **Hinweis:** Die Synology DSM Integration bietet ebenfalls einen Backup-Speicherort an.
 > Freigegebener Ordner: `ha-backups`, Pfad: `integration`. Muss in den DSM-Integrationsoptionen (⚙) korrekt konfiguriert sein, sonst erscheint "Failed to list backups".
 
-## 10. Recorder konfigurieren ✅
+## 10. Automationen & Scripts ✅
+
+> YAML-basierte Automationen und Scripts, versioniert im Repo unter `config/kamrui-n100/`.
+> `configuration.yaml` enthält bereits: `automation: !include automations.yaml` und `script: !include scripts.yaml`.
+
+### 10.1 Automationen (`automations.yaml`)
+
+- [x] **Jalousien abends schließen** (`jalousien_abends_schliessen`)
+  - Trigger: 1 Stunde nach Sonnenuntergang
+  - Action: Schließt 14 von 18 Jalousien, wartet bis Wohnzimmer/Esszimmer geschlossen sind, öffnet diese dann auf 2% (Spalt)
+  - Ausnahmen: Schlafzimmer DG, Kinderzimmer 1+2, Küche
+
+> **Hinweis:** In HA existieren zusätzlich 3 Sungrow-Automationen (danger mode reset, export/self-consumption rated limit),
+> die über eine Integration automatisch angelegt wurden. Diese werden nicht im Repo gepflegt.
+
+### 10.2 Scripts (`scripts.yaml`)
+
+- [x] **Batterie Zwangsladen** (`batterie_zwangsladen`)
+  - Startet Sungrow Forced Charge für konfigurierbare Dauer (0,5–8h) und Leistung (1000–10600 W)
+  - Nach Ablauf: automatisch zurück auf Eigenverbrauchsmodus (`self_consumption_mode_max_battery_discharge`)
+  - Mode: `restart` (erneuter Aufruf setzt Timer zurück)
+  - Dashboard-Buttons: 1h/5kW, 2h/5kW, Stoppen (im Batterie-Bereich des Energiemanagement-Dashboards)
+
+> **Achtung:** Zwangsladen überschreibt die Sungrow-Wechselrichtersteuerung per Modbus.
+> Falls der 1komma5° Heartbeat die Batterie aktiv steuert, kann es zu Konflikten kommen.
+> In der Simulationsphase (Phase 1) ist dies unkritisch.
+
+## 11. Recorder konfigurieren ✅
 
 - [x] `configuration.yaml` ergänzen:
   ```yaml
@@ -463,6 +490,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Power Flow ✅ → Mushroom ✅ → Template-Sensoren ✅
 → ENTSO-e ✅ → 1komma5° Tagesforecast-Sensor ✅
 → myUplink (Novelan WP) ✅ → COP-Tracking (utility_meter + Template-Sensoren) ✅
+→ Automationen (Jalousien) ✅ → Scripts (Batterie Zwangsladen) ✅
 → EMHASS Add-on + Simulation                         ← NÄCHSTER SCHRITT
 ```
 
