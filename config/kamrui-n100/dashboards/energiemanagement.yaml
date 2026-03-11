@@ -72,6 +72,7 @@ views:
                 height: 280
               tooltip:
                 shared: true
+                intersect: false
               legend:
                 show: true
             yaxis:
@@ -192,6 +193,7 @@ views:
                 show: true
               tooltip:
                 shared: true
+                intersect: false
             yaxis:
               - id: power
                 min: 0
@@ -308,6 +310,7 @@ views:
                 show: true
               tooltip:
                 shared: true
+                intersect: false
             series:
               - entity: sensor.battery_charging_power
                 name: Laden
@@ -354,6 +357,7 @@ views:
                 show: true
               tooltip:
                 shared: true
+                intersect: false
             series:
               - entity: sensor.import_power
                 name: Bezug
@@ -408,6 +412,7 @@ views:
                 show: true
               tooltip:
                 shared: true
+                intersect: false
             yaxis:
               - id: power
                 min: 0
@@ -500,6 +505,9 @@ views:
             apex_config:
               chart:
                 height: 250
+              tooltip:
+                shared: true
+                intersect: false
             yaxis:
               - id: power
                 min: 0
