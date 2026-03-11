@@ -71,7 +71,7 @@
   "nominal_power_of_deferrable_loads": [0],
   "num_lags": 48,
   "num_threads": 0,
-  "number_of_deferrable_loads": 1,
+  "number_of_deferrable_loads": 0,
   "open_meteo_cache_max_age": 30,
   "operating_hours_of_each_deferrable_load": [0],
   "optimization_time_step": 30,

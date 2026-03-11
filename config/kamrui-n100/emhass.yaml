@@ -2,17 +2,17 @@
 # Eingebunden via configuration.yaml → homeassistant.packages.emhass
 
 rest_command:
-  # Day-Ahead Optimierung mit 1komma5° Preisen + Solcast PV-Forecast
+  # Day-Ahead Optimierung mit ENTSO-e Börsenpreisen + Solcast PV-Forecast
   # EMHASS erwartet 48 Werte (24h × 2 bei 30-Min-Schritten)
   emhass_dayahead:
     url: "http://localhost:5000/action/dayahead-optim"
     method: POST
     content_type: "application/json"
     payload: >-
-      {%- set price_sensor = 'sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45' -%}
-      {%- set forecast_raw = state_attr(price_sensor, 'forecast') or [] -%}
+      {%- set prices_today = state_attr('sensor.average_electricity_price', 'prices_today') or [] -%}
+      {%- set prices_tomorrow = state_attr('sensor.average_electricity_price', 'prices_tomorrow') or [] -%}
       {%- set ns = namespace(prices=[]) -%}
-      {%- for f in forecast_raw[:24] -%}
+      {%- for f in prices_today[:24] -%}
         {%- set ns.prices = ns.prices + [f.price, f.price] -%}
       {%- endfor -%}
       {%- set pv_raw = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') or [] -%}
@@ -40,7 +40,7 @@ rest_command:
 automation:
   - id: emhass_dayahead_daily
     alias: "EMHASS Day-Ahead Optimierung"
-    description: "Tägliche EMHASS-Optimierung um 5:30 mit 1komma5° Preisen + Solcast PV-Forecast"
+    description: "Tägliche EMHASS-Optimierung um 5:30 mit ENTSO-e Börsenpreisen + Solcast PV-Forecast"
     trigger:
       - platform: time
         at: "05:30:00"
