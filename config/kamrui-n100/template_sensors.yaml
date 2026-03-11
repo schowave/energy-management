@@ -56,3 +56,37 @@
           {{ states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) }}
         forecast_json: >-
           {{ (state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') or []) | to_json }}
+
+# ── ENTSO-e Tagespreise (Trigger-basiert) ──
+# Speichert prices_today sobald verfügbar, damit keine
+# Lücken bei temporären API-Ausfällen entstehen.
+- trigger:
+    - platform: state
+      entity_id: sensor.average_electricity_price
+      from: "unavailable"
+    - platform: state
+      entity_id: sensor.average_electricity_price
+      from: "unknown"
+    - platform: state
+      entity_id: sensor.average_electricity_price
+      attribute: prices_today
+  condition:
+    - condition: template
+      value_template: >-
+        {{ state_attr('sensor.average_electricity_price', 'prices_today') not in [None, []] }}
+  sensor:
+    - name: "ENTSO-e Tagespreise"
+      unique_id: entsoe_prices_today
+      icon: mdi:currency-eur
+      state: "{{ now().strftime('%Y-%m-%d') }}"
+      attributes:
+        prices_today: >-
+          {{ state_attr('sensor.average_electricity_price', 'prices_today') | to_json }}
+        prices_tomorrow: >-
+          {{ (state_attr('sensor.average_electricity_price', 'prices_tomorrow') or []) | to_json }}
+        current_price: >-
+          {{ states('sensor.current_electricity_market_price') | float(0) }}
+        min_price: >-
+          {{ states('sensor.lowest_energy_price') | float(0) }}
+        max_price: >-
+          {{ states('sensor.highest_energy_price') | float(0) }}

@@ -5,7 +5,7 @@ rest_command:
   # Day-Ahead Optimierung mit 1komma5° Preisen + Solcast PV-Forecast
   # EMHASS erwartet 48 Werte (24h × 2 bei 30-Min-Schritten)
   emhass_dayahead:
-    url: "http://localhost:5001/action/dayahead-optim"
+    url: "http://localhost:5000/action/dayahead-optim"
     method: POST
     content_type: "application/json"
     payload: >-
@@ -34,7 +34,7 @@ rest_command:
 
   # Publish: Aktualisiert EMHASS-Sensoren in HA
   emhass_publish:
-    url: "http://localhost:5001/action/publish-data"
+    url: "http://localhost:5000/action/publish-data"
     method: POST
 
 automation:

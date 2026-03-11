@@ -3,3 +3,4 @@
 .shelly-cloud.env
 **/secrets.yaml
 .ha_token
+.entsoe_token
