@@ -235,7 +235,7 @@ views:
               {% endif %}
             secondary: >-
               {% if states('sensor.unit_load_cost') not in ['unknown', 'unavailable'] %}
-                Strompreis: {{ (states('sensor.unit_load_cost') | float(0) * 100) | round(1) }} ct/kWh
+                Strompreis: {{ (states('sensor.unit_load_cost') | float(0) * 100) | round(2) }} ct/kWh
               {% else %}
                 Preis: —
               {% endif %}
@@ -248,7 +248,7 @@ views:
           - type: custom:mushroom-template-card
             primary: >-
               {% if states('sensor.total_cost_fun_value') not in ['unknown', 'unavailable'] %}
-                Tagesprofit: {{ states('sensor.total_cost_fun_value') }} €
+                Tagesprofit: {{ states('sensor.total_cost_fun_value') | float(0) | round(2) }} €
               {% else %}
                 Profit: —
               {% endif %}
@@ -393,7 +393,7 @@ views:
                     text: "€/kWh"
                   labels:
                     formatter: |
-                      EVAL:function(val) { return val ? val.toFixed(3) : '0'; }
+                      EVAL:function(val) { return val ? val.toFixed(2) : '0.00'; }
             series:
               - entity: sensor.unit_load_cost
                 name: "Bezugskosten"
