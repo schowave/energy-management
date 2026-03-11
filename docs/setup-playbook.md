@@ -254,7 +254,29 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 > Dashboard für 1KOMMA5GRAD Heartbeat-Daten. Wird nach Heartbeat-Kündigung obsolet.
 
-### 5.6 Dashboard "Energiemanagement" ✅
+### 5.6 myUplink (Novelan LICV 8.2 Wärmepumpe) ✅
+
+- [x] Einstellungen → Geräte & Dienste → Integration hinzufügen → "myUplink"
+- [x] myUplink-Konto verknüpfen (OAuth2-Flow → NIBE Login)
+- [x] Gerät erkannt: LICV 8.2R1/3 (105 Entitäten)
+- [x] Prüfen: Entwicklerwerkzeuge → Zustände → nach `licv` filtern
+
+> **Repo:** https://www.home-assistant.io/integrations/myuplink/ (offizielle HA-Integration seit 2024.2)
+> Liefert Temperaturen (Vorlauf, Rücklauf, WW, Außen), Energiezähler (thermisch), Betriebsmodi,
+> Schalter (Extra DHW, Heating/DHW blocked), Betriebsstunden und Heizleistung.
+>
+> **Wichtige Sensoren:**
+> - `sensor.licv_8_2r1_3_flow` / `return` / `dhw` / `outdoor_temp` — Temperaturen
+> - `sensor.licv_8_2r1_3_heating_capacity` — aktuelle Heizleistung (kW)
+> - `sensor.licv_8_2r1_3_power_consumption` — Stromaufnahme (kW, myUplink-intern)
+> - `sensor.licv_8_2r1_3_heating_2` / `domestic_hot_water_2` — thermische Energiezähler (kWh, inkl. Heizstab)
+> - `switch.licv_8_2r1_3_extra_dhw` — Extra Warmwasser (2h Boost)
+> - `sensor.licv_8_2r1_3_operat_hours_heat` / `operating_hours_dhw` — Betriebsstunden
+>
+> **Stromverbrauch (Shelly 3EM):** `sensor.kg_technik_waermepumpe_3em_energie` — elektrischer Energiezähler für COP-Berechnung
+> myUplink liefert nur thermische Energie. Für echte COP-Berechnung wird der Shelly 3EM am WP-Anschluss benötigt.
+
+### 5.7 Dashboard "Energiemanagement" ✅
 
 - [x] Einstellungen → Dashboards → + Dashboard hinzufügen → "Energiemanagement" (`mdi:lightning-bolt`)
 - [x] Dashboard-Konfiguration: siehe `config/kamrui-n100/dashboards/energiemanagement.yaml`
@@ -440,6 +462,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 → Recorder konfigurieren (365 Tage)                    ✅ erledigt
 → hacs_1komma5grad ✅ → Solcast ✅ → ApexCharts ✅ → Power Flow ✅ → Mushroom ✅ → Template-Sensoren ✅
 → ENTSO-e ✅ → 1komma5° Tagesforecast-Sensor ✅
+→ myUplink (Novelan WP) ✅ → COP-Tracking (utility_meter + Template-Sensoren) ✅
 → EMHASS Add-on + Simulation                         ← NÄCHSTER SCHRITT
 ```
 
@@ -448,7 +471,7 @@ HAOS flashen → Onboarding → Erweiterter Modus          ✅ erledigt
 - Langlebiger Zugriffstoken in `.ha_token` (gitignored)
 - API-Basis: `https://ha.schowalter.co/api/`
 - Alle Entitäten abrufbar: `curl -H "Authorization: Bearer $(cat .ha_token)" https://ha.schowalter.co/api/states`
-- Entity-Referenz: [ha-entities.md](ha-entities.md) (656 Entitäten, kategorisiert nach Integration)
+- Entity-Referenz: [ha-entities.md](ha-entities.md) (768 Entitäten, kategorisiert nach Integration)
 
 ## Nützliche URLs
 

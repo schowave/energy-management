@@ -473,6 +473,57 @@ views:
             name: Betriebsstunden WW
             icon: mdi:clock-outline
             icon_color: grey
+          - type: heading
+            heading: "COP (Leistungszahl)"
+          - type: markdown
+            content: |
+              ### Monatlich
+              {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
+              {% if el > 1 %}
+              | | Thermisch | Elektrisch | COP |
+              |---|---|---|---|
+              | **Heizung** | {{ states('sensor.wp_heizung_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_heizung_monatlich') }}** |
+              | **Warmwasser** | {{ states('sensor.wp_ww_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_monatlich') }}** |
+              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_monatlich') | float(0) + states('sensor.wp_ww_thermisch_monatlich') | float(0)) | round(1) }} kWh | {{ el | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_monatlich') }}** |
+              {% else %}
+              *Noch nicht genug Daten für diesen Monat.*
+              {% endif %}
+
+              ### Gesamt (seit Tracking)
+              {% set el_t = states('sensor.wp_strom_gesamt') | float(0) %}
+              {% if el_t > 1 %}
+              | | Thermisch | Elektrisch | COP |
+              |---|---|---|---|
+              | **Heizung** | {{ states('sensor.wp_heizung_thermisch_gesamt') }} kWh | — | **{{ states('sensor.wp_cop_heizung_gesamt') }}** |
+              | **Warmwasser** | {{ states('sensor.wp_ww_thermisch_gesamt') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_gesamt') }}** |
+              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_gesamt') | float(0) + states('sensor.wp_ww_thermisch_gesamt') | float(0)) | round(1) }} kWh | {{ el_t | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_gesamt') }}** |
+              {% else %}
+              *Noch nicht genug Daten.*
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: "COP Heizung: {{ states('sensor.wp_cop_heizung_monatlich') }}"
+            secondary: "Gesamt: {{ states('sensor.wp_cop_heizung_gesamt') }}"
+            icon: mdi:heat-pump
+            icon_color: >-
+              {% set cop = states('sensor.wp_cop_heizung_monatlich') | float(0) %}
+              {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
+            entity: sensor.wp_cop_heizung_monatlich
+          - type: custom:mushroom-template-card
+            primary: "COP Warmwasser: {{ states('sensor.wp_cop_warmwasser_monatlich') }}"
+            secondary: "Gesamt: {{ states('sensor.wp_cop_warmwasser_gesamt') }}"
+            icon: mdi:water-boiler
+            icon_color: >-
+              {% set cop = states('sensor.wp_cop_warmwasser_monatlich') | float(0) %}
+              {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
+            entity: sensor.wp_cop_warmwasser_monatlich
+          - type: custom:mushroom-template-card
+            primary: "COP Kombiniert: {{ states('sensor.wp_cop_kombiniert_monatlich') }}"
+            secondary: "Gesamt: {{ states('sensor.wp_cop_kombiniert_gesamt') }}"
+            icon: mdi:heat-pump-outline
+            icon_color: >-
+              {% set cop = states('sensor.wp_cop_kombiniert_monatlich') | float(0) %}
+              {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
+            entity: sensor.wp_cop_kombiniert_monatlich
           - type: custom:apexcharts-card
             header:
               show: true

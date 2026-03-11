@@ -156,10 +156,22 @@
 
 ### 1.6 Wärmepumpe einbinden (parallel, unabhängig von Heartbeat)
 
-**Stromverbrauch (Shelly vorhanden):**
-- [ ] Vorhandenen Shelly (Stromverbrauch WP) in HA einbinden
-- [ ] Template-Sensor `sensor.wp_power` anlegen (Abstraktionsschicht)
+**myUplink Integration (Monitoring):**
+- [x] myUplink offizielle HA-Integration eingerichtet (OAuth2, seit HA 2024.2)
+- [x] Novelan LICV 8.2R1/3 erkannt — 105 Entitäten (Temperaturen, Energiezähler, Betriebsmodi, Schalter)
+- [x] Extra Warmwasser (switch.licv_8_2r1_3_extra_dhw) im Dashboard steuerbar
+- [x] Temperaturen (Vorlauf/Rücklauf/WW/Außen) im Dashboard visualisiert
+
+**Stromverbrauch (Shelly 3EM):**
+- [x] Shelly 3EM (`sensor.kg_technik_waermepumpe_3em_energie`) in HA eingebunden
+- [x] Stromverbrauch-Chart im Dashboard (ApexCharts, 24h Verlauf)
+- [x] Live-COP Berechnung: `heating_capacity (myUplink) / shelly_power`
 - [ ] In InfluxDB langfristig loggen (Verbrauchsmuster der WP verstehen)
+
+**COP-Tracking:**
+- [x] utility_meter Helpers für monatliche + Gesamt-Zähler (thermisch + elektrisch)
+- [x] Template-Sensoren: COP Heizung / Warmwasser / Kombiniert (monatlich + gesamt)
+- [x] COP-Karten im Dashboard (Mushroom + Markdown-Tabelle)
 
 **SG-Ready Steuerung (Shelly noch kaufen):**
 - [ ] **Klären: Ist SG-Ready bei der Novelan LICV 8.2 freigeschaltet?**

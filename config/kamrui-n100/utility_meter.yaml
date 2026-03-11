@@ -1,0 +1,33 @@
+# ── Wärmepumpe COP-Tracking ──────────────────────
+# Monatliche Zähler für COP-Berechnung (Heizung / WW / Kombiniert)
+# Thermische Energie: myUplink (inkl. Heizstab, _2 Varianten)
+# Elektrische Energie: Shelly 3EM
+
+# ── Monatlich ─────────────────────────────────────
+wp_strom_monatlich:
+  source: sensor.kg_technik_waermepumpe_3em_energie
+  name: "WP Strom monatlich"
+  cycle: monthly
+
+wp_heizung_thermisch_monatlich:
+  source: sensor.licv_8_2r1_3_heating_2
+  name: "WP Heizung thermisch monatlich"
+  cycle: monthly
+
+wp_ww_thermisch_monatlich:
+  source: sensor.licv_8_2r1_3_domestic_hot_water_2
+  name: "WP Warmwasser thermisch monatlich"
+  cycle: monthly
+
+# ── Gesamt (seit Tracking-Start, kein Reset) ─────
+wp_strom_gesamt:
+  source: sensor.kg_technik_waermepumpe_3em_energie
+  name: "WP Strom gesamt (seit Tracking)"
+
+wp_heizung_thermisch_gesamt:
+  source: sensor.licv_8_2r1_3_heating_2
+  name: "WP Heizung thermisch gesamt (seit Tracking)"
+
+wp_ww_thermisch_gesamt:
+  source: sensor.licv_8_2r1_3_domestic_hot_water_2
+  name: "WP Warmwasser thermisch gesamt (seit Tracking)"

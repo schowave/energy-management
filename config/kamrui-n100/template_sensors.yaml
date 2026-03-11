@@ -90,3 +90,87 @@
           {{ states('sensor.lowest_energy_price') | float(0) }}
         max_price: >-
           {{ states('sensor.highest_energy_price') | float(0) }}
+
+# ── Wärmepumpe COP-Sensoren ──────────────────────
+# COP = Thermische Energie (myUplink _2, inkl. Heizstab) / Elektrische Energie (Shelly 3EM)
+# Monatliche Werte kommen von utility_meter Helpers.
+- sensor:
+    - name: "WP COP Heizung monatlich"
+      unique_id: wp_cop_heating_monthly
+      state_class: measurement
+      icon: mdi:heat-pump
+      state: >
+        {% set th = states('sensor.wp_heizung_thermisch_monatlich') | float(0) %}
+        {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
+        {% if el > 1 %}
+          {{ (th / el) | round(2) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "WP COP Warmwasser monatlich"
+      unique_id: wp_cop_dhw_monthly
+      state_class: measurement
+      icon: mdi:water-boiler
+      state: >
+        {% set th = states('sensor.wp_ww_thermisch_monatlich') | float(0) %}
+        {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
+        {% if el > 1 %}
+          {{ (th / el) | round(2) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "WP COP kombiniert monatlich"
+      unique_id: wp_cop_combined_monthly
+      state_class: measurement
+      icon: mdi:heat-pump-outline
+      state: >
+        {% set th_h = states('sensor.wp_heizung_thermisch_monatlich') | float(0) %}
+        {% set th_w = states('sensor.wp_ww_thermisch_monatlich') | float(0) %}
+        {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
+        {% if el > 1 %}
+          {{ ((th_h + th_w) / el) | round(2) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "WP COP Heizung gesamt"
+      unique_id: wp_cop_heating_total
+      state_class: measurement
+      icon: mdi:heat-pump
+      state: >
+        {% set th = states('sensor.wp_heizung_thermisch_gesamt') | float(0) %}
+        {% set el = states('sensor.wp_strom_gesamt') | float(0) %}
+        {% if el > 1 %}
+          {{ (th / el) | round(2) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "WP COP Warmwasser gesamt"
+      unique_id: wp_cop_dhw_total
+      state_class: measurement
+      icon: mdi:water-boiler
+      state: >
+        {% set th = states('sensor.wp_ww_thermisch_gesamt') | float(0) %}
+        {% set el = states('sensor.wp_strom_gesamt') | float(0) %}
+        {% if el > 1 %}
+          {{ (th / el) | round(2) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "WP COP kombiniert gesamt"
+      unique_id: wp_cop_combined_total
+      state_class: measurement
+      icon: mdi:heat-pump-outline
+      state: >
+        {% set th_h = states('sensor.wp_heizung_thermisch_gesamt') | float(0) %}
+        {% set th_w = states('sensor.wp_ww_thermisch_gesamt') | float(0) %}
+        {% set el = states('sensor.wp_strom_gesamt') | float(0) %}
+        {% if el > 1 %}
+          {{ ((th_h + th_w) / el) | round(2) }}
+        {% else %}
+          0
+        {% endif %}

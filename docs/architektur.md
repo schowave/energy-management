@@ -13,6 +13,7 @@ graph TB
         SOLCAST["Solcast<br/><small>PV-Prognose 48h – Ost/West</small>"]
         HB_API["1komma5° Heartbeat API<br/><small>Strompreise · Energy-Sensoren kWh</small>"]
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
+        MYUPLINK["🌡️ myUplink<br/><small>Novelan WP – Temperaturen · Steuerung</small>"]
     end
 
     subgraph N100P1["🖥️ KAMRUI N100 – Home Assistant OS"]
@@ -23,7 +24,8 @@ graph TB
         ENTSOE_INT["📊 ENTSO-e Integration<br/><small>HACS – JaccoR v0.7.5</small>"]
         APEX["📊 ApexCharts Card<br/><small>HACS Frontend</small>"]
         MUSHROOM["🍄 Mushroom + Power Flow<br/><small>HACS Frontend</small>"]
-        SHELLY_INT["🔌 Shelly Integration<br/><small>Jalousien · Steckdosen · Lichter</small>"]
+        SHELLY_INT["🔌 Shelly Integration<br/><small>Jalousien · Steckdosen · Lichter · WP 3EM</small>"]
+        MYUPLINK_INT["🌡️ myUplink Integration<br/><small>Offizielle HA Integration</small>"]
         EMHASSP1["🧠 EMHASS App<br/><small>Simulationsmodus · nur berechnen</small>"]
         INFLUXP1["📈 InfluxDB App<br/><small>Langzeit-Logging 365d</small>"]
         GRAFANAP1["📊 Grafana App<br/><small>Langzeit-Visualisierung</small>"]
@@ -44,11 +46,16 @@ graph TB
     SOLCAST_INT --> HAP1
     HB_API -->|Preise · kWh| HACS_1K5
     HACS_1K5 --> HAP1
+    MYUPLINK -->|"Temperaturen · Steuerung"| MYUPLINK_INT
+    MYUPLINK_INT --> HAP1
 
     %% Lokaler Modbus-Zugriff – nur lesend, parallel zu Heartbeat
     MODBUS -->|Modbus TCP :502| GRIDBOX
     GRIDBOX --- SUNGROW1
     MODBUS -->|PV · SOC · Power · Grid| HAP1
+
+    %% Shelly Geräte (lokal)
+    SHELLY_INT -->|"Jalousien · Steckdosen · WP 3EM"| HAP1
 
     %% HA → EMHASS Simulation
     HAP1 -->|Sensordaten + Preise| EMHASSP1
@@ -69,8 +76,8 @@ graph TB
     classDef haos fill:#14532d,stroke:#22c55e,color:#f1f5f9
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,HB_API,CF cloud
-    class HAP1,HACS_1K5,MODBUS,SOLCAST_INT,ENTSOE_INT,APEX,MUSHROOM,SHELLY_INT,EMHASSP1,INFLUXP1,GRAFANAP1,CFD_P1 haos
+    class ENTSOE,SOLCAST,HB_API,CF,MYUPLINK cloud
+    class HAP1,HACS_1K5,MODBUS,SOLCAST_INT,ENTSOE_INT,APEX,MUSHROOM,SHELLY_INT,MYUPLINK_INT,EMHASSP1,INFLUXP1,GRAFANAP1,CFD_P1 haos
     class HEARTBEAT,GRIDBOX,SUNGROW1,SYNOLOGY lokal
 ```
 
@@ -85,6 +92,7 @@ graph TB
         SOLCAST["Solcast / Forecast.Solar<br/><small>PV-Prognose 48h</small>"]
         TIBBER["Tibber / aWATTar<br/><small>Dynamischer Tarif</small>"]
         CF["☁️ Cloudflare<br/><small>ha.schowalter.co</small>"]
+        MYUPLINK2["🌡️ myUplink<br/><small>Novelan WP – Monitoring</small>"]
     end
 
     subgraph SERVER["🖥️ KAMRUI N100 – Home Assistant OS"]
@@ -113,6 +121,7 @@ graph TB
     ENTSOE -->|Preise| HA
     SOLCAST -->|Forecast| HA
     TIBBER -->|Preise| HA
+    MYUPLINK2 -->|"WP Monitoring"| HA
     HA ==>|Modbus TCP| SUNGROW
 
     %% HA ↔ Apps
@@ -144,7 +153,7 @@ graph TB
     classDef lokal fill:#422006,stroke:#f59e0b,color:#f1f5f9
     classDef hw fill:#450a0a,stroke:#ef4444,color:#f1f5f9
 
-    class ENTSOE,SOLCAST,TIBBER,CF cloud
+    class ENTSOE,SOLCAST,TIBBER,CF,MYUPLINK2 cloud
     class HA,EMHASS,MQTT,GRAFANA,INFLUX,CFD haos
     class SUNGROW,METER,SHELLY,SYNOLOGY lokal
     class PV,BATTERIE,WP,HAUS hw
@@ -168,6 +177,7 @@ gantt
     InfluxDB + Grafana + Recorder 365d      :done, p1d, after p1b, 2d
     Dashboards + ApexCharts + Template-Sens.:done, p1e, after p1d, 3d
     ENTSO-e Transparency Platform            :done, p1a, 2026-03-10, 1d
+    myUplink Novelan WP Integration         :done, p1mu, 2026-03-11, 1d
     EMHASS App Simulationsmodus             :active, p1f, after p1e, 5d
     Daten sammeln & vergleichen             :p1g, after p1f, 42d
 
@@ -213,6 +223,7 @@ gantt
 | **Solcast / Forecast.Solar** | PV-Prognose 48h | Kostenlos |
 | **Sungrow Modbus (mkaiser)** | Inverter + Batterie Echtzeit-Daten via gridBox | Kostenlos |
 | **EMHASS** | LP-Optimierer · HiGHS Solver (Heartbeat-Ersatz) | Kostenlos |
+| **myUplink Integration** | Novelan WP Monitoring – Temperaturen, COP, Steuerung | Kostenlos |
 | **Novelan SG-Ready** | WP-Steuerung via Shelly/ESP32 (Phase 2) | Kostenlos |
 | **1komma5grad HACS** | Heartbeat-Preise + Energy-Sensoren (Phase 1) | Kostenlos |
 | **Solcast PV Forecast** | PV-Prognose 48h (Ost/West, 2 Sites) | Kostenlos |
