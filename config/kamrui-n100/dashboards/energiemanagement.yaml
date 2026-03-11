@@ -522,15 +522,14 @@ views:
             primary: >-
               {% if states('sensor.p_batt_forecast') not in ['unknown', 'unavailable'] %}
                 {% set p = states('sensor.p_batt_forecast') | float(0) %}
-                Batterie-Empfehlung: {% if p > 50 %}Laden {{ p | round(0) }} W
+                Akku: {% if p > 50 %}Laden {{ p | round(0) }} W
                 {% elif p < -50 %}Entladen {{ (p | abs) | round(0) }} W
                 {% else %}Halten{% endif %}
               {% else %}
-                Batterie-Empfehlung: —
+                Akku: —
               {% endif %}
             secondary: >-
-              Akku {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}% (Empfehlung)
-              · {{ states('sensor.battery_level') | float(0) | round(0) }}% (Aktuell)
+              SOC {{ states('sensor.battery_level') | float(0) | round(0) }}% · Empf. {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
             icon: mdi:battery-sync
             icon_color: >-
               {% set p = states('sensor.p_batt_forecast') | float(0) %}
@@ -555,7 +554,7 @@ views:
             entity: sensor.p_grid_forecast
           - type: custom:mushroom-template-card
             primary: >-
-              Erwarteter Tagesgewinn: {{ states('sensor.total_cost_fun_value') | float(0) | round(2) }} €
+              Tagesgewinn: {{ states('sensor.total_cost_fun_value') | float(0) | round(2) }} €
             secondary: >-
               Einspeisevergütung: 8,20 ct/kWh
             icon: mdi:piggy-bank
@@ -633,6 +632,8 @@ views:
                 curve: stepline
                 float_precision: 0
                 yaxis_id: power
+                show:
+                  in_header: raw
                 extend_to: false
                 group_by:
                   func: last
@@ -645,7 +646,7 @@ views:
                 float_precision: 0
                 yaxis_id: power
                 show:
-                  in_header: before_now
+                  in_header: raw
                 data_generator: |
                   var fc = entity.attributes.forecasts || [];
                   return fc.map((e) => {
