@@ -40,10 +40,17 @@ rest_command:
 automation:
   - id: emhass_dayahead_daily
     alias: "EMHASS Day-Ahead Optimierung"
-    description: "Tägliche EMHASS-Optimierung um 5:30 mit ENTSO-e Börsenpreisen + Solcast PV-Forecast"
+    description: >-
+      EMHASS-Optimierung 3x täglich:
+      05:30 Morgens (Tagesplan), 13:30 (neue ENTSO-e Preise für morgen),
+      18:00 (aktualisierter Solcast + Abendplan)
     trigger:
       - platform: time
         at: "05:30:00"
+      - platform: time
+        at: "13:30:00"
+      - platform: time
+        at: "18:00:00"
     action:
       - service: rest_command.emhass_dayahead
       - delay: "00:00:10"

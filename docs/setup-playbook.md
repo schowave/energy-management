@@ -137,7 +137,7 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 - [ ] App Store → "emhass" suchen → **Installieren**
 - [ ] App starten
 
-**Add-on konfigurieren (Web-UI: http://homeassistant.local:5001/configuration):**
+**Add-on konfigurieren (Web-UI: http://homeassistant.local:5000/configuration):**
 
 | Parameter | Wert | Erklärung |
 |---|---|---|
@@ -161,13 +161,13 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 - [ ] `configuration.yaml` enthält bereits: `emhass: !include emhass.yaml` (Package)
 - [ ] Das Package `emhass.yaml` definiert:
-  - `rest_command.emhass_dayahead` — POST mit 1komma5° Preisen + Solcast PV-Forecast
+  - `rest_command.emhass_dayahead` — POST mit ENTSO-e Börsenpreisen + Solcast PV-Forecast
   - `rest_command.emhass_publish` — Sensoren in HA aktualisieren
-  - `automation.emhass_dayahead_daily` — Trigger täglich um 05:30
+  - `automation.emhass_dayahead_daily` — Trigger 3× täglich: 05:30, 13:30, 18:00
 
 **Prüfen:**
 
-- [ ] EMHASS Web-UI: http://homeassistant.local:5001 → Configuration prüfen
+- [ ] EMHASS Web-UI: http://homeassistant.local:5000 → Configuration prüfen
 - [ ] Manuell testen: Entwicklerwerkzeuge → Dienste → `rest_command.emhass_dayahead` → Aufrufen
 - [ ] Sensoren prüfen: Entwicklerwerkzeuge → Zustände → nach `emhass` filtern
   - `sensor.p_pv_forecast` — PV-Prognose
@@ -182,10 +182,13 @@ Danach "Schließen" und die Seite neu laden (Ctrl+Shift+R).
 
 **Preisdaten:**
 
-> Die 1komma5° Preise (Dynamic Pulse inkl. Netzentgelte + MwSt.) werden per `rest_command.emhass_dayahead`
+> Die ENTSO-e Börsenpreise (`sensor.average_electricity_price`) werden per `rest_command.emhass_dayahead`
 > als `load_cost_forecast` übergeben. Jeder Stundenwert wird für zwei 30-Min-Slots dupliziert.
 > `prod_price_forecast` ist fest auf 0,082 EUR/kWh (EEG-Einspeisevergütung).
 > Solcast PV-Forecast wird aus `detailedForecast` extrahiert (kW → W × 1000).
+>
+> **Optimierungsintervalle:** 3× täglich — 05:30 (Tagesplan vor PV-Start),
+> 13:30 (neue ENTSO-e Preise für morgen ab ~13:00 CET), 18:00 (aktualisierter Solcast + Abendplan).
 
 ### 3.8 Terminal & SSH (optional, für CLI-Zugriff)
 
