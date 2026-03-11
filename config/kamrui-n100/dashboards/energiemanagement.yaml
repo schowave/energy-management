@@ -179,20 +179,20 @@ views:
         cards:
           - type: heading
             heading: "EMHASS Optimierung"
-          # Status-Karte
+          # Status-Karten
           - type: custom:mushroom-template-card
             primary: >-
               {% if states('sensor.optim_status') not in ['unknown', 'unavailable', ''] %}
-                Optimierung: {{ states('sensor.optim_status') }}
+                Status: {{ states('sensor.optim_status') }}
               {% else %}
-                Optimierung: Keine Daten
+                Status: Keine Daten
               {% endif %}
             secondary: >-
               {% set last = state_attr('automation.emhass_day_ahead_optimierung', 'last_triggered') %}
               {% if last %}
-                Letzte Automation: {{ as_timestamp(last) | timestamp_custom('%d.%m. %H:%M') }}
+                Letzte Berechnung: {{ as_timestamp(last) | timestamp_custom('%d.%m. %H:%M') }}
               {% else %}
-                Täglich 05:30 · Manuell via Button
+                Täglich 05:30, 13:30, 18:00
               {% endif %}
             icon: mdi:robot
             icon_color: >-
@@ -200,84 +200,73 @@ views:
               {% elif states('sensor.optim_status') in ['unknown', 'unavailable', ''] %}grey
               {% else %}red{% endif %}
             entity: automation.emhass_day_ahead_optimierung
-          # SOC + Batterie-Forecast
           - type: custom:mushroom-template-card
             primary: >-
-              {% if states('sensor.soc_batt_forecast') not in ['unknown', 'unavailable'] %}
-                SOC Plan: {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
-              {% else %}
-                SOC Plan: —
-              {% endif %}
-            secondary: >-
               {% if states('sensor.p_batt_forecast') not in ['unknown', 'unavailable'] %}
                 {% set p = states('sensor.p_batt_forecast') | float(0) %}
-                {% if p > 50 %}Laden {{ p | round(0) }} W
+                Batterie-Empfehlung: {% if p > 50 %}Laden {{ p | round(0) }} W
                 {% elif p < -50 %}Entladen {{ (p | abs) | round(0) }} W
-                {% else %}Idle{% endif %}
+                {% else %}Halten{% endif %}
               {% else %}
-                Batterie-Plan: —
+                Batterie-Empfehlung: —
               {% endif %}
+            secondary: >-
+              Akku {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}% (Empfehlung)
+              · {{ states('sensor.battery_level') | float(0) | round(0) }}% (Aktuell)
             icon: mdi:battery-sync
             icon_color: >-
               {% set p = states('sensor.p_batt_forecast') | float(0) %}
               {% if p > 50 %}green{% elif p < -50 %}orange{% else %}grey{% endif %}
             entity: sensor.p_batt_forecast
-          # Netz-Forecast
           - type: custom:mushroom-template-card
             primary: >-
               {% if states('sensor.p_grid_forecast') not in ['unknown', 'unavailable'] %}
                 {% set g = states('sensor.p_grid_forecast') | float(0) %}
-                {% if g > 50 %}Netzbezug: {{ g | round(0) }} W
-                {% elif g < -50 %}Einspeisung: {{ (g | abs) | round(0) }} W
-                {% else %}Netz: ~0 W{% endif %}
+                Netz-Empfehlung: {% if g > 50 %}Bezug {{ g | round(0) }} W
+                {% elif g < -50 %}Einspeisung {{ (g | abs) | round(0) }} W
+                {% else %}~0 W{% endif %}
               {% else %}
-                Netz-Plan: —
+                Netz-Empfehlung: —
               {% endif %}
             secondary: >-
-              {% if states('sensor.unit_load_cost') not in ['unknown', 'unavailable'] %}
-                Strompreis: {{ (states('sensor.unit_load_cost') | float(0) * 100) | round(2) }} ct/kWh
-              {% else %}
-                Preis: —
-              {% endif %}
+              Börsenpreis: {{ (states('sensor.unit_load_cost') | float(0) * 100) | round(2) }} ct/kWh
             icon: mdi:transmission-tower
             icon_color: >-
               {% set g = states('sensor.p_grid_forecast') | float(0) %}
               {% if g > 50 %}red{% elif g < -50 %}green{% else %}grey{% endif %}
             entity: sensor.p_grid_forecast
-          # Profit
           - type: custom:mushroom-template-card
             primary: >-
-              {% if states('sensor.total_cost_fun_value') not in ['unknown', 'unavailable'] %}
-                Tagesprofit: {{ states('sensor.total_cost_fun_value') | float(0) | round(2) }} €
-              {% else %}
-                Profit: —
-              {% endif %}
+              Erwarteter Tagesgewinn: {{ states('sensor.total_cost_fun_value') | float(0) | round(2) }} €
             secondary: >-
-              Einspeisevergütung: 8,2 ct/kWh
+              Einspeisevergütung: 8,20 ct/kWh
             icon: mdi:piggy-bank
             icon_color: >-
               {% set p = states('sensor.total_cost_fun_value') | float(0) %}
               {% if p > 0 %}green{% elif p < 0 %}red{% else %}grey{% endif %}
             entity: sensor.total_cost_fun_value
-          # EMHASS Power-Forecast Chart
+          # Leistungs-Empfehlung (data_generator für Sensoren mit forecasts-Attribut)
           - type: custom:apexcharts-card
             header:
               show: true
-              title: "EMHASS Optimierungsplan — Leistung"
+              title: "Empfohlener Leistungsverlauf"
+              show_states: true
+              colorize_states: true
+            now:
+              show: true
+              label: Jetzt
             graph_span: 24h
             span:
               start: day
             apex_config:
               chart:
-                height: 300
+                height: 350
               legend:
                 show: true
                 position: bottom
               tooltip:
                 shared: true
                 intersect: false
-              stroke:
-                curve: stepline
             yaxis:
               - id: power
                 apex_config:
@@ -288,54 +277,76 @@ views:
                       EVAL:function(val) { return val ? Math.round(val) : '0'; }
             series:
               - entity: sensor.p_pv_forecast
-                name: "PV Forecast"
-                color: "#FF6B35"
+                name: "PV-Erzeugung"
+                color: "#f59e0b"
                 stroke_width: 2
-                extend_to: false
-                yaxis_id: power
-                group_by:
-                  func: last
-                  duration: 30min
-              - entity: sensor.p_load_forecast
-                name: "Last Forecast"
-                color: "#FF9800"
-                stroke_width: 2
-                extend_to: false
-                yaxis_id: power
-                group_by:
-                  func: last
-                  duration: 30min
-              - entity: sensor.p_batt_forecast
-                name: "Batterie"
-                color: "#00BCD4"
-                stroke_width: 2
+                curve: stepline
                 type: area
-                opacity: 0.2
-                extend_to: false
+                opacity: 0.25
+                float_precision: 0
                 yaxis_id: power
+                show:
+                  in_header: before_now
+                data_generator: |
+                  var fc = entity.attributes.forecasts || [];
+                  return fc.map((e) => {
+                    return [new Date(e.date).getTime(), parseFloat(e.p_pv_forecast)];
+                  });
+              - entity: sensor.p_load_forecast
+                name: "Hausverbrauch"
+                color: "#ec4899"
+                stroke_width: 2
+                curve: stepline
+                type: area
+                opacity: 0.15
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: before_now
+                data_generator: |
+                  var fc = entity.attributes.forecasts || [];
+                  return fc.map((e) => {
+                    return [new Date(e.date).getTime(), parseFloat(e.p_load_forecast)];
+                  });
+              - entity: sensor.p_batt_forecast
+                name: "Akku (+Entladen / −Laden)"
+                color: "#22c55e"
+                stroke_width: 2
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                extend_to: false
                 group_by:
                   func: last
                   duration: 30min
               - entity: sensor.p_grid_forecast
-                name: "Netz"
-                color: "#2196F3"
+                name: "Netz (+Bezug / −Einspeisung)"
+                color: "#06b6d4"
                 stroke_width: 2
-                extend_to: false
+                curve: stepline
+                float_precision: 0
                 yaxis_id: power
-                group_by:
-                  func: last
-                  duration: 30min
-          # SOC Chart
+                show:
+                  in_header: before_now
+                data_generator: |
+                  var fc = entity.attributes.forecasts || [];
+                  return fc.map((e) => {
+                    return [new Date(e.date).getTime(), parseFloat(e.p_grid_forecast)];
+                  });
+          # Akkustand: Empfehlung vs. Realität
           - type: custom:apexcharts-card
             header:
               show: true
-              title: "EMHASS SOC-Plan vs. Real"
+              title: "Akkustand: Empfehlung vs. Realität"
+            now:
+              show: true
+              label: Jetzt
             graph_span: 24h
             span:
               start: day
             apex_config:
               chart:
-                height: 200
+                height: 220
               legend:
                 show: true
               tooltip:
@@ -350,7 +361,7 @@ views:
                     text: "%"
             series:
               - entity: sensor.soc_batt_forecast
-                name: "SOC Plan"
+                name: "Empfehlung"
                 color: "#4CAF50"
                 stroke_width: 2
                 curve: stepline
@@ -360,7 +371,7 @@ views:
                   func: last
                   duration: 30min
               - entity: sensor.battery_level
-                name: "SOC Real"
+                name: "Aktuell"
                 color: "#FF9800"
                 stroke_width: 2
                 curve: smooth
@@ -369,11 +380,14 @@ views:
                 group_by:
                   func: avg
                   duration: 15min
-          # Kosten-Chart
+          # Börsenpreis-Verlauf
           - type: custom:apexcharts-card
             header:
               show: true
-              title: "Stromkosten (EMHASS)"
+              title: "Börsenpreis (ENTSO-e)"
+            now:
+              show: true
+              label: Jetzt
             graph_span: 24h
             span:
               start: day
@@ -396,7 +410,7 @@ views:
                       EVAL:function(val) { return val ? val.toFixed(2) : '0.00'; }
             series:
               - entity: sensor.unit_load_cost
-                name: "Bezugskosten"
+                name: "Bezugspreis"
                 color: "#F44336"
                 stroke_width: 2
                 curve: stepline
