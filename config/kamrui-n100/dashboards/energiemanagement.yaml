@@ -831,31 +831,61 @@ views:
           - type: heading
             heading: "Batterie-Steuerung"
           - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
             primary: >-
-              {% if is_state_attr('select.battery_forced_charge_discharge', 'state', 'Forced charge') or
-                    states('select.battery_forced_charge_discharge') == 'Forced charge' %}
-                Zwangsladen aktiv
-              {% else %}
-                Eigenverbrauchsmodus
-              {% endif %}
+              {% set mode = states('select.battery_forced_charge_discharge') %}
+              {% if mode == 'Forced charge' %}Zwangsladen
+              {% elif mode == 'Forced discharge' %}Zwangsentladen
+              {% else %}Eigenverbrauch{% endif %}
+              · SOC {{ states('sensor.battery_level') }}%
             secondary: >-
-              SOC {{ states('sensor.battery_level') }}% · Ladeleistung {{ states('sensor.battery_charging_power') }} W
+              {% if is_state('binary_sensor.battery_charging', 'on') %}
+                ↑ Laden {{ states('sensor.battery_charging_power') }} W · {{ states('sensor.battery_current') }} A
+                {%- if states('select.battery_forced_charge_discharge') == 'Forced charge' %}
+                  · Soll {{ states('sensor.battery_forced_charge_discharge_power') }} W
+                {%- endif %}
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}
+                ↓ Entladen {{ states('sensor.battery_discharging_power') }} W · {{ states('sensor.battery_current') }} A
+                {%- if states('select.battery_forced_charge_discharge') == 'Forced charge' %}
+                  · ⚠ Forced Charge aktiv aber Entladung!
+                {%- endif %}
+              {% else %}
+                Idle — kein Lade-/Entladevorgang
+              {% endif %}
+              Max {{ states('sensor.battery_max_charge_power') | int }} W Laden · {{ states('sensor.battery_max_discharge_power') | int }} W Entladen
             icon: >-
-              {% if states('select.battery_forced_charge_discharge') == 'Forced charge' %}
-                mdi:battery-charging-high
+              {% set soc = states('sensor.battery_level') | float(0) %}
+              {% if is_state('binary_sensor.battery_charging', 'on') %}
+                {% if soc > 80 %}mdi:battery-charging-high
+                {% elif soc > 40 %}mdi:battery-charging-medium
+                {% else %}mdi:battery-charging-low{% endif %}
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}
+                {% if soc > 80 %}mdi:battery-high
+                {% elif soc > 40 %}mdi:battery-medium
+                {% else %}mdi:battery-low{% endif %}
               {% else %}
                 mdi:battery-check
               {% endif %}
             icon_color: >-
-              {% if states('select.battery_forced_charge_discharge') == 'Forced charge' %}
-                orange
-              {% else %}
-                green
-              {% endif %}
+              {% set mode = states('select.battery_forced_charge_discharge') %}
+              {% if mode == 'Forced charge' %}orange
+              {% elif is_state('binary_sensor.battery_charging', 'on') %}green
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}
+                {% if states('sensor.battery_level') | float(0) < 20 %}red{% else %}amber{% endif %}
+              {% else %}grey{% endif %}
             entity: select.battery_forced_charge_discharge
+            badge_icon: >-
+              {% if is_state('binary_sensor.battery_charging', 'on') %}mdi:arrow-up-bold
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}mdi:arrow-down-bold
+              {% else %}mdi:pause{% endif %}
+            badge_color: >-
+              {% if is_state('binary_sensor.battery_charging', 'on') %}green
+              {% elif is_state('binary_sensor.battery_discharging', 'on') %}amber
+              {% else %}grey{% endif %}
           - type: button
-            name: "Zwangsladen 1h / 5kW"
-            icon: mdi:battery-charging-60
+            name: "1h / 5kW"
+            icon: mdi:battery-arrow-up
             icon_height: 40px
             tap_action:
               action: call-service
@@ -866,8 +896,8 @@ views:
               confirmation:
                 text: "Batterie 1 Stunde mit 5 kW zwangsladen?"
           - type: button
-            name: "Zwangsladen 2h / 5kW"
-            icon: mdi:battery-charging-80
+            name: "2h / 5kW"
+            icon: mdi:battery-clock
             icon_height: 40px
             tap_action:
               action: call-service
@@ -878,8 +908,8 @@ views:
               confirmation:
                 text: "Batterie 2 Stunden mit 5 kW zwangsladen?"
           - type: button
-            name: "Zwangsladen stoppen"
-            icon: mdi:stop-circle-outline
+            name: "Stoppen"
+            icon: mdi:battery-remove
             icon_height: 40px
             tap_action:
               action: call-service
