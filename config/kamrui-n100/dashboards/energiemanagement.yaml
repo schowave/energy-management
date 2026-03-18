@@ -990,20 +990,20 @@ views:
               | | Thermisch | Elektrisch | COP |
               |---|---|---|---|
               | **Heizung** | {{ states('sensor.wp_heizung_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_heizung_monatlich') }}** |
-              | **Warmwasser** | {{ states('sensor.wp_ww_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_monatlich') }}** |
-              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_monatlich') | float(0) + states('sensor.wp_ww_thermisch_monatlich') | float(0)) | round(1) }} kWh | {{ el | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_monatlich') }}** |
+              | **Warmwasser** | {{ states('sensor.wp_warmwasser_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_monatlich') }}** |
+              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_monatlich') | float(0) + states('sensor.wp_warmwasser_thermisch_monatlich') | float(0)) | round(1) }} kWh | {{ el | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_monatlich') }}** |
               {% else %}
               *Noch nicht genug Daten für diesen Monat.*
               {% endif %}
 
               ### Gesamt (seit Tracking)
-              {% set el_t = states('sensor.wp_strom_gesamt') | float(0) %}
+              {% set el_t = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
               {% if el_t > 1 %}
               | | Thermisch | Elektrisch | COP |
               |---|---|---|---|
-              | **Heizung** | {{ states('sensor.wp_heizung_thermisch_gesamt') }} kWh | — | **{{ states('sensor.wp_cop_heizung_gesamt') }}** |
-              | **Warmwasser** | {{ states('sensor.wp_ww_thermisch_gesamt') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_gesamt') }}** |
-              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_gesamt') | float(0) + states('sensor.wp_ww_thermisch_gesamt') | float(0)) | round(1) }} kWh | {{ el_t | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_gesamt') }}** |
+              | **Heizung** | {{ states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') }} kWh | — | **{{ states('sensor.wp_cop_heizung_gesamt') }}** |
+              | **Warmwasser** | {{ states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_gesamt') }}** |
+              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) + states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0)) | round(1) }} kWh | {{ el_t | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_gesamt') }}** |
               {% else %}
               *Noch nicht genug Daten.*
               {% endif %}
