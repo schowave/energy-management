@@ -11,13 +11,11 @@ rest_command:
     timeout: 120
     payload: >-
       {%- set all_prices = state_attr('sensor.average_electricity_price', 'prices') or [] -%}
-      {%- set current_hour = now().hour -%}
+      {%- set now_ts = as_timestamp(now()) -%}
+      {%- set current_hour_start = as_timestamp(now().replace(minute=0, second=0, microsecond=0)) -%}
       {%- set ns = namespace(prices=[]) -%}
       {%- for f in all_prices -%}
-        {%- set hour = as_timestamp(f.time) | timestamp_custom('%H', true) | int -%}
-        {%- set day = as_timestamp(f.time) | timestamp_custom('%d', true) | int -%}
-        {%- set today = now().day -%}
-        {%- if (day == today and hour >= current_hour) or day > today -%}
+        {%- if as_timestamp(f.time) >= current_hour_start -%}
           {%- set ns.prices = ns.prices + [f.price, f.price] -%}
         {%- endif -%}
       {%- endfor -%}
@@ -26,9 +24,7 @@ rest_command:
       {%- set pv_tomorrow = state_attr('sensor.solcast_pv_forecast_prognose_morgen', 'detailedForecast') or [] -%}
       {%- set ns2 = namespace(pv=[]) -%}
       {%- for f in pv_today -%}
-        {%- set hour = as_timestamp(f.period_start) | timestamp_custom('%H', true) | int -%}
-        {%- set minute = as_timestamp(f.period_start) | timestamp_custom('%M', true) | int -%}
-        {%- if hour > current_hour or (hour == current_hour and minute >= 0) -%}
+        {%- if as_timestamp(f.period_start) >= current_hour_start -%}
           {%- set ns2.pv = ns2.pv + [(f.pv_estimate * 1000) | round(0)] -%}
         {%- endif -%}
       {%- endfor -%}

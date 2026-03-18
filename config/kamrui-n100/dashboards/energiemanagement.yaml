@@ -671,8 +671,8 @@ views:
                 group_by:
                   func: last
                   duration: 30min
-              # Netz: Real (Vergangenheit) + Forecast (Zukunft)
-              - entity: sensor.import_power
+              # Netz: Real (Vergangenheit, +Bezug / -Einspeisung) + Forecast (Zukunft)
+              - entity: sensor.energy_grid_import_power_export_power_net_power
                 name: "Netz Real"
                 color: "#06b6d4"
                 stroke_width: 2
@@ -798,14 +798,11 @@ views:
                 show:
                   in_header: false
                 data_generator: |
-                  var now = Date.now();
                   var start = new Date();
                   start.setHours(0,0,0,0);
-                  var points = [];
-                  for (var t = start.getTime(); t <= now + 24*3600*1000; t += 1800*1000) {
-                    points.push([t, 0.082]);
-                  }
-                  return points;
+                  var end = new Date(start);
+                  end.setDate(end.getDate() + 1);
+                  return [[start.getTime(), 0.082], [end.getTime(), 0.082]];
           # Aktions-Buttons
           - type: heading
             heading: "EMHASS Aktionen"
