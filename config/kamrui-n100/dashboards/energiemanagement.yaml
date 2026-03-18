@@ -957,16 +957,77 @@ views:
             name: Stromaufnahme (myUplink)
             icon: mdi:flash
             icon_color: amber
+          # ── Wärmequelle + Soll/Ist ─────────────────────
+          - type: heading
+            heading: "Wärmequelle & Soll/Ist"
           - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_heating
-            name: Heizung gesamt
-            icon: mdi:counter
-            icon_color: red
+            entity: sensor.licv_8_2r1_3_heat_source_inlet
+            name: Wärmequelle Eintritt
+            icon: mdi:thermometer-water
+            icon_color: teal
           - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_domestic_hot_water
-            name: Warmwasser gesamt
-            icon: mdi:counter
-            icon_color: orange
+            entity: sensor.licv_8_2r1_3_flow_rate
+            name: Durchfluss
+            icon: mdi:waves-arrow-right
+            icon_color: cyan
+          - type: custom:mushroom-template-card
+            primary: "Heizen: {{ states('sensor.licv_8_2r1_3_return') }}°C → Soll {{ states('sensor.licv_8_2r1_3_return_target') }}°C"
+            secondary: >-
+              {% set ist = states('sensor.licv_8_2r1_3_return') | float(0) %}
+              {% set soll = states('sensor.licv_8_2r1_3_return_target') | float(0) %}
+              {% set diff = (ist - soll) | round(1) %}
+              {% if diff > 0.5 %}Über Soll (+{{ diff }}°C)
+              {% elif diff < -0.5 %}Unter Soll ({{ diff }}°C)
+              {% else %}Im Sollbereich{% endif %}
+            icon: mdi:target
+            icon_color: >-
+              {% set ist = states('sensor.licv_8_2r1_3_return') | float(0) %}
+              {% set soll = states('sensor.licv_8_2r1_3_return_target') | float(0) %}
+              {% if (ist - soll) | abs < 1 %}green{% elif ist < soll %}blue{% else %}orange{% endif %}
+            entity: sensor.licv_8_2r1_3_return_target
+          - type: custom:mushroom-template-card
+            primary: "WW: {{ states('sensor.licv_8_2r1_3_dhw') }}°C → Soll {{ states('sensor.licv_8_2r1_3_dhw_target') }}°C"
+            secondary: >-
+              {% set ist = states('sensor.licv_8_2r1_3_dhw') | float(0) %}
+              {% set soll = states('sensor.licv_8_2r1_3_dhw_target') | float(0) %}
+              {% set diff = (ist - soll) | round(1) %}
+              {% if diff > 0.5 %}Über Soll (+{{ diff }}°C)
+              {% elif diff < -0.5 %}Unter Soll ({{ diff }}°C)
+              {% else %}Im Sollbereich{% endif %}
+            icon: mdi:target
+            icon_color: >-
+              {% set ist = states('sensor.licv_8_2r1_3_dhw') | float(0) %}
+              {% set soll = states('sensor.licv_8_2r1_3_dhw_target') | float(0) %}
+              {% if (ist - soll) | abs < 1 %}green{% elif ist < soll %}blue{% else %}orange{% endif %}
+            entity: sensor.licv_8_2r1_3_dhw_target
+          - type: custom:mushroom-number-card
+            entity: number.licv_8_2r1_3_sollwert_heizen
+            name: "Sollwert Heizung"
+            icon: mdi:thermostat
+            display_mode: slider
+          - type: custom:mushroom-number-card
+            entity: number.licv_8_2r1_3_sollwert_warmw
+            name: "Sollwert Warmwasser"
+            icon: mdi:thermostat
+            display_mode: slider
+          # ── Diagnose ───────────────────────────────────
+          - type: heading
+            heading: "Diagnose"
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% if is_state('binary_sensor.licv_8_2r1_3_alarm', 'on') %}Alarm aktiv!{% else %}Kein Alarm{% endif %}
+            secondary: >-
+              HD {{ states('sensor.licv_8_2r1_3_hd') }} bar · ND {{ states('sensor.licv_8_2r1_3_nd') }} bar
+            icon: >-
+              {% if is_state('binary_sensor.licv_8_2r1_3_alarm', 'on') %}mdi:alert-circle{% else %}mdi:check-circle{% endif %}
+            icon_color: >-
+              {% if is_state('binary_sensor.licv_8_2r1_3_alarm', 'on') %}red{% else %}green{% endif %}
+            entity: binary_sensor.licv_8_2r1_3_alarm
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_operating_hours_hp
+            name: Betriebsstunden Verdichter
+            icon: mdi:clock-outline
+            icon_color: blue
           - type: custom:mushroom-entity-card
             entity: sensor.licv_8_2r1_3_operat_hours_heat
             name: Betriebsstunden Heizen
@@ -977,6 +1038,26 @@ views:
             name: Betriebsstunden WW
             icon: mdi:clock-outline
             icon_color: grey
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_waermepumpe_3em_energie
+            name: Stromzähler (Shelly 3EM)
+            icon: mdi:meter-electric
+            icon_color: amber
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_total_heat_quant_hs
+            name: Wärmemenge gesamt
+            icon: mdi:fire-circle
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_heating
+            name: Heizung gesamt
+            icon: mdi:counter
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_domestic_hot_water
+            name: Warmwasser gesamt
+            icon: mdi:counter
+            icon_color: orange
           - type: heading
             heading: "COP (Leistungszahl)"
           - type: markdown
@@ -1191,6 +1272,27 @@ views:
                 extend_to: false
                 group_by:
                   func: avg
+                  duration: 5min
+                yaxis_id: temp
+              - entity: sensor.licv_8_2r1_3_heat_source_inlet
+                name: Wärmequelle
+                color: "#009688"
+                stroke_width: 1
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: temp
+              - entity: sensor.licv_8_2r1_3_return_target
+                name: Soll Rücklauf
+                color: "#2196F3"
+                stroke_width: 1
+                stroke_dash: 4
+                curve: stepline
+                extend_to: false
+                group_by:
+                  func: last
                   duration: 5min
                 yaxis_id: temp
               - entity: sensor.licv_8_2r1_3_outdoor_temp
