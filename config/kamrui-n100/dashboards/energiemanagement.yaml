@@ -593,38 +593,71 @@ views:
                     formatter: |
                       EVAL:function(val) { return val ? Math.round(val) : '0'; }
             series:
-              - entity: sensor.p_pv_forecast
-                name: "PV-Erzeugung"
+              # PV: Real (Vergangenheit) + Forecast (Zukunft)
+              - entity: sensor.total_dc_power
+                name: "PV Real"
                 color: "#f59e0b"
                 stroke_width: 2
-                curve: stepline
+                curve: smooth
                 type: area
                 opacity: 0.25
                 float_precision: 0
                 yaxis_id: power
                 show:
-                  in_header: before_now
+                  in_header: raw
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.p_pv_forecast
+                name: "PV Forecast"
+                color: "#d97706"
+                stroke_width: 2
+                stroke_dash: 5
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: false
+                  legend_value: false
                 data_generator: |
+                  var now = Date.now();
                   var fc = entity.attributes.forecasts || [];
-                  return fc.map((e) => {
-                    return [new Date(e.date).getTime(), parseFloat(e.p_pv_forecast)];
-                  });
-              - entity: sensor.p_load_forecast
-                name: "Hausverbrauch"
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_pv_forecast)]);
+              # Hausverbrauch: Real (Vergangenheit) + Forecast (Zukunft)
+              - entity: sensor.load_power
+                name: "Hausverbrauch Real"
                 color: "#ec4899"
                 stroke_width: 2
-                curve: stepline
+                curve: smooth
                 type: area
                 opacity: 0.15
                 float_precision: 0
                 yaxis_id: power
                 show:
-                  in_header: before_now
+                  in_header: raw
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.p_load_forecast
+                name: "Verbrauch Forecast"
+                color: "#be185d"
+                stroke_width: 2
+                stroke_dash: 5
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: false
+                  legend_value: false
                 data_generator: |
+                  var now = Date.now();
                   var fc = entity.attributes.forecasts || [];
-                  return fc.map((e) => {
-                    return [new Date(e.date).getTime(), parseFloat(e.p_load_forecast)];
-                  });
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_load_forecast)]);
+              # Akku: Recorder-History (stabil)
               - entity: sensor.p_batt_forecast
                 name: "Akku (+Entladen / −Laden)"
                 color: "#22c55e"
@@ -638,20 +671,36 @@ views:
                 group_by:
                   func: last
                   duration: 30min
-              - entity: sensor.p_grid_forecast
-                name: "Netz (+Bezug / −Einspeisung)"
+              # Netz: Real (Vergangenheit) + Forecast (Zukunft)
+              - entity: sensor.import_power
+                name: "Netz Real"
                 color: "#06b6d4"
                 stroke_width: 2
-                curve: stepline
+                curve: smooth
                 float_precision: 0
                 yaxis_id: power
                 show:
                   in_header: raw
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.p_grid_forecast
+                name: "Netz Forecast"
+                color: "#0891b2"
+                stroke_width: 2
+                stroke_dash: 5
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: false
+                  legend_value: false
                 data_generator: |
+                  var now = Date.now();
                   var fc = entity.attributes.forecasts || [];
-                  return fc.map((e) => {
-                    return [new Date(e.date).getTime(), parseFloat(e.p_grid_forecast)];
-                  });
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_grid_forecast)]);
           # Akkustand: Empfehlung vs. Realität
           - type: custom:apexcharts-card
             header:
@@ -728,28 +777,35 @@ views:
                     formatter: |
                       EVAL:function(val) { return val ? val.toFixed(2) : '0.00'; }
             series:
-              - entity: sensor.unit_load_cost
-                name: "Bezugspreis"
+              - entity: sensor.current_electricity_market_price
+                name: "Börsenpreis"
                 color: "#F44336"
                 stroke_width: 2
                 curve: stepline
-                float_precision: 2
+                float_precision: 4
                 extend_to: false
                 yaxis_id: cost
                 group_by:
                   func: last
                   duration: 30min
-              - entity: sensor.unit_prod_price
+              - entity: sensor.current_electricity_market_price
                 name: "Einspeisevergütung"
                 color: "#4CAF50"
-                stroke_width: 2
-                float_precision: 2
+                stroke_width: 1
                 curve: stepline
-                extend_to: false
+                float_precision: 4
                 yaxis_id: cost
-                group_by:
-                  func: last
-                  duration: 30min
+                show:
+                  in_header: false
+                data_generator: |
+                  var now = Date.now();
+                  var start = new Date();
+                  start.setHours(0,0,0,0);
+                  var points = [];
+                  for (var t = start.getTime(); t <= now + 24*3600*1000; t += 1800*1000) {
+                    points.push([t, 0.082]);
+                  }
+                  return points;
           # Aktions-Buttons
           - type: heading
             heading: "EMHASS Aktionen"

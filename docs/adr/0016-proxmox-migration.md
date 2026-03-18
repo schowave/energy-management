@@ -41,13 +41,14 @@ Migration auf **Proxmox VE** mit HA OS als VM und weiteren Diensten als LXC-Cont
 │  │  4 GB    │ │  1 GB    │ │  512 MB   │            │
 │  └──────────┘ └──────────┘ └───────────┘            │
 │                                                      │
-│  ┌──────────┐ ┌──────────┐                           │
-│  │ Pi-hole  │ │cloudflared│                          │
-│  │   LXC    │ │   LXC    │                          │
-│  │  512 MB  │ │  256 MB  │                          │
-│  └──────────┘ └──────────┘                           │
+│  ┌──────────┐ ┌──────────┐ ┌─────────────┐           │
+│  │ Pi-hole  │ │cloudflared│ │ Docker-Host │           │
+│  │   LXC    │ │   LXC    │ │    LXC      │           │
+│  │  512 MB  │ │  256 MB  │ │   2 GB      │           │
+│  └──────────┘ └──────────┘ │ Paperless-ngx│          │
+│                             └─────────────┘           │
 │                                                      │
-│          ~7 GB belegt, ~9 GB frei                    │
+│          ~8 GB belegt, ~7 GB frei                    │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -62,6 +63,7 @@ Migration auf **Proxmox VE** mit HA OS als VM und weiteren Diensten als LXC-Cont
 | **InfluxDB** | HA Add-on | Eigener LXC | Eigene Ressourcen, besser bei vielen Sensoren |
 | **Grafana** | HA Add-on | Eigener LXC | Eigene Subdomain, unabhängig von HA |
 | **Pi-hole** | — | Eigener LXC | Neu, DNS-Werbeblocker |
+| **Paperless-ngx** | — | Docker in LXC | Neu, Dokumentenmanagement mit OCR |
 
 ### Faustregel: Was bleibt als HA Add-on?
 

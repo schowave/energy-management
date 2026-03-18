@@ -3,23 +3,44 @@
 
 rest_command:
   # Day-Ahead Optimierung mit ENTSO-e Börsenpreisen + Solcast PV-Forecast
-  # 48 Werte (24h × 2 bei 30-Min-Schritten)
+  # 48 Werte (24h × 2 bei 30-Min-Schritten), ab aktueller Stunde
   emhass_dayahead:
     url: "http://5b918bf2-emhass:5000/action/dayahead-optim"
     method: POST
     content_type: "application/json"
     timeout: 120
     payload: >-
-      {%- set prices_today = state_attr('sensor.average_electricity_price', 'prices_today') or [] -%}
+      {%- set all_prices = state_attr('sensor.average_electricity_price', 'prices') or [] -%}
+      {%- set current_hour = now().hour -%}
       {%- set ns = namespace(prices=[]) -%}
-      {%- for f in prices_today[:24] -%}
-        {%- set ns.prices = ns.prices + [f.price, f.price] -%}
+      {%- for f in all_prices -%}
+        {%- set hour = as_timestamp(f.time) | timestamp_custom('%H', true) | int -%}
+        {%- set day = as_timestamp(f.time) | timestamp_custom('%d', true) | int -%}
+        {%- set today = now().day -%}
+        {%- if (day == today and hour >= current_hour) or day > today -%}
+          {%- set ns.prices = ns.prices + [f.price, f.price] -%}
+        {%- endif -%}
       {%- endfor -%}
-      {%- set pv_raw = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') or [] -%}
+      {%- set ns.prices = ns.prices[:48] -%}
+      {%- set pv_today = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') or [] -%}
+      {%- set pv_tomorrow = state_attr('sensor.solcast_pv_forecast_prognose_morgen', 'detailedForecast') or [] -%}
       {%- set ns2 = namespace(pv=[]) -%}
-      {%- for f in pv_raw[:48] -%}
+      {%- for f in pv_today -%}
+        {%- set hour = as_timestamp(f.period_start) | timestamp_custom('%H', true) | int -%}
+        {%- set minute = as_timestamp(f.period_start) | timestamp_custom('%M', true) | int -%}
+        {%- if hour > current_hour or (hour == current_hour and minute >= 0) -%}
+          {%- set ns2.pv = ns2.pv + [(f.pv_estimate * 1000) | round(0)] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- for f in pv_tomorrow -%}
         {%- set ns2.pv = ns2.pv + [(f.pv_estimate * 1000) | round(0)] -%}
       {%- endfor -%}
+      {%- set ns2.pv = ns2.pv[:48] -%}
+      {%- if ns2.pv | length < 48 -%}
+        {%- for i in range(48 - ns2.pv | length) -%}
+          {%- set ns2.pv = ns2.pv + [0] -%}
+        {%- endfor -%}
+      {%- endif -%}
       {
         "load_cost_forecast": {{ ns.prices | to_json }},
         "prod_price_forecast": [
@@ -29,7 +50,7 @@ rest_command:
         ],
         "pv_power_forecast": {{ ns2.pv | to_json }},
         "soc_init": {{ states('sensor.battery_level') | float(50) / 100 }},
-        "soc_final": 0.50
+        "soc_final": 0.05
       }
 
   # Publish: Aktualisiert EMHASS-Sensoren in HA

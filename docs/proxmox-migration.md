@@ -217,6 +217,90 @@ bash -c "$(wget -qLO - https://community-scripts.github.io/ProxmoxVE/scripts?id=
 - [ ] InfluxDB als Datasource hinzufügen (neue LXC-IP)
 - [ ] Dashboards neu aufbauen oder aus HA-Grafana exportieren/importieren
 
+### 4.6 Docker-Host LXC (Paperless-ngx & weitere)
+
+Für Anwendungen, die es nicht als fertiges Community-Script gibt, einen Docker-Host LXC erstellen:
+
+```bash
+bash -c "$(wget -qLO - https://community-scripts.github.io/ProxmoxVE/scripts?id=docker)"
+```
+
+- [ ] LXC wird erstellt (Debian + Docker + Docker Compose)
+- [ ] RAM: mindestens 2 GB empfohlen (Paperless-ngx + Redis + PostgreSQL)
+
+#### Paperless-ngx installieren
+
+Im Docker-Host LXC-Terminal:
+
+```bash
+mkdir -p /opt/paperless && cd /opt/paperless
+
+# Docker Compose File erstellen
+cat > docker-compose.yml << 'EOF'
+services:
+  broker:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: <SICHERES-PASSWORT>
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
+    ports:
+      - "8000:8000"
+    volumes:
+      - data:/usr/src/paperless/data
+      - media:/usr/src/paperless/media
+      - /opt/paperless/export:/usr/src/paperless/export
+      - /opt/paperless/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: <SICHERES-PASSWORT>
+      PAPERLESS_OCR_LANGUAGE: deu
+      PAPERLESS_TIME_ZONE: Europe/Berlin
+      PAPERLESS_URL: https://paperless.schowalter.co
+
+volumes:
+  data:
+  media:
+  pgdata:
+  redis-data:
+EOF
+
+docker compose up -d
+```
+
+- [ ] Warten bis alle Container laufen: `docker compose ps`
+- [ ] Superuser anlegen: `docker compose exec webserver createsuperuser`
+- [ ] Paperless-ngx Web-UI: `http://<DOCKER-LXC-IP>:8000`
+- [ ] Cloudflared-Config ergänzen: `paperless.schowalter.co → http://<DOCKER-LXC-IP>:8000`
+- [ ] Optional: Consume-Verzeichnis auf Synology NAS mounten (Scan → automatischer Import)
+
+#### Weitere Docker-Anwendungen
+
+Im selben LXC können weitere Compose-Stacks hinzugefügt werden:
+
+```bash
+mkdir -p /opt/<anwendung> && cd /opt/<anwendung>
+# docker-compose.yml erstellen, docker compose up -d
+```
+
 ## Phase 5: Validierung
 
 ### 5.1 Home Assistant
@@ -231,9 +315,10 @@ bash -c "$(wget -qLO - https://community-scripts.github.io/ProxmoxVE/scripts?id=
 ### 5.2 Neue Dienste
 
 - [ ] Pi-hole: DNS-Auflösung funktioniert, Ads werden geblockt
-- [ ] Cloudflared: Alle Subdomains erreichbar (`ha.`, `grafana.`, `pihole.`)
+- [ ] Cloudflared: Alle Subdomains erreichbar (`ha.`, `grafana.`, `pihole.`, `paperless.`)
 - [ ] InfluxDB: Sensordaten kommen an (HA → InfluxDB)
 - [ ] Grafana: Dashboards zeigen Daten
+- [ ] Paperless-ngx: Web-UI erreichbar, OCR funktioniert (Testdokument hochladen)
 - [ ] Alle LXCs starten automatisch nach Reboot
 
 ### 5.3 Proxmox
@@ -261,5 +346,6 @@ bash -c "$(wget -qLO - https://community-scripts.github.io/ProxmoxVE/scripts?id=
 | 102 | Cloudflared | LXC | 256 MB | 1 Core | Ja |
 | 103 | InfluxDB | LXC | 1 GB | 1 Core | Ja |
 | 104 | Grafana | LXC | 512 MB | 1 Core | Ja |
-| — | **Gesamt** | — | **~6.3 GB** | — | — |
-| — | **Frei (von 16 GB)** | — | **~8-9 GB** | — | — |
+| 105 | Docker-Host (Paperless-ngx) | LXC | 2 GB | 2 Cores | Ja |
+| — | **Gesamt** | — | **~8.3 GB** | — | — |
+| — | **Frei (von 16 GB)** | — | **~6-7 GB** | — | — |
