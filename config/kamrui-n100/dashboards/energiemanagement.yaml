@@ -491,9 +491,11 @@ views:
   - type: sections
     title: "Optimierung & Steuerung"
     icon: mdi:robot
+    max_columns: 3
     sections:
       # ── EMHASS Optimierung ─────────────────────────────
       - type: grid
+        column_span: 2
         cards:
           - type: heading
             heading: "EMHASS Optimierung"
@@ -564,6 +566,8 @@ views:
             entity: sensor.total_cost_fun_value
           # Leistungs-Empfehlung
           - type: custom:apexcharts-card
+            grid_options:
+              columns: full
             header:
               show: true
               title: "Empfohlener Leistungsverlauf"
@@ -703,6 +707,8 @@ views:
                     .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_grid_forecast)]);
           # Akkustand: Empfehlung vs. Realität
           - type: custom:apexcharts-card
+            grid_options:
+              columns: full
             header:
               show: true
               title: "Akkustand: Empfehlung vs. Realität"
@@ -750,6 +756,8 @@ views:
                   duration: 15min
           # Börsenpreis-Verlauf
           - type: custom:apexcharts-card
+            grid_options:
+              columns: full
             header:
               show: true
               title: "Börsenpreis (ENTSO-e)"
@@ -853,7 +861,6 @@ views:
               {% else %}
                 Idle — kein Lade-/Entladevorgang
               {% endif %}
-              Max {{ states('sensor.battery_max_charge_power') | int }} W Laden · {{ states('sensor.battery_max_discharge_power') | int }} W Entladen
             icon: >-
               {% set soc = states('sensor.battery_level') | float(0) %}
               {% if is_state('binary_sensor.battery_charging', 'on') %}
@@ -957,6 +964,13 @@ views:
               action: toggle
               confirmation:
                 text: "Extra Warmwasser umschalten?"
+
+
+      # ── WP Temperaturen & Soll/Ist ────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Temperaturen & Soll/Ist"
           - type: custom:mushroom-entity-card
             entity: sensor.licv_8_2r1_3_flow
             name: Vorlauf
@@ -977,19 +991,6 @@ views:
             name: Außentemperatur
             icon: mdi:home-thermometer-outline
             icon_color: green
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_heating_capacity
-            name: Heizleistung
-            icon: mdi:fire
-            icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: sensor.licv_8_2r1_3_power_consumption
-            name: Stromaufnahme (myUplink)
-            icon: mdi:flash
-            icon_color: amber
-          # ── Wärmequelle + Soll/Ist ─────────────────────
-          - type: heading
-            heading: "Wärmequelle & Soll/Ist"
           - type: custom:mushroom-entity-card
             entity: sensor.licv_8_2r1_3_heat_source_inlet
             name: Wärmequelle Eintritt
@@ -1040,9 +1041,60 @@ views:
             name: "Sollwert Warmwasser"
             icon: mdi:thermostat
             display_mode: slider
-          # ── Diagnose ───────────────────────────────────
+
+      # ── WP Status & Diagnose ──────────────────────
+      - type: grid
+        cards:
           - type: heading
-            heading: "Diagnose"
+            heading: "Status & Diagnose"
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set mode = states('sensor.licv_8_2r1_3_operation_mode') | float(0) | int %}
+              {% set modes = {0: 'Heizen', 1: 'Warmwasser', 2: 'Kühlen', 3: 'Abtauen', 4: 'Schwimmbad', 5: 'Standby', 6: 'EVU-Sperre', 7: 'Fehler'} %}
+              {{ modes.get(mode, 'Unbekannt (' ~ mode ~ ')') }}
+            secondary: >-
+              {% if is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') %}Verdichter läuft{% else %}Verdichter aus{% endif %}
+              {% if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') %} · Heizstab aktiv!{% endif %}
+            icon: >-
+              {% set mode = states('sensor.licv_8_2r1_3_operation_mode') | float(0) | int %}
+              {% if mode == 0 %}mdi:radiator{% elif mode == 1 %}mdi:water-boiler{% elif mode == 3 %}mdi:snowflake-melt{% elif mode == 7 %}mdi:alert{% else %}mdi:heat-pump-outline{% endif %}
+            icon_color: >-
+              {% if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') %}red
+              {% elif is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') %}blue
+              {% else %}grey{% endif %}
+            entity: sensor.licv_8_2r1_3_operation_mode
+          - type: custom:mushroom-chips-card
+            grid_options:
+              columns: full
+            chips:
+              - type: template
+                content: >-
+                  VD1 {{ 'AN' if is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') else 'AUS' }}
+                icon: mdi:heat-pump
+                icon_color: >-
+                  {{ 'blue' if is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') else 'grey' }}
+                entity: binary_sensor.licv_8_2r1_3_vd1
+              - type: template
+                content: >-
+                  Heizstab {{ 'AN' if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') else 'AUS' }}
+                icon: mdi:lightning-bolt
+                icon_color: >-
+                  {{ 'red' if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') else 'grey' }}
+                entity: binary_sensor.licv_8_2r1_3_el_heater
+              - type: template
+                content: >-
+                  HUP {{ 'AN' if is_state('binary_sensor.licv_8_2r1_3_hup', 'on') else 'AUS' }}
+                icon: mdi:pump
+                icon_color: >-
+                  {{ 'cyan' if is_state('binary_sensor.licv_8_2r1_3_hup', 'on') else 'grey' }}
+                entity: binary_sensor.licv_8_2r1_3_hup
+              - type: template
+                content: >-
+                  EVU {{ 'Frei' if is_state('binary_sensor.licv_8_2r1_3_evu', 'on') else 'Sperre!' }}
+                icon: mdi:transmission-tower
+                icon_color: >-
+                  {{ 'green' if is_state('binary_sensor.licv_8_2r1_3_evu', 'on') else 'red' }}
+                entity: binary_sensor.licv_8_2r1_3_evu
           - type: custom:mushroom-template-card
             primary: >-
               {% if is_state('binary_sensor.licv_8_2r1_3_alarm', 'on') %}Alarm aktiv!{% else %}Kein Alarm{% endif %}
@@ -1053,6 +1105,16 @@ views:
             icon_color: >-
               {% if is_state('binary_sensor.licv_8_2r1_3_alarm', 'on') %}red{% else %}green{% endif %}
             entity: binary_sensor.licv_8_2r1_3_alarm
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_heating_capacity
+            name: Heizleistung
+            icon: mdi:fire
+            icon_color: red
+          - type: custom:mushroom-entity-card
+            entity: sensor.licv_8_2r1_3_power_consumption
+            name: Stromaufnahme (myUplink)
+            icon: mdi:flash
+            icon_color: amber
           - type: custom:mushroom-entity-card
             entity: sensor.licv_8_2r1_3_operating_hours_hp
             name: Betriebsstunden Verdichter
@@ -1088,9 +1150,15 @@ views:
             name: Warmwasser gesamt
             icon: mdi:counter
             icon_color: orange
+
+      # ── WP COP ────────────────────────────────────
+      - type: grid
+        cards:
           - type: heading
             heading: "COP (Leistungszahl)"
           - type: markdown
+            grid_options:
+              columns: full
             content: |
               ### Monatlich
               {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
@@ -1139,58 +1207,12 @@ views:
               {% set cop = states('sensor.wp_cop_kombiniert_monatlich') | float(0) %}
               {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
             entity: sensor.wp_cop_kombiniert_monatlich
-          # ── WP Status-LEDs ──────────────────────────
+
+      # ── WP Steuerung & SG-Ready ───────────────────
+      - type: grid
+        cards:
           - type: heading
-            heading: "Status"
-          - type: custom:mushroom-template-card
-            primary: >-
-              {% set mode = states('sensor.licv_8_2r1_3_operation_mode') | float(0) | int %}
-              {% set modes = {0: 'Heizen', 1: 'Warmwasser', 2: 'Kühlen', 3: 'Abtauen', 4: 'Schwimmbad', 5: 'Standby', 6: 'EVU-Sperre', 7: 'Fehler'} %}
-              {{ modes.get(mode, 'Unbekannt (' ~ mode ~ ')') }}
-            secondary: >-
-              {% if is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') %}Verdichter läuft{% else %}Verdichter aus{% endif %}
-              {% if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') %} · Heizstab aktiv!{% endif %}
-            icon: >-
-              {% set mode = states('sensor.licv_8_2r1_3_operation_mode') | float(0) | int %}
-              {% if mode == 0 %}mdi:radiator{% elif mode == 1 %}mdi:water-boiler{% elif mode == 3 %}mdi:snowflake-melt{% elif mode == 7 %}mdi:alert{% else %}mdi:heat-pump-outline{% endif %}
-            icon_color: >-
-              {% if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') %}red
-              {% elif is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') %}blue
-              {% else %}grey{% endif %}
-            entity: sensor.licv_8_2r1_3_operation_mode
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: template
-                content: >-
-                  VD1 {{ 'AN' if is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') else 'AUS' }}
-                icon: mdi:heat-pump
-                icon_color: >-
-                  {{ 'blue' if is_state('binary_sensor.licv_8_2r1_3_vd1', 'on') else 'grey' }}
-                entity: binary_sensor.licv_8_2r1_3_vd1
-              - type: template
-                content: >-
-                  Heizstab {{ 'AN' if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') else 'AUS' }}
-                icon: mdi:lightning-bolt
-                icon_color: >-
-                  {{ 'red' if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') else 'grey' }}
-                entity: binary_sensor.licv_8_2r1_3_el_heater
-              - type: template
-                content: >-
-                  HUP {{ 'AN' if is_state('binary_sensor.licv_8_2r1_3_hup', 'on') else 'AUS' }}
-                icon: mdi:pump
-                icon_color: >-
-                  {{ 'cyan' if is_state('binary_sensor.licv_8_2r1_3_hup', 'on') else 'grey' }}
-                entity: binary_sensor.licv_8_2r1_3_hup
-              - type: template
-                content: >-
-                  EVU {{ 'Frei' if is_state('binary_sensor.licv_8_2r1_3_evu', 'on') else 'Sperre!' }}
-                icon: mdi:transmission-tower
-                icon_color: >-
-                  {{ 'green' if is_state('binary_sensor.licv_8_2r1_3_evu', 'on') else 'red' }}
-                entity: binary_sensor.licv_8_2r1_3_evu
-          # ── WP Steuerung ─────────────────────────────
-          - type: heading
-            heading: "Steuerung"
+            heading: "WP Steuerung"
           - type: custom:mushroom-template-card
             primary: "Heizung sperren"
             secondary: >-
@@ -1223,7 +1245,6 @@ views:
               action: toggle
               confirmation:
                 text: "Warmwasser sperren/freigeben?"
-          # ── SG-Ready / PV-Optimierung ────────────────
           - type: heading
             heading: "SG-Ready / PV-Optimierung"
           - type: custom:mushroom-select-card
