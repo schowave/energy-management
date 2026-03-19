@@ -15,10 +15,12 @@
   "battery_stress_segments": 10,
   "battery_target_state_of_charge": 0.5,
   "compute_curtailment": false,
-  "continual_publish": false,
+  "continual_publish": true,
   "costfun": "profit",
   "delta_forecast_daily": 1,
-  "end_timesteps_of_each_deferrable_load": [0],
+  "end_timesteps_of_each_deferrable_load": [
+    0
+  ],
   "historic_days_to_retrieve": 9,
   "influxdb_database": "homeassistant",
   "influxdb_host": "localhost",
@@ -29,8 +31,8 @@
   "influxdb_verify_ssl": false,
   "inverter_ac_input_max": 10000,
   "inverter_ac_output_max": 10000,
-  "inverter_efficiency_ac_dc": 0.96,
-  "inverter_efficiency_dc_ac": 0.96,
+  "inverter_efficiency_ac_dc": 1,
+  "inverter_efficiency_dc_ac": 1,
   "inverter_is_hybrid": true,
   "inverter_stress_cost": 0,
   "inverter_stress_segments": 10,
@@ -63,17 +65,23 @@
   "maximum_power_from_grid": 9000,
   "maximum_power_to_grid": 9000,
   "method_ts_round": "nearest",
-  "minimum_power_of_deferrable_loads": [0],
+  "minimum_power_of_deferrable_loads": [
+    0
+  ],
   "model_type": "load_forecast",
   "modules_per_string": [
     16
   ],
-  "nominal_power_of_deferrable_loads": [0],
+  "nominal_power_of_deferrable_loads": [
+    0
+  ],
   "num_lags": 48,
   "num_threads": 0,
   "number_of_deferrable_loads": 0,
   "open_meteo_cache_max_age": 30,
-  "operating_hours_of_each_deferrable_load": [0],
+  "operating_hours_of_each_deferrable_load": [
+    0
+  ],
   "optimization_time_step": 30,
   "perform_backtest": false,
   "photovoltaic_production_sell_price": 0.082,
@@ -96,8 +104,15 @@
     "sensor.p_pv_forecast"
   ],
   "set_battery_dynamic": false,
-  "set_deferrable_load_single_constant": [false],
-  "set_deferrable_startup_penalty": [0],
+  "set_deferrable_load_single_constant": [
+    false
+  ],
+  "set_deferrable_max_startups": [
+    0
+  ],
+  "set_deferrable_startup_penalty": [
+    0
+  ],
   "set_nocharge_from_grid": false,
   "set_nodischarge_to_grid": false,
   "set_total_pv_sell": false,
@@ -108,7 +123,9 @@
   "sklearn_model": "KNeighborsRegressor",
   "split_date_delta": "48h",
   "ssl_no_verify": false,
-  "start_timesteps_of_each_deferrable_load": [0],
+  "start_timesteps_of_each_deferrable_load": [
+    0
+  ],
   "strings_per_inverter": [
     1
   ],
@@ -118,7 +135,9 @@
   "surface_tilt": [
     30
   ],
-  "treat_deferrable_load_as_semi_cont": [false],
+  "treat_deferrable_load_as_semi_cont": [
+    false
+  ],
   "use_influxdb": false,
   "use_websocket": false,
   "var_model": "sensor.load_power",
