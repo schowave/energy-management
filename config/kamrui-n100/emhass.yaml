@@ -46,7 +46,7 @@ rest_command:
         ],
         "pv_power_forecast": {{ ns2.pv | to_json }},
         "soc_init": {{ states('sensor.battery_level') | float(50) / 100 }},
-        "soc_final": 0.05
+        "soc_final": 0.1
       }
 
   # Publish: Aktualisiert EMHASS-Sensoren in HA
@@ -70,6 +70,6 @@ automation:
         at: "18:00:00"
     action:
       - service: rest_command.emhass_dayahead
-      - delay: "00:00:10"
+      - delay: "00:00:30"
       - service: rest_command.emhass_publish
     mode: single

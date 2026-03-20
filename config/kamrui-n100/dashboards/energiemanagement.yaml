@@ -485,6 +485,144 @@ views:
             icon: mdi:timer-outline
             icon_color: teal
 
+      # ── PV-Strings (MPPT) ─────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: PV-Strings (Ost / West)
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "MPPT1 (West) vs. MPPT2 (Ost)"
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.mppt1_power
+                name: "MPPT1 (West)"
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.mppt2_power
+                name: "MPPT2 (Ost)"
+                color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+          - type: custom:mushroom-entity-card
+            entity: sensor.mppt1_power
+            name: "MPPT1 (West)"
+            icon: mdi:solar-panel
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.mppt2_power
+            name: "MPPT2 (Ost)"
+            icon: mdi:solar-panel
+            icon_color: orange
+          - type: custom:mushroom-entity-card
+            entity: sensor.mppt1_voltage
+            name: "MPPT1 Spannung"
+            icon: mdi:flash
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.mppt2_voltage
+            name: "MPPT2 Spannung"
+            icon: mdi:flash
+            icon_color: orange
+
+      # ── Hardware-Zustand ───────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Hardware-Zustand
+          - type: custom:mushroom-entity-card
+            entity: sensor.battery_temperature
+            name: Batterie-Temperatur
+            icon: mdi:thermometer
+            icon_color: >-
+              {% set t = states('sensor.battery_temperature') | float(0) %}
+              {% if t > 40 %}red{% elif t > 35 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-entity-card
+            entity: sensor.inverter_temperature
+            name: Wechselrichter-Temperatur
+            icon: mdi:thermometer
+            icon_color: >-
+              {% set t = states('sensor.inverter_temperature') | float(0) %}
+              {% if t > 55 %}red{% elif t > 45 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-entity-card
+            entity: sensor.battery_state_of_health
+            name: "Batterie SOH"
+            icon: mdi:battery-heart-variant
+            icon_color: >-
+              {% set soh = states('sensor.battery_state_of_health') | float(100) %}
+              {% if soh < 80 %}red{% elif soh < 90 %}amber{% else %}green{% endif %}
+
+      # ── Verbraucher (Shelly) ───────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Verbraucher (Shelly)
+          - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
+            primary: "Grundlast-Übersicht"
+            secondary: >-
+              Serverschrank {{ states('sensor.kg_technik_serverschrank_leistung') }} W
+              · Kühlschrank {{ states('sensor.kg_flur_kuehlschrank_leistung') }} W
+              · Workstation {{ states('sensor.dg_buero_workstation_leistung') }} W
+            icon: mdi:power-plug
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_serverschrank_leistung
+            name: Serverschrank
+            icon: mdi:server
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_flur_kuehlschrank_leistung
+            name: Kühlschrank
+            icon: mdi:fridge
+            icon_color: cyan
+          - type: custom:mushroom-entity-card
+            entity: sensor.dg_buero_workstation_leistung
+            name: Workstation
+            icon: mdi:desktop-tower-monitor
+            icon_color: purple
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_waschmaschine_leistung
+            name: Waschmaschine
+            icon: mdi:washing-machine
+            icon_color: teal
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_trockner_leistung
+            name: Trockner
+            icon: mdi:tumble-dryer
+            icon_color: orange
+
   # ════════════════════════════════════════════════════
   # Tab 2: Optimierung & Steuerung — Was soll passieren?
   # ════════════════════════════════════════════════════
@@ -734,6 +872,7 @@ views:
                   title:
                     text: "%"
             series:
+              # Empfehlung: Vergangenheit aus Recorder + Zukunft aus Forecast-Attribut
               - entity: sensor.soc_batt_forecast
                 name: "Empfehlung"
                 color: "#4CAF50"
@@ -744,6 +883,21 @@ views:
                 group_by:
                   func: last
                   duration: 30min
+              - entity: sensor.soc_batt_forecast
+                name: "Empfehlung (Forecast)"
+                color: "#4CAF50"
+                stroke_width: 2
+                curve: stepline
+                extend_to: false
+                yaxis_id: soc
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  var now = Date.now();
+                  var fc = entity.attributes.battery_scheduled_soc || [];
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.soc_batt_forecast)]);
               - entity: sensor.battery_level
                 name: "Aktuell"
                 color: "#FF9800"
