@@ -1189,12 +1189,12 @@ views:
             entity: number.licv_8_2r1_3_sollwert_heizen
             name: "Sollwert Heizung"
             icon: mdi:thermostat
-            display_mode: slider
+            display_mode: buttons
           - type: custom:mushroom-number-card
             entity: number.licv_8_2r1_3_sollwert_warmw
             name: "Sollwert Warmwasser"
             icon: mdi:thermostat
-            display_mode: slider
+            display_mode: buttons
 
       # ── WP Status & Diagnose ──────────────────────
       - type: grid

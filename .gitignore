@@ -4,3 +4,4 @@
 **/secrets.yaml
 .ha_token
 .entsoe_token
+.superpowers/
