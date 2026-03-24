@@ -6,7 +6,151 @@ views:
     title: "Cockpit"
     icon: mdi:home-lightning-bolt
     max_columns: 1
-    sections: []
+    sections:
+      # ── Energiefluss ────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Energiefluss
+          - type: custom:power-flow-card-plus
+            entities:
+              solar:
+                entity: sensor.total_dc_power
+                display_zero_state: true
+              battery:
+                entity: sensor.energy_battery_battery_discharging_power_battery_charging_power_net_power
+                state_of_charge: sensor.battery_level
+                display_zero_state: true
+              grid:
+                entity: sensor.energy_grid_import_power_export_power_net_power
+                display_zero_state: true
+              home:
+                entity: sensor.load_power
+                display_zero_state: true
+            clickable_entities: true
+            display_zero_lines:
+              mode: show
+            use_new_flow_rate_model: true
+            w_decimals: 0
+            kw_decimals: 1
+            min_flow_rate: 0.75
+            max_flow_rate: 6
+            watt_threshold: 0
+      # ── KPI-Chips ───────────────────────────────────────
+      - type: grid
+        cards:
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:home-lightning-bolt
+                icon_color: green
+                content: "Autarkie {{ states('sensor.autarkiegrad') }}%"
+                entity: sensor.autarkiegrad
+              - type: template
+                icon: mdi:solar-power-variant
+                icon_color: orange
+                content: "Eigen {{ states('sensor.eigenverbrauchsquote') }}%"
+                entity: sensor.eigenverbrauchsquote
+              - type: template
+                icon: mdi:currency-eur
+                icon_color: blue
+                content: "{{ states('sensor.current_electricity_market_price') | float(0) | round(2) }} €/kWh"
+                entity: sensor.current_electricity_market_price
+      # ── EMHASS-Empfehlung + Modus ──────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: EMHASS-Empfehlung
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set p = states('sensor.p_batt_forecast') | float(0) %}
+              {% if states('sensor.p_batt_forecast') in ['unknown', 'unavailable'] %}Akku: —
+              {% elif p > 50 %}Akku laden · Ziel {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
+              {% elif p < -50 %}Akku entladen · Ziel {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
+              {% else %}Akku halten · SOC {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
+              {% endif %}
+            secondary: >-
+              {% set status = states('sensor.optim_status') %}
+              {% set last = state_attr('automation.emhass_day_ahead_optimierung', 'last_triggered') %}
+              {% set gain = states('sensor.total_cost_fun_value') | float(0) | round(2) %}
+              {% set mode = states('select.battery_forced_charge_discharge') %}
+              {{ status if status not in ['unknown', 'unavailable', ''] else 'Keine Daten' }}
+              · {{ gain }}€
+              {% if last %} · {{ as_timestamp(last) | timestamp_custom('%H:%M') }}{% endif %}
+              · {% if mode == 'Forced charge' %}Zwangsladen{% elif mode == 'Forced discharge' %}Zwangsentladen{% else %}Eigenverbrauch{% endif %}
+            icon: mdi:robot
+            icon_color: >-
+              {% if states('sensor.optim_status') == 'Optimal' %}green
+              {% elif states('sensor.optim_status') in ['unknown', 'unavailable', ''] %}grey
+              {% else %}red{% endif %}
+            entity: sensor.p_batt_forecast
+            badge_icon: >-
+              {% set mode = states('select.battery_forced_charge_discharge') %}
+              {% if mode == 'Forced charge' %}mdi:battery-arrow-up
+              {% elif mode == 'Forced discharge' %}mdi:battery-arrow-down
+              {% else %}mdi:battery-check{% endif %}
+            badge_color: >-
+              {% set mode = states('select.battery_forced_charge_discharge') %}
+              {% if mode == 'Forced charge' %}orange
+              {% else %}green{% endif %}
+      # ── Batterie-Steuerung ──────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Batterie-Steuerung
+          - type: button
+            name: "1h / 5kW"
+            icon: mdi:battery-arrow-up
+            icon_height: 40px
+            tap_action:
+              action: call-service
+              service: script.batterie_zwangsladen
+              data:
+                dauer_stunden: 1
+                ladeleistung: 5000
+              confirmation:
+                text: "Batterie 1 Stunde mit 5 kW zwangsladen?"
+          - type: button
+            name: "2h / 5kW"
+            icon: mdi:battery-clock
+            icon_height: 40px
+            tap_action:
+              action: call-service
+              service: script.batterie_zwangsladen
+              data:
+                dauer_stunden: 2
+                ladeleistung: 5000
+              confirmation:
+                text: "Batterie 2 Stunden mit 5 kW zwangsladen?"
+          - type: button
+            name: "Stoppen"
+            icon: mdi:battery-remove
+            icon_height: 40px
+            tap_action:
+              action: call-service
+              service: scene.turn_on
+              target:
+                entity_id: scene.self_consumption_mode_max_battery_discharge
+              confirmation:
+                text: "Zwangsladen abbrechen und auf Eigenverbrauch wechseln?"
+          - type: button
+            name: "Day-Ahead"
+            icon: mdi:chart-timeline-variant-shimmer
+            icon_height: 40px
+            tap_action:
+              action: call-service
+              service: rest_command.emhass_dayahead
+              confirmation:
+                text: "EMHASS Day-Ahead Optimierung jetzt starten?"
+          - type: button
+            name: "Publish"
+            icon: mdi:publish
+            icon_height: 40px
+            tap_action:
+              action: call-service
+              service: rest_command.emhass_publish
+              confirmation:
+                text: "EMHASS Sensoren in HA aktualisieren?"
 
   # ════════════════════════════════════════════════════
   # Tab 2: Analyse — Zeitreihen & Charts
