@@ -159,7 +159,670 @@ views:
     title: "Analyse"
     icon: mdi:chart-line
     max_columns: 3
-    sections: []
+    sections:
+      # ── Section 1: PV & Forecast ──────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "PV & Forecast"
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: PV Real vs. Solcast Forecast
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 300
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.total_dc_power
+                name: PV Real
+                color: "#FF6B35"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Forecast
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                yaxis_id: power
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate * 1000
+                  ]);
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Optimistisch (90)
+                color: "#2196F3"
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                curve: smooth
+                yaxis_id: power
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate90 * 1000
+                  ]);
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Pessimistisch (10)
+                color: "#2196F3"
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                curve: smooth
+                yaxis_id: power
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate10 * 1000
+                  ]);
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "MPPT1 (West) vs. MPPT2 (Ost)"
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.mppt1_power
+                name: "MPPT1 (West)"
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.mppt2_power
+                name: "MPPT2 (Ost)"
+                color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.solcast_pv_forecast_prognose_heute
+                icon: mdi:solar-power
+                name: Heute
+              - type: entity
+                entity: sensor.solcast_pv_forecast_prognose_morgen
+                icon: mdi:weather-sunny
+                name: Morgen
+              - type: entity
+                entity: sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute
+                icon: mdi:sun-clock
+                name: Verbleibend
+              - type: entity
+                entity: sensor.daily_pv_generation
+                icon: mdi:solar-power-variant
+                name: Real heute
+
+      # ── Section 2: Batterie & EMHASS-Plan ─────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Batterie & EMHASS-Plan"
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "Empfohlener Leistungsverlauf"
+              show_states: true
+              colorize_states: true
+            now:
+              show: true
+              label: Jetzt
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 350
+              legend:
+                show: true
+                position: bottom
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                apex_config:
+                  title:
+                    text: Watt
+                  labels:
+                    formatter: |
+                      EVAL:function(val) { return val ? Math.round(val) : '0'; }
+            series:
+              - entity: sensor.total_dc_power
+                name: "PV Real"
+                color: "#f59e0b"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.25
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: raw
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.p_pv_forecast
+                name: "PV Forecast"
+                color: "#d97706"
+                stroke_width: 2
+                stroke_dash: 5
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  var now = Date.now();
+                  var fc = entity.attributes.forecasts || [];
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_pv_forecast)]);
+              - entity: sensor.load_power
+                name: "Hausverbrauch Real"
+                color: "#ec4899"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.15
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: raw
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.p_load_forecast
+                name: "Verbrauch Forecast"
+                color: "#be185d"
+                stroke_width: 2
+                stroke_dash: 5
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  var now = Date.now();
+                  var fc = entity.attributes.forecasts || [];
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_load_forecast)]);
+              - entity: sensor.p_batt_forecast
+                name: "Akku (+Entladen / −Laden)"
+                color: "#22c55e"
+                stroke_width: 2
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: raw
+                extend_to: false
+                group_by:
+                  func: last
+                  duration: 30min
+              - entity: sensor.energy_grid_import_power_export_power_net_power
+                name: "Netz Real"
+                color: "#06b6d4"
+                stroke_width: 2
+                curve: smooth
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: raw
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.p_grid_forecast
+                name: "Netz Forecast"
+                color: "#0891b2"
+                stroke_width: 2
+                stroke_dash: 5
+                curve: stepline
+                float_precision: 0
+                yaxis_id: power
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  var now = Date.now();
+                  var fc = entity.attributes.forecasts || [];
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_grid_forecast)]);
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "Akkustand: Empfehlung vs. Realität"
+            now:
+              show: true
+              label: Jetzt
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 220
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: soc
+                min: 0
+                max: 100
+                apex_config:
+                  title:
+                    text: "%"
+            series:
+              - entity: sensor.soc_batt_forecast
+                name: "Empfehlung"
+                color: "#4CAF50"
+                stroke_width: 2
+                curve: stepline
+                extend_to: false
+                yaxis_id: soc
+                group_by:
+                  func: last
+                  duration: 30min
+              - entity: sensor.soc_batt_forecast
+                name: "Empfehlung (Forecast)"
+                color: "#4CAF50"
+                stroke_width: 2
+                curve: stepline
+                extend_to: false
+                yaxis_id: soc
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  var now = Date.now();
+                  var fc = entity.attributes.battery_scheduled_soc || [];
+                  return fc.filter((e) => new Date(e.date).getTime() >= now)
+                    .map((e) => [new Date(e.date).getTime(), parseFloat(e.soc_batt_forecast)]);
+              - entity: sensor.battery_level
+                name: "Aktuell"
+                color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                yaxis_id: soc
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: Batterie Lade-/Entladeleistung
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            series:
+              - entity: sensor.battery_charging_power
+                name: Laden
+                color: "#4CAF50"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.battery_discharging_power
+                name: Entladen
+                color: "#F44336"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.daily_battery_charge
+                icon: mdi:battery-plus
+                name: Geladen
+              - type: entity
+                entity: sensor.daily_battery_discharge
+                icon: mdi:battery-minus
+                name: Entladen
+
+      # ── Section 3: Netz & Strompreis ──────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Netz & Strompreis"
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: Netzbezug / Einspeisung
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            series:
+              - entity: sensor.import_power
+                name: Bezug
+                color: "#F44336"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.export_power
+                name: Einspeisung
+                color: "#4CAF50"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            now:
+              show: true
+              label: Jetzt
+            header:
+              show: true
+              title: "Preisverlauf: 1komma5° vs. ENTSO-e Börse"
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 280
+              tooltip:
+                shared: true
+                intersect: false
+              legend:
+                show: true
+            yaxis:
+              - id: price
+                min: 0
+                apex_config:
+                  title:
+                    text: EUR/kWh
+                  labels:
+                    formatter: |
+                      EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
+            series:
+              - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+                name: "1komma5° Real"
+                color: "#4CAF50"
+                stroke_width: 2
+                float_precision: 2
+                extend_to: false
+                yaxis_id: price
+                group_by:
+                  func: avg
+                  duration: 5min
+              - entity: sensor.1komma5_tagesforecast
+                name: "1komma5° Forecast"
+                color: "#4CAF50"
+                stroke_width: 1
+                curve: stepline
+                float_precision: 2
+                opacity: 0.5
+                yaxis_id: price
+                data_generator: |
+                  const mp = parseFloat(entity.attributes.midnight_price) || 0;
+                  const raw = entity.attributes.forecast_json || [];
+                  const fc = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const points = [[today.getTime(), mp]];
+                  fc.forEach(f => points.push([
+                    new Date(f.datetime).getTime(),
+                    f.price
+                  ]));
+                  return points;
+              - entity: sensor.current_electricity_market_price
+                name: "ENTSO-e Börse"
+                color: "#FF9800"
+                stroke_width: 2
+                curve: stepline
+                float_precision: 2
+                extend_to: false
+                yaxis_id: price
+                group_by:
+                  func: avg
+                  duration: 60min
+              - entity: sensor.average_electricity_price
+                name: "ENTSO-e Forecast"
+                color: "#FF9800"
+                stroke_width: 1
+                curve: stepline
+                float_precision: 2
+                opacity: 0.5
+                yaxis_id: price
+                data_generator: |
+                  const today = entity.attributes.prices_today || [];
+                  const tomorrow = entity.attributes.prices_tomorrow || [];
+                  const all = [...today, ...tomorrow];
+                  return all.map(f => [
+                    new Date(f.time).getTime(),
+                    f.price
+                  ]);
+          - type: markdown
+            content: |
+              {% set hour = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_hour') %}
+              {% set price = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'cheapest_upcoming_price') %}
+              {% if hour and price %}
+              🕐 Günstigste (1k5): **{{ as_timestamp(hour) | timestamp_custom('%H:%M') }} Uhr** — {{ price }} EUR/kWh
+              {% else %}
+              🕐 Keine günstigere Stunde mehr heute
+              {% endif %}
+              {% set diff = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) - states('sensor.current_electricity_market_price') | float(0) %}
+              💰 Aufschlag 1komma5° vs. Börse: **{{ (diff * 100) | round(1) }} ct/kWh**
+          - type: custom:mushroom-entity-card
+            entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
+            name: "1komma5° aktuell"
+            icon: mdi:lightning-bolt
+            icon_color: green
+          - type: custom:mushroom-entity-card
+            entity: sensor.current_electricity_market_price
+            name: "ENTSO-e aktuell"
+            icon: mdi:currency-eur
+            icon_color: orange
+          - type: custom:mushroom-entity-card
+            entity: sensor.lowest_energy_price
+            name: "ENTSO-e Minimum"
+            icon: mdi:arrow-down-bold
+            icon_color: green
+          - type: custom:mushroom-entity-card
+            entity: sensor.highest_energy_price
+            name: "ENTSO-e Maximum"
+            icon: mdi:arrow-up-bold
+            icon_color: red
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.daily_imported_energy
+                icon: mdi:transmission-tower-import
+                name: Import heute
+              - type: entity
+                entity: sensor.daily_exported_energy
+                icon: mdi:transmission-tower-export
+                name: Export heute
+
+      # ── Section 4: Verbrauch ──────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Verbrauch"
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.load_power') }} W"
+            secondary: "Hausverbrauch"
+            icon: mdi:home
+            icon_color: >-
+              {% set p = states('sensor.load_power') | float(0) %}
+              {% if p < 2000 %}green{% elif p < 3500 %}amber{% else %}red{% endif %}
+            entity: sensor.load_power
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: Verbrauch-Verlauf
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.load_power
+                name: Hausverbrauch
+                color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.3
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+          - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
+            primary: "Grundlast-Übersicht"
+            secondary: >-
+              Serverschrank {{ states('sensor.kg_technik_serverschrank_leistung') }} W
+              · Kühlschrank {{ states('sensor.kg_flur_kuehlschrank_leistung') }} W
+              · Workstation {{ states('sensor.dg_buero_workstation_leistung') }} W
+            icon: mdi:power-plug
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_serverschrank_leistung
+            name: Serverschrank
+            icon: mdi:server
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_flur_kuehlschrank_leistung
+            name: Kühlschrank
+            icon: mdi:fridge
+            icon_color: cyan
+          - type: custom:mushroom-entity-card
+            entity: sensor.dg_buero_workstation_leistung
+            name: Workstation
+            icon: mdi:desktop-tower-monitor
+            icon_color: purple
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_waschmaschine_leistung
+            name: Waschmaschine
+            icon: mdi:washing-machine
+            icon_color: teal
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_trockner_leistung
+            name: Trockner
+            icon: mdi:tumble-dryer
+            icon_color: orange
+
+      # ── Section 5: Hardware ───────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Hardware"
+          - type: custom:mushroom-entity-card
+            entity: sensor.battery_temperature
+            name: Batterie-Temperatur
+            icon: mdi:thermometer
+            icon_color: >-
+              {% set t = states('sensor.battery_temperature') | float(0) %}
+              {% if t > 40 %}red{% elif t > 35 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-entity-card
+            entity: sensor.inverter_temperature
+            name: Wechselrichter-Temperatur
+            icon: mdi:thermometer
+            icon_color: >-
+              {% set t = states('sensor.inverter_temperature') | float(0) %}
+              {% if t > 55 %}red{% elif t > 45 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-entity-card
+            entity: sensor.battery_state_of_health
+            name: "Batterie SOH"
+            icon: mdi:battery-heart-variant
+            icon_color: >-
+              {% set soh = states('sensor.battery_state_of_health') | float(100) %}
+              {% if soh < 80 %}red{% elif soh < 90 %}amber{% else %}green{% endif %}
 
   # ════════════════════════════════════════════════════
   # Tab 3: Wärmepumpe — Status, Steuerung, Diagnose
