@@ -1,54 +1,3 @@
-# ── Wiederverwendbare Konfiguration (YAML-Anchors) ─
-x-apex-defaults: &apex_defaults
-  legend:
-    show: true
-  tooltip:
-    shared: true
-    intersect: false
-
-x-group-5min: &group_5min
-  func: avg
-  duration: 5min
-
-x-group-15min: &group_15min
-  func: avg
-  duration: 15min
-
-x-group-30min: &group_30min
-  func: avg
-  duration: 30min
-
-x-yaxis-power: &yaxis_power
-  - id: power
-    min: 0
-    apex_config:
-      title:
-        text: Watt
-
-x-yaxis-price: &yaxis_price
-  - id: price
-    min: 0
-    apex_config:
-      title:
-        text: EUR/kWh
-      labels:
-        formatter: |
-          EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
-
-x-yaxis-soc: &yaxis_soc
-  - id: soc
-    min: 0
-    max: 100
-    apex_config:
-      title:
-        text: "%"
-
-x-yaxis-temp: &yaxis_temp
-  - id: temp
-    apex_config:
-      title:
-        text: "°C"
-
 views:
   # ════════════════════════════════════════════════════
   # Tab 1: Cockpit — Quick-Check + Steuerung
@@ -270,8 +219,17 @@ views:
             apex_config:
               chart:
                 height: 300
-              <<: *apex_defaults
-            yaxis: *yaxis_power
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
             series:
               - entity: sensor.total_dc_power
                 name: PV Real
@@ -279,7 +237,9 @@ views:
                 stroke_width: 2
                 curve: smooth
                 extend_to: false
-                group_by: *group_5min
+                group_by:
+                  func: avg
+                  duration: 5min
                 yaxis_id: power
               - entity: sensor.solcast_pv_forecast_prognose_heute
                 name: Forecast
@@ -330,8 +290,17 @@ views:
             apex_config:
               chart:
                 height: 250
-              <<: *apex_defaults
-            yaxis: *yaxis_power
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
             series:
               - entity: sensor.mppt1_power
                 name: "MPPT1 (West)"
@@ -339,7 +308,9 @@ views:
                 stroke_width: 2
                 curve: smooth
                 extend_to: false
-                group_by: *group_5min
+                group_by:
+                  func: avg
+                  duration: 5min
                 yaxis_id: power
               - entity: sensor.mppt2_power
                 name: "MPPT2 (Ost)"
@@ -347,7 +318,9 @@ views:
                 stroke_width: 2
                 curve: smooth
                 extend_to: false
-                group_by: *group_5min
+                group_by:
+                  func: avg
+                  duration: 5min
                 yaxis_id: power
           - type: custom:mushroom-chips-card
             chips:
@@ -397,7 +370,11 @@ views:
               apex_config:
                 chart:
                   height: 350
-                <<: *apex_defaults
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
                 legend:
                   show: true
                   position: bottom
@@ -422,7 +399,9 @@ views:
                   show:
                     in_header: raw
                   extend_to: false
-                  group_by: *group_30min
+                  group_by:
+                    func: avg
+                    duration: 30min
                 - entity: sensor.p_pv_forecast
                   name: "PV Forecast"
                   color: "#d97706"
@@ -451,7 +430,9 @@ views:
                   show:
                     in_header: raw
                   extend_to: false
-                  group_by: *group_30min
+                  group_by:
+                    func: avg
+                    duration: 30min
                 - entity: sensor.p_load_forecast
                   name: "Verbrauch Forecast"
                   color: "#be185d"
@@ -491,7 +472,9 @@ views:
                   show:
                     in_header: raw
                   extend_to: false
-                  group_by: *group_30min
+                  group_by:
+                    func: avg
+                    duration: 30min
                 - entity: sensor.p_grid_forecast
                   name: "Netz Forecast"
                   color: "#0891b2"
@@ -527,11 +510,20 @@ views:
               apex_config:
                 chart:
                   height: 350
-                <<: *apex_defaults
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
                 legend:
                   show: true
                   position: bottom
-              yaxis: *yaxis_power
+              yaxis:
+                - id: power
+                  min: 0
+                  apex_config:
+                    title:
+                      text: Watt
               series:
                 - entity: sensor.total_dc_power
                   name: "PV"
@@ -596,11 +588,20 @@ views:
               apex_config:
                 chart:
                   height: 350
-                <<: *apex_defaults
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
                 legend:
                   show: true
                   position: bottom
-              yaxis: *yaxis_power
+              yaxis:
+                - id: power
+                  min: 0
+                  apex_config:
+                    title:
+                      text: Watt
               series:
                 - entity: sensor.total_dc_power
                   name: "PV"
@@ -668,8 +669,18 @@ views:
               apex_config:
                 chart:
                   height: 220
-                <<: *apex_defaults
-              yaxis: *yaxis_soc
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
+              yaxis:
+                - id: soc
+                  min: 0
+                  max: 100
+                  apex_config:
+                    title:
+                      text: "%"
               series:
                 - entity: sensor.soc_batt_forecast
                   name: "Empfehlung"
@@ -703,7 +714,9 @@ views:
                   curve: smooth
                   extend_to: false
                   yaxis_id: soc
-                  group_by: *group_15min
+                  group_by:
+                    func: avg
+                    duration: 15min
           # ── Akkustand: 3 Tage ────────────────────────────
           - type: conditional
             conditions:
@@ -723,8 +736,18 @@ views:
               apex_config:
                 chart:
                   height: 220
-                <<: *apex_defaults
-              yaxis: *yaxis_soc
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
+              yaxis:
+                - id: soc
+                  min: 0
+                  max: 100
+                  apex_config:
+                    title:
+                      text: "%"
               series:
                 - entity: sensor.battery_level
                   name: "Akkustand"
@@ -735,7 +758,9 @@ views:
                   opacity: 0.2
                   extend_to: false
                   yaxis_id: soc
-                  group_by: *group_30min
+                  group_by:
+                    func: avg
+                    duration: 30min
           # ── Akkustand: 7 Tage ────────────────────────────
           - type: conditional
             conditions:
@@ -755,8 +780,18 @@ views:
               apex_config:
                 chart:
                   height: 220
-                <<: *apex_defaults
-              yaxis: *yaxis_soc
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
+              yaxis:
+                - id: soc
+                  min: 0
+                  max: 100
+                  apex_config:
+                    title:
+                      text: "%"
               series:
                 - entity: sensor.battery_level
                   name: "Akkustand"
@@ -782,19 +817,27 @@ views:
             apex_config:
               chart:
                 height: 250
-              <<: *apex_defaults
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
             series:
               - entity: sensor.battery_charging_power
                 name: Laden
                 color: "#4CAF50"
                 type: column
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
               - entity: sensor.battery_discharging_power
                 name: Entladen
                 color: "#F44336"
                 type: column
                 invert: true
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
           - type: custom:mushroom-chips-card
             chips:
               - type: entity
@@ -823,19 +866,27 @@ views:
             apex_config:
               chart:
                 height: 250
-              <<: *apex_defaults
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
             series:
               - entity: sensor.import_power
                 name: Bezug
                 color: "#F44336"
                 type: column
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
               - entity: sensor.export_power
                 name: Einspeisung
                 color: "#4CAF50"
                 type: column
                 invert: true
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
           # ── Preisverlauf: Heute ──────────────────────────
           - type: conditional
             conditions:
@@ -858,8 +909,20 @@ views:
               apex_config:
                 chart:
                   height: 280
-                <<: *apex_defaults
-              yaxis: *yaxis_price
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
+              yaxis:
+                - id: price
+                  min: 0
+                  apex_config:
+                    title:
+                      text: EUR/kWh
+                    labels:
+                      formatter: |
+                        EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
               series:
                 - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
                   name: "1komma5° Real"
@@ -868,7 +931,9 @@ views:
                   float_precision: 2
                   extend_to: false
                   yaxis_id: price
-                  group_by: *group_5min
+                  group_by:
+                    func: avg
+                    duration: 5min
                 - entity: sensor.1komma5_tagesforecast
                   name: "1komma5° Forecast"
                   color: "#4CAF50"
@@ -935,8 +1000,20 @@ views:
               apex_config:
                 chart:
                   height: 280
-                <<: *apex_defaults
-              yaxis: *yaxis_price
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
+              yaxis:
+                - id: price
+                  min: 0
+                  apex_config:
+                    title:
+                      text: EUR/kWh
+                    labels:
+                      formatter: |
+                        EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
               series:
                 - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
                   name: "1komma5°"
@@ -945,7 +1022,9 @@ views:
                   float_precision: 2
                   extend_to: false
                   yaxis_id: price
-                  group_by: *group_15min
+                  group_by:
+                    func: avg
+                    duration: 15min
                 - entity: sensor.current_electricity_market_price
                   name: "ENTSO-e"
                   color: "#FF9800"
@@ -976,8 +1055,20 @@ views:
               apex_config:
                 chart:
                   height: 280
-                <<: *apex_defaults
-              yaxis: *yaxis_price
+                legend:
+                  show: true
+                tooltip:
+                  shared: true
+                  intersect: false
+              yaxis:
+                - id: price
+                  min: 0
+                  apex_config:
+                    title:
+                      text: EUR/kWh
+                    labels:
+                      formatter: |
+                        EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
               series:
                 - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
                   name: "1komma5°"
@@ -986,7 +1077,9 @@ views:
                   float_precision: 2
                   extend_to: false
                   yaxis_id: price
-                  group_by: *group_30min
+                  group_by:
+                    func: avg
+                    duration: 30min
                 - entity: sensor.current_electricity_market_price
                   name: "ENTSO-e"
                   color: "#FF9800"
@@ -1066,8 +1159,17 @@ views:
               chart:
                 height: 250
                 stacked: true
-              <<: *apex_defaults
-            yaxis: *yaxis_power
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
             series:
               - entity: sensor.total_dc_power
                 name: PV-Eigenverbrauch
@@ -1077,7 +1179,9 @@ views:
                 opacity: 0.7
                 curve: smooth
                 extend_to: false
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
                 yaxis_id: power
               - entity: sensor.battery_discharging_power
                 name: Batterie
@@ -1087,7 +1191,9 @@ views:
                 opacity: 0.7
                 curve: smooth
                 extend_to: false
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
                 yaxis_id: power
               - entity: sensor.import_power
                 name: Netzbezug
@@ -1097,7 +1203,9 @@ views:
                 opacity: 0.7
                 curve: smooth
                 extend_to: false
-                group_by: *group_15min
+                group_by:
+                  func: avg
+                  duration: 15min
                 yaxis_id: power
           - type: custom:apexcharts-card
             grid_options:
@@ -1111,7 +1219,11 @@ views:
             apex_config:
               chart:
                 height: 250
-              <<: *apex_defaults
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
             yaxis:
               - id: energy
                 min: 0
@@ -1469,8 +1581,16 @@ views:
             apex_config:
               chart:
                 height: 250
-              <<: *apex_defaults
-            yaxis: *yaxis_temp
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: temp
+                apex_config:
+                  title:
+                    text: "°C"
             series:
               - entity: sensor.licv_8_2r1_3_flow
                 name: Vorlauf
@@ -1581,7 +1701,11 @@ views:
             apex_config:
               chart:
                 height: 250
-              <<: *apex_defaults
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
             yaxis:
               - id: thermal
                 apex_config:
@@ -1602,7 +1726,9 @@ views:
                 opacity: 0.2
                 extend_to: false
                 yaxis_id: thermal
-                group_by: *group_5min
+                group_by:
+                  func: avg
+                  duration: 5min
               - entity: sensor.kg_technik_waermepumpe_3em_leistung
                 name: Stromaufnahme (elektr.)
                 color: "#2196F3"
@@ -1612,7 +1738,9 @@ views:
                 opacity: 0.2
                 extend_to: false
                 yaxis_id: electric
-                group_by: *group_5min
+                group_by:
+                  func: avg
+                  duration: 5min
               - entity: sensor.licv_8_2r1_3_outdoor_temp
                 name: Außentemperatur
                 color: "#4CAF50"
@@ -1621,7 +1749,9 @@ views:
                 curve: smooth
                 extend_to: false
                 yaxis_id: thermal
-                group_by: *group_5min
+                group_by:
+                  func: avg
+                  duration: 5min
           # ── Monatliche Bilanz ──────────────────────────
           - type: heading
             heading: "Monatliche Bilanz"
