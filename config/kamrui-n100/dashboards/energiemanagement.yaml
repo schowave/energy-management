@@ -214,8 +214,6 @@ views:
               show: true
               title: PV Real vs. Solcast Forecast
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 300
@@ -285,8 +283,6 @@ views:
               show: true
               title: "MPPT1 (West) vs. MPPT2 (Ost)"
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
@@ -365,8 +361,6 @@ views:
                 show: true
                 label: Jetzt
               graph_span: 24h
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 350
@@ -503,8 +497,6 @@ views:
                 show: true
                 title: "Leistungsverlauf (3 Tage)"
               graph_span: 3d
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 350
@@ -579,8 +571,6 @@ views:
                 show: true
                 title: "Leistungsverlauf (7 Tage)"
               graph_span: 7d
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 350
@@ -658,8 +648,6 @@ views:
                 show: true
                 label: Jetzt
               graph_span: 24h
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 220
@@ -725,8 +713,6 @@ views:
                 show: true
                 title: "Akkustand (3 Tage)"
               graph_span: 3d
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 220
@@ -769,8 +755,6 @@ views:
                 show: true
                 title: "Akkustand (7 Tage)"
               graph_span: 7d
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 220
@@ -806,8 +790,6 @@ views:
               show: true
               title: Batterie Lade-/Entladeleistung
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
@@ -855,8 +837,6 @@ views:
               show: true
               title: Netzbezug / Einspeisung
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
@@ -898,8 +878,6 @@ views:
                 show: true
                 title: "Preisverlauf: 1komma5° vs. ENTSO-e Börse"
               graph_span: 24h
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 280
@@ -989,8 +967,6 @@ views:
                 show: true
                 title: "Preisverlauf (3 Tage)"
               graph_span: 3d
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 280
@@ -1044,8 +1020,6 @@ views:
                 show: true
                 title: "Preisverlauf (7 Tage)"
               graph_span: 7d
-              span:
-                end: now
               apex_config:
                 chart:
                   height: 280
@@ -1147,8 +1121,6 @@ views:
               show: true
               title: Energiequellen Hausverbrauch
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
@@ -1208,8 +1180,6 @@ views:
               show: true
               title: "Tagesbilanz: Erzeugung vs. Bezug/Einspeisung"
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
@@ -1570,8 +1540,6 @@ views:
               show: true
               title: Temperaturen
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
@@ -1654,8 +1622,6 @@ views:
               show: true
               title: Stromverbrauch WP (Shelly 3EM)
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 200
@@ -1690,8 +1656,6 @@ views:
               show: true
               title: "Heizleistung vs. Stromaufnahme"
             graph_span: 24h
-            span:
-              end: now
             apex_config:
               chart:
                 height: 250
