@@ -743,7 +743,53 @@ views:
               columns: full
             header:
               show: true
-              title: Verbrauch-Verlauf
+              title: Energiequellen Hausverbrauch
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+                stacked: true
+              <<: *apex_defaults
+            yaxis: *yaxis_power
+            series:
+              - entity: sensor.total_dc_power
+                name: PV-Eigenverbrauch
+                color: "#f59e0b"
+                stroke_width: 0
+                type: area
+                opacity: 0.7
+                curve: smooth
+                extend_to: false
+                group_by: *group_15min
+                yaxis_id: power
+              - entity: sensor.battery_discharging_power
+                name: Batterie
+                color: "#22c55e"
+                stroke_width: 0
+                type: area
+                opacity: 0.7
+                curve: smooth
+                extend_to: false
+                group_by: *group_15min
+                yaxis_id: power
+              - entity: sensor.import_power
+                name: Netzbezug
+                color: "#F44336"
+                stroke_width: 0
+                type: area
+                opacity: 0.7
+                curve: smooth
+                extend_to: false
+                group_by: *group_15min
+                yaxis_id: power
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "Tagesbilanz: Erzeugung vs. Bezug/Einspeisung"
             graph_span: 24h
             span:
               start: day
@@ -751,18 +797,38 @@ views:
               chart:
                 height: 250
               <<: *apex_defaults
-            yaxis: *yaxis_power
+            yaxis:
+              - id: energy
+                min: 0
+                apex_config:
+                  title:
+                    text: kWh
             series:
-              - entity: sensor.load_power
-                name: Hausverbrauch
-                color: "#FF9800"
+              - entity: sensor.daily_pv_generation
+                name: "PV-Erzeugung"
+                color: "#f59e0b"
                 stroke_width: 2
                 curve: smooth
+                extend_to: false
+                yaxis_id: energy
+              - entity: sensor.daily_imported_energy
+                name: "Netzbezug"
+                color: "#F44336"
                 type: area
                 opacity: 0.3
+                stroke_width: 2
+                curve: smooth
                 extend_to: false
-                group_by: *group_5min
-                yaxis_id: power
+                yaxis_id: energy
+              - entity: sensor.daily_exported_energy
+                name: "Einspeisung"
+                color: "#4CAF50"
+                type: area
+                opacity: 0.3
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                yaxis_id: energy
           - type: custom:mushroom-template-card
             grid_options:
               columns: full
