@@ -19,6 +19,25 @@ wp_ww_thermisch_monatlich:
   name: "WP Warmwasser thermisch monatlich"
   cycle: monthly
 
+# ── Monatlich nach Modus (Tarif-basiert) ─────────
+wp_strom_modus_monatlich:
+  source: sensor.kg_technik_waermepumpe_3em_energie
+  name: "WP Strom nach Modus monatlich"
+  cycle: monthly
+  tariffs:
+    - heizen
+    - warmwasser
+    - sonstig
+
+# ── Gesamt nach Modus (Tarif-basiert, kein Reset) ─
+wp_strom_modus_gesamt:
+  source: sensor.kg_technik_waermepumpe_3em_energie
+  name: "WP Strom nach Modus gesamt"
+  tariffs:
+    - heizen
+    - warmwasser
+    - sonstig
+
 # ── Gesamt (seit Tracking-Start, kein Reset) ─────
 wp_strom_gesamt:
   source: sensor.kg_technik_waermepumpe_3em_energie

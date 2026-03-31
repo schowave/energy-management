@@ -93,15 +93,18 @@
 
 # ── Wärmepumpe COP-Sensoren ──────────────────────
 # COP = Thermische Energie (myUplink _2, inkl. Heizstab) / Elektrische Energie (Shelly 3EM)
-# Monatliche Werte kommen von utility_meter Helpers.
+# Strom wird per Tarif-Umschaltung nach Betriebsmodus aufgeteilt:
+#   sensor.wp_strom_modus_*_heizen / _warmwasser / _sonstig
+# Thermische Energie kommt direkt von myUplink (getrennt nach Heizen/WW).
 - sensor:
+    # ── Monatlich ──────────────────────────────────
     - name: "WP COP Heizung monatlich"
       unique_id: wp_cop_heating_monthly
       state_class: measurement
       icon: mdi:heat-pump
       state: >
         {% set th = states('sensor.wp_heizung_thermisch_monatlich') | float(0) %}
-        {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
+        {% set el = states('sensor.wp_strom_modus_monatlich_heizen') | float(0) %}
         {% if el > 1 %}
           {{ (th / el) | round(2) }}
         {% else %}
@@ -114,7 +117,7 @@
       icon: mdi:water-boiler
       state: >
         {% set th = states('sensor.wp_warmwasser_thermisch_monatlich') | float(0) %}
-        {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
+        {% set el = states('sensor.wp_strom_modus_monatlich_warmwasser') | float(0) %}
         {% if el > 1 %}
           {{ (th / el) | round(2) }}
         {% else %}
@@ -135,13 +138,14 @@
           0
         {% endif %}
 
+    # ── Gesamt (seit Tracking) ─────────────────────
     - name: "WP COP Heizung gesamt"
       unique_id: wp_cop_heating_total
       state_class: measurement
       icon: mdi:heat-pump
       state: >
         {% set th = states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) %}
-        {% set el = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
+        {% set el = states('sensor.wp_strom_modus_gesamt_heizen') | float(0) %}
         {% if el > 1 %}
           {{ (th / el) | round(2) }}
         {% else %}
@@ -154,7 +158,7 @@
       icon: mdi:water-boiler
       state: >
         {% set th = states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0) %}
-        {% set el = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
+        {% set el = states('sensor.wp_strom_modus_gesamt_warmwasser') | float(0) %}
         {% if el > 1 %}
           {{ (th / el) | round(2) }}
         {% else %}

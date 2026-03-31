@@ -48,3 +48,28 @@
       data:
         position: 2
   mode: single
+
+# ── WP Strom-Tarif nach Betriebsmodus umschalten ──
+- id: wp_strom_tarif_umschalten
+  alias: "WP Strom-Tarif nach Betriebsmodus"
+  description: >-
+    Schaltet den Utility-Meter-Tarif basierend auf dem
+    WP-Betriebsmodus um (0=Heizen, 1=Warmwasser, sonst=Sonstig).
+  trigger:
+    - platform: state
+      entity_id: sensor.licv_8_2r1_3_operation_mode
+  action:
+    - variables:
+        mode: "{{ trigger.to_state.state | float(99) | int }}"
+        tarif: >-
+          {% if mode == 0 %}heizen
+          {% elif mode == 1 %}warmwasser
+          {% else %}sonstig{% endif %}
+    - service: select.select_option
+      target:
+        entity_id:
+          - select.wp_strom_modus_monatlich
+          - select.wp_strom_modus_gesamt
+      data:
+        option: "{{ tarif }}"
+  mode: single
