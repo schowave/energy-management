@@ -1254,57 +1254,131 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: power
-          - type: markdown
+          - type: custom:apexcharts-card
             grid_options:
               columns: full
-            content: |
-              ### Monatlich
-              {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
-              {% if el > 1 %}
-              | | Thermisch | Elektrisch | COP |
-              |---|---|---|---|
-              | **Heizung** | {{ states('sensor.wp_heizung_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_heizung_monatlich') }}** |
-              | **Warmwasser** | {{ states('sensor.wp_warmwasser_thermisch_monatlich') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_monatlich') }}** |
-              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_monatlich') | float(0) + states('sensor.wp_warmwasser_thermisch_monatlich') | float(0)) | round(1) }} kWh | {{ el | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_monatlich') }}** |
-              {% else %}
-              *Noch nicht genug Daten für diesen Monat.*
-              {% endif %}
-
-              ### Gesamt (seit Tracking)
-              {% set el_t = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
-              {% if el_t > 1 %}
-              | | Thermisch | Elektrisch | COP |
-              |---|---|---|---|
-              | **Heizung** | {{ states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') }} kWh | — | **{{ states('sensor.wp_cop_heizung_gesamt') }}** |
-              | **Warmwasser** | {{ states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') }} kWh | — | **{{ states('sensor.wp_cop_warmwasser_gesamt') }}** |
-              | **Kombiniert** | {{ (states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) + states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0)) | round(1) }} kWh | {{ el_t | round(1) }} kWh | **{{ states('sensor.wp_cop_kombiniert_gesamt') }}** |
-              {% else %}
-              *Noch nicht genug Daten.*
-              {% endif %}
+            header:
+              show: true
+              title: "Heizleistung vs. Stromaufnahme"
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 250
+              <<: *apex_defaults
+            yaxis:
+              - id: thermal
+                apex_config:
+                  title:
+                    text: "kW (therm.)"
+              - id: electric
+                opposite: true
+                apex_config:
+                  title:
+                    text: "W (elektr.)"
+            series:
+              - entity: sensor.licv_8_2r1_3_heating_capacity
+                name: Heizleistung (therm.)
+                color: "#F44336"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.2
+                extend_to: false
+                yaxis_id: thermal
+                group_by: *group_5min
+              - entity: sensor.kg_technik_waermepumpe_3em_leistung
+                name: Stromaufnahme (elektr.)
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                type: area
+                opacity: 0.2
+                extend_to: false
+                yaxis_id: electric
+                group_by: *group_5min
+              - entity: sensor.licv_8_2r1_3_outdoor_temp
+                name: Außentemperatur
+                color: "#4CAF50"
+                stroke_width: 1
+                stroke_dash: 4
+                curve: smooth
+                extend_to: false
+                yaxis_id: thermal
+                group_by: *group_5min
+          # ── Monatliche Bilanz ──────────────────────────
+          - type: heading
+            heading: "Monatliche Bilanz"
           - type: custom:mushroom-template-card
-            primary: "COP Heizung: {{ states('sensor.wp_cop_heizung_monatlich') }}"
-            secondary: "Gesamt: {{ states('sensor.wp_cop_heizung_gesamt') }}"
-            icon: mdi:heat-pump
+            grid_options:
+              columns: full
+            primary: "Heizung"
+            secondary: >-
+              {{ states('sensor.wp_heizung_thermisch_monatlich') }} kWh thermisch
+              · COP {{ states('sensor.wp_cop_heizung_monatlich') }}
+            icon: mdi:radiator
             icon_color: >-
               {% set cop = states('sensor.wp_cop_heizung_monatlich') | float(0) %}
               {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
             entity: sensor.wp_cop_heizung_monatlich
           - type: custom:mushroom-template-card
-            primary: "COP Warmwasser: {{ states('sensor.wp_cop_warmwasser_monatlich') }}"
-            secondary: "Gesamt: {{ states('sensor.wp_cop_warmwasser_gesamt') }}"
+            grid_options:
+              columns: full
+            primary: "Warmwasser"
+            secondary: >-
+              {{ states('sensor.wp_warmwasser_thermisch_monatlich') }} kWh thermisch
+              · COP {{ states('sensor.wp_cop_warmwasser_monatlich') }}
             icon: mdi:water-boiler
             icon_color: >-
               {% set cop = states('sensor.wp_cop_warmwasser_monatlich') | float(0) %}
               {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
             entity: sensor.wp_cop_warmwasser_monatlich
           - type: custom:mushroom-template-card
-            primary: "COP Kombiniert: {{ states('sensor.wp_cop_kombiniert_monatlich') }}"
-            secondary: "Gesamt: {{ states('sensor.wp_cop_kombiniert_gesamt') }}"
+            grid_options:
+              columns: full
+            primary: "Kombiniert · {{ states('sensor.wp_strom_monatlich') }} kWh Strom"
+            secondary: >-
+              {{ (states('sensor.wp_heizung_thermisch_monatlich') | float(0) + states('sensor.wp_warmwasser_thermisch_monatlich') | float(0)) | round(1) }} kWh thermisch
+              · COP {{ states('sensor.wp_cop_kombiniert_monatlich') }}
             icon: mdi:heat-pump-outline
             icon_color: >-
               {% set cop = states('sensor.wp_cop_kombiniert_monatlich') | float(0) %}
               {% if cop > 3.5 %}green{% elif cop > 2.5 %}amber{% else %}red{% endif %}
             entity: sensor.wp_cop_kombiniert_monatlich
+          # ── Gesamt (seit Tracking) ─────────────────────
+          - type: heading
+            heading: "Gesamt (seit Tracking)"
+          - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
+            primary: "Heizung gesamt"
+            secondary: >-
+              {{ states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') }} kWh thermisch
+              · COP {{ states('sensor.wp_cop_heizung_gesamt') }}
+            icon: mdi:radiator
+            icon_color: blue
+            entity: sensor.wp_cop_heizung_gesamt
+          - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
+            primary: "Warmwasser gesamt"
+            secondary: >-
+              {{ states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') }} kWh thermisch
+              · COP {{ states('sensor.wp_cop_warmwasser_gesamt') }}
+            icon: mdi:water-boiler
+            icon_color: orange
+            entity: sensor.wp_cop_warmwasser_gesamt
+          - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
+            primary: "Kombiniert gesamt · {{ states('sensor.wp_strom_gesamt_seit_tracking') }} kWh Strom"
+            secondary: >-
+              {{ (states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) + states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0)) | round(1) }} kWh thermisch
+              · COP {{ states('sensor.wp_cop_kombiniert_gesamt') }}
+            icon: mdi:heat-pump-outline
+            icon_color: blue
+            entity: sensor.wp_cop_kombiniert_gesamt
           - type: custom:mushroom-entity-card
             entity: sensor.licv_8_2r1_3_heating_capacity
             name: Heizleistung
