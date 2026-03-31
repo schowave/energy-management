@@ -372,12 +372,10 @@ views:
                   height: 350
                 legend:
                   show: true
+                  position: bottom
                 tooltip:
                   shared: true
                   intersect: false
-                legend:
-                  show: true
-                  position: bottom
               yaxis:
                 - id: power
                   apex_config:
@@ -512,12 +510,10 @@ views:
                   height: 350
                 legend:
                   show: true
+                  position: bottom
                 tooltip:
                   shared: true
                   intersect: false
-                legend:
-                  show: true
-                  position: bottom
               yaxis:
                 - id: power
                   min: 0
@@ -590,12 +586,10 @@ views:
                   height: 350
                 legend:
                   show: true
+                  position: bottom
                 tooltip:
                   shared: true
                   intersect: false
-                legend:
-                  show: true
-                  position: bottom
               yaxis:
                 - id: power
                   min: 0
