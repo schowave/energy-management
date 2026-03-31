@@ -113,7 +113,7 @@
       state_class: measurement
       icon: mdi:water-boiler
       state: >
-        {% set th = states('sensor.wp_ww_thermisch_monatlich') | float(0) %}
+        {% set th = states('sensor.wp_warmwasser_thermisch_monatlich') | float(0) %}
         {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
         {% if el > 1 %}
           {{ (th / el) | round(2) }}
@@ -127,7 +127,7 @@
       icon: mdi:heat-pump-outline
       state: >
         {% set th_h = states('sensor.wp_heizung_thermisch_monatlich') | float(0) %}
-        {% set th_w = states('sensor.wp_ww_thermisch_monatlich') | float(0) %}
+        {% set th_w = states('sensor.wp_warmwasser_thermisch_monatlich') | float(0) %}
         {% set el = states('sensor.wp_strom_monatlich') | float(0) %}
         {% if el > 1 %}
           {{ ((th_h + th_w) / el) | round(2) }}
@@ -153,7 +153,7 @@
       state_class: measurement
       icon: mdi:water-boiler
       state: >
-        {% set th = states('sensor.wp_ww_thermisch_gesamt_seit_tracking') | float(0) %}
+        {% set th = states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0) %}
         {% set el = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
         {% if el > 1 %}
           {{ (th / el) | round(2) }}
@@ -167,7 +167,7 @@
       icon: mdi:heat-pump-outline
       state: >
         {% set th_h = states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) %}
-        {% set th_w = states('sensor.wp_ww_thermisch_gesamt_seit_tracking') | float(0) %}
+        {% set th_w = states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0) %}
         {% set el = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
         {% if el > 1 %}
           {{ ((th_h + th_w) / el) | round(2) }}
