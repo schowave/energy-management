@@ -34,11 +34,14 @@ Ab 01.04.2026 läuft ein dynamischer Stromtarif über 1komma5°. Der Heartbeat s
 
 ## Architektur
 
-### Ansatz: Template-Sensoren + Utility Meters + Dashboard
+### Ansatz: Template-Sensoren + Integration-Sensoren + Utility Meters + Dashboard
 
-- **Template-Sensoren** berechnen laufend Kosten und Deltas
-- **Utility Meters** aggregieren auf Tages-/Wochen-/Monatsbasis
+- **Template-Sensoren** berechnen laufend Kosten-Raten (EUR/h) und Deltas
+- **Integration-Sensoren** (`sensor.integration` / Riemann-Summe) integrieren EUR/h über die Zeit zu kumulierten EUR-Werten
+- **Utility Meters** aggregieren die kumulierten EUR-Sensoren auf Tages-/Wochen-/Monatsbasis
 - **Dashboard** visualisiert Live-Vergleich und historische Trends
+
+**Wichtig:** Utility Meters tracken State-Änderungen (Deltas), nicht zeitgewichtete Integrale. Daher muss zwischen den EUR/h-Template-Sensoren und den Utility Meters jeweils ein `sensor.integration` stehen, der die Riemann-Summe bildet.
 
 Keine externen Skripte, alles in HA-YAML.
 
@@ -88,15 +91,15 @@ Einheit: EUR/h. Gibt die momentanen Netto-Stromkosten an.
 **Sensor:** `sensor.emhass_theo_kosten_laufend`
 **Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
 
-**EMHASS-Vorzeichen-Konvention:** `p_batt_forecast` positiv = Entladen, negativ = Laden.
+**EMHASS-Vorzeichen-Konvention:** `p_batt_forecast` positiv = Laden, negativ = Entladen. (Quelle: `docs/emhass-referenz.md`)
 
 ```
 Verbrauch = consumption_power_7fee... (W)
 PV = solar_production_power_7fee... (W)
 EMHASS_Batterie = states('sensor.p_batt_forecast') (W, direkt als State nutzbar)
 
-Theo_Netzbezug = max(0, (Verbrauch - PV - EMHASS_Batterie) / 1000) (kW)
-Theo_Einspeisung = max(0, (PV + EMHASS_Batterie - Verbrauch) / 1000) (kW)
+Theo_Netzbezug = max(0, (Verbrauch - PV + EMHASS_Batterie) / 1000) (kW)
+Theo_Einspeisung = max(0, (PV - EMHASS_Batterie - Verbrauch) / 1000) (kW)
 
 Theo_Kosten = Theo_Netzbezug × Preis - Theo_Einspeisung × Einspeisevergütung  (EUR/h)
 ```
@@ -161,34 +164,48 @@ Zeigt in Echtzeit: "Die WP verbraucht gerade X EUR/h, hätte aber Y EUR/h günst
 
 ---
 
+## Komponente 1b: Integration-Sensoren (Riemann-Summe)
+
+Zwischen den EUR/h-Template-Sensoren und den Utility Meters stehen `sensor.integration`-Sensoren, die EUR/h über die Zeit zu kumulierten EUR integrieren:
+
+| Integration Sensor | Source (EUR/h) | Unit |
+|---|---|---|
+| `sensor.1k5_netzbezugskosten_kumuliert` | `sensor.1k5_netzbezugskosten_laufend` | EUR |
+| `sensor.emhass_theo_kosten_kumuliert` | `sensor.emhass_theo_kosten_laufend` | EUR |
+| `sensor.entscheidungs_delta_kumuliert` | `sensor.entscheidungs_delta_laufend` | EUR |
+| `sensor.wp_stromkosten_kumuliert` | `sensor.wp_stromkosten_laufend` | EUR |
+| `sensor.wp_einsparpotenzial_kumuliert` | `sensor.wp_einsparpotenzial_laufend` | EUR |
+
+Methode: `left` (Riemann links), `unit_prefix: ""`, `round: 4`.
+
 ## Komponente 2: Utility Meters
 
-Aggregation der laufenden Kostensensoren auf drei Zeitebenen:
+Aggregation der kumulierten EUR-Sensoren auf drei Zeitebenen:
 
 ### Batterie-Entscheidungsvergleich
 
 | Utility Meter | Source Sensor | Cycle |
 |--------------|---------------|-------|
-| `utility_meter.1k5_real_kosten_tag` | `sensor.1k5_netzbezugskosten_laufend` | daily |
-| `utility_meter.emhass_theo_kosten_tag` | `sensor.emhass_theo_kosten_laufend` | daily |
-| `utility_meter.entscheidungs_delta_tag` | `sensor.entscheidungs_delta_laufend` | daily |
-| `utility_meter.1k5_real_kosten_woche` | `sensor.1k5_netzbezugskosten_laufend` | weekly |
-| `utility_meter.emhass_theo_kosten_woche` | `sensor.emhass_theo_kosten_laufend` | weekly |
-| `utility_meter.entscheidungs_delta_woche` | `sensor.entscheidungs_delta_laufend` | weekly |
-| `utility_meter.1k5_real_kosten_monat` | `sensor.1k5_netzbezugskosten_laufend` | monthly |
-| `utility_meter.emhass_theo_kosten_monat` | `sensor.emhass_theo_kosten_laufend` | monthly |
-| `utility_meter.entscheidungs_delta_monat` | `sensor.entscheidungs_delta_laufend` | monthly |
+| `utility_meter.1k5_real_kosten_tag` | `sensor.1k5_netzbezugskosten_kumuliert` | daily |
+| `utility_meter.emhass_theo_kosten_tag` | `sensor.emhass_theo_kosten_kumuliert` | daily |
+| `utility_meter.entscheidungs_delta_tag` | `sensor.entscheidungs_delta_kumuliert` | daily |
+| `utility_meter.1k5_real_kosten_woche` | `sensor.1k5_netzbezugskosten_kumuliert` | weekly |
+| `utility_meter.emhass_theo_kosten_woche` | `sensor.emhass_theo_kosten_kumuliert` | weekly |
+| `utility_meter.entscheidungs_delta_woche` | `sensor.entscheidungs_delta_kumuliert` | weekly |
+| `utility_meter.1k5_real_kosten_monat` | `sensor.1k5_netzbezugskosten_kumuliert` | monthly |
+| `utility_meter.emhass_theo_kosten_monat` | `sensor.emhass_theo_kosten_kumuliert` | monthly |
+| `utility_meter.entscheidungs_delta_monat` | `sensor.entscheidungs_delta_kumuliert` | monthly |
 
 ### Wärmepumpen-Tracking
 
 | Utility Meter | Source Sensor | Cycle |
 |--------------|---------------|-------|
-| `utility_meter.wp_stromkosten_tag` | `sensor.wp_stromkosten_laufend` | daily |
-| `utility_meter.wp_einsparpotenzial_tag` | `sensor.wp_einsparpotenzial_laufend` | daily |
-| `utility_meter.wp_stromkosten_woche` | `sensor.wp_stromkosten_laufend` | weekly |
-| `utility_meter.wp_einsparpotenzial_woche` | `sensor.wp_einsparpotenzial_laufend` | weekly |
-| `utility_meter.wp_stromkosten_monat` | `sensor.wp_stromkosten_laufend` | monthly |
-| `utility_meter.wp_einsparpotenzial_monat` | `sensor.wp_einsparpotenzial_laufend` | monthly |
+| `utility_meter.wp_stromkosten_tag` | `sensor.wp_stromkosten_kumuliert` | daily |
+| `utility_meter.wp_einsparpotenzial_tag` | `sensor.wp_einsparpotenzial_kumuliert` | daily |
+| `utility_meter.wp_stromkosten_woche` | `sensor.wp_stromkosten_kumuliert` | weekly |
+| `utility_meter.wp_einsparpotenzial_woche` | `sensor.wp_einsparpotenzial_kumuliert` | weekly |
+| `utility_meter.wp_stromkosten_monat` | `sensor.wp_stromkosten_kumuliert` | monthly |
+| `utility_meter.wp_einsparpotenzial_monat` | `sensor.wp_einsparpotenzial_kumuliert` | monthly |
 
 Alle Meter resetten automatisch am Beginn des jeweiligen Zeitraums.
 
@@ -299,9 +316,9 @@ Eigenes Dashboard: `config/kamrui-n100/dashboards/1k5-vs-emhass.yaml`
 | Datei | Beschreibung |
 |-------|-------------|
 | `config/kamrui-n100/template_sensors.yaml` | Neue Sensoren (Heartbeat-Modus, Kosten, Delta, WP-Tracking) |
-| `config/kamrui-n100/utility_meter.yaml` | Neue Utility Meters (15 Stück) |
+| `config/kamrui-n100/configuration.yaml` | `input_number.einspeiseverguetung` + 5 Integration-Sensoren |
+| `config/kamrui-n100/utility_meter.yaml` | Neue Utility Meters (15 Stück, Quelle: Integration-Sensoren) |
 | `config/kamrui-n100/dashboards/1k5-vs-emhass.yaml` | Neues Vergleichs-Dashboard |
-| `config/kamrui-n100/configuration.yaml` | `input_number.einspeiseverguetung` hinzufügen |
 
 ---
 
