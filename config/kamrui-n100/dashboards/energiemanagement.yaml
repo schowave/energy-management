@@ -1724,7 +1724,8 @@ views:
           - type: custom:mushroom-template-card
             grid_options:
               columns: full
-            primary: "Heizung · {{ states('sensor.wp_strom_modus_monatlich_heizen') }} kWh Strom"
+            primary: >-
+              Heizung · {{ states('sensor.wp_strom_modus_monatlich_heizen') | float(0) | round(1) }} kWh Strom
             secondary: >-
               {{ states('sensor.wp_heizung_thermisch_monatlich') }} kWh thermisch
               · COP {{ states('sensor.wp_cop_heizung_monatlich') }}
@@ -1736,7 +1737,8 @@ views:
           - type: custom:mushroom-template-card
             grid_options:
               columns: full
-            primary: "Warmwasser · {{ states('sensor.wp_strom_modus_monatlich_warmwasser') }} kWh Strom"
+            primary: >-
+              Warmwasser · {{ states('sensor.wp_strom_modus_monatlich_warmwasser') | float(0) | round(1) }} kWh Strom
             secondary: >-
               {{ states('sensor.wp_warmwasser_thermisch_monatlich') }} kWh thermisch
               · COP {{ states('sensor.wp_cop_warmwasser_monatlich') }}
@@ -1763,7 +1765,8 @@ views:
           - type: custom:mushroom-template-card
             grid_options:
               columns: full
-            primary: "Heizung gesamt · {{ states('sensor.wp_strom_modus_gesamt_heizen') }} kWh Strom"
+            primary: >-
+              Heizung gesamt · {{ states('sensor.wp_strom_modus_gesamt_heizen') | float(0) | round(1) }} kWh Strom
             secondary: >-
               {{ states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') }} kWh thermisch
               · COP {{ states('sensor.wp_cop_heizung_gesamt') }}
@@ -1773,7 +1776,8 @@ views:
           - type: custom:mushroom-template-card
             grid_options:
               columns: full
-            primary: "Warmwasser gesamt · {{ states('sensor.wp_strom_modus_gesamt_warmwasser') }} kWh Strom"
+            primary: >-
+              Warmwasser gesamt · {{ states('sensor.wp_strom_modus_gesamt_warmwasser') | float(0) | round(1) }} kWh Strom
             secondary: >-
               {{ states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') }} kWh thermisch
               · COP {{ states('sensor.wp_cop_warmwasser_gesamt') }}
