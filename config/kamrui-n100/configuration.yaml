@@ -20,6 +20,16 @@ template: !include template_sensors.yaml
 
 utility_meter: !include utility_meter.yaml
 
+input_select:
+  dashboard_zeitraum:
+    name: "Dashboard Zeitraum"
+    options:
+      - "Heute"
+      - "3 Tage"
+      - "7 Tage"
+    initial: "Heute"
+    icon: mdi:calendar-range
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
