@@ -214,6 +214,8 @@ views:
               show: true
               title: PV Real vs. Solcast Forecast
             graph_span: 24h
+            span:
+              start: day
             apex_config:
               chart:
                 height: 300
@@ -361,6 +363,8 @@ views:
                 show: true
                 label: Jetzt
               graph_span: 24h
+              span:
+                start: day
               apex_config:
                 chart:
                   height: 350
@@ -648,6 +652,8 @@ views:
                 show: true
                 label: Jetzt
               graph_span: 24h
+              span:
+                start: day
               apex_config:
                 chart:
                   height: 220
@@ -878,6 +884,8 @@ views:
                 show: true
                 title: "Preisverlauf: 1komma5° vs. ENTSO-e Börse"
               graph_span: 24h
+              span:
+                start: day
               apex_config:
                 chart:
                   height: 280
