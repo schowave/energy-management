@@ -30,6 +30,16 @@ input_select:
     initial: "Heute"
     icon: mdi:calendar-range
 
+input_number:
+  einspeiseverguetung:
+    name: "Einspeisevergütung"
+    min: 0
+    max: 0.20
+    step: 0.001
+    unit_of_measurement: "EUR/kWh"
+    icon: mdi:currency-eur
+    initial: 0.082
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
