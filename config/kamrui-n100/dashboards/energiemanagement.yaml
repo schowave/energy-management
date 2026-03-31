@@ -72,6 +72,7 @@ views:
                 entity: sensor.energy_battery_battery_discharging_power_battery_charging_power_net_power
                 state_of_charge: sensor.battery_level
                 display_zero_state: true
+                invert_state: true
               grid:
                 entity: sensor.energy_grid_import_power_export_power_net_power
                 display_zero_state: true
@@ -107,6 +108,36 @@ views:
                 icon_color: blue
                 content: "{{ states('sensor.current_electricity_market_price') | float(0) | round(2) }} €/kWh"
                 entity: sensor.current_electricity_market_price
+      # ── Tagesbilanz-Chips ─────────────────────────────
+      - type: grid
+        cards:
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.daily_pv_generation
+                icon: mdi:solar-power-variant
+                icon_color: orange
+                name: PV
+              - type: entity
+                entity: sensor.daily_imported_energy
+                icon: mdi:transmission-tower-import
+                icon_color: red
+                name: Import
+              - type: entity
+                entity: sensor.daily_exported_energy
+                icon: mdi:transmission-tower-export
+                icon_color: green
+                name: Export
+              - type: entity
+                entity: sensor.daily_battery_charge
+                icon: mdi:battery-plus
+                icon_color: green
+                name: Geladen
+              - type: entity
+                entity: sensor.daily_battery_discharge
+                icon: mdi:battery-minus
+                icon_color: red
+                name: Entladen
       # ── EMHASS-Empfehlung + Modus ──────────────────────
       - type: grid
         cards:
@@ -135,6 +166,9 @@ views:
               {% elif states('sensor.optim_status') in ['unknown', 'unavailable', ''] %}grey
               {% else %}red{% endif %}
             entity: sensor.p_batt_forecast
+            tap_action:
+              action: more-info
+              entity: sensor.p_batt_forecast
             badge_icon: >-
               {% set mode = states('select.battery_forced_charge_discharge') %}
               {% if mode == 'Forced charge' %}mdi:battery-arrow-up
