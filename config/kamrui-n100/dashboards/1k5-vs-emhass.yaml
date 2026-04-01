@@ -266,6 +266,20 @@ views:
                   if (x === 'entladen') return 2;
                   if (x === 'zero_export') return 3;
                   return 0;
+      # ── Zustandsverlauf ─────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Betriebsmodus-Verlauf"
+          - type: history-graph
+            grid_options:
+              columns: full
+            hours_to_show: 24
+            entities:
+              - entity: sensor.heartbeat_modus
+                name: Heartbeat
+              - entity: sensor.licv_8_2r1_3_operation_mode
+                name: WP Modus
       # ── Kostenvergleich kumuliert ──────────────────────
       - type: grid
         cards:
