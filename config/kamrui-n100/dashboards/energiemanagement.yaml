@@ -247,6 +247,9 @@ views:
                 stroke_width: 2
                 curve: smooth
                 yaxis_id: power
+                show:
+                  legend_value: false
+                  in_header: false
                 data_generator: |
                   return entity.attributes.detailedForecast.map(f => [
                     new Date(f.period_start).getTime(),
@@ -260,6 +263,9 @@ views:
                 opacity: 0.15
                 curve: smooth
                 yaxis_id: power
+                show:
+                  legend_value: false
+                  in_header: false
                 data_generator: |
                   return entity.attributes.detailedForecast.map(f => [
                     new Date(f.period_start).getTime(),
@@ -273,6 +279,9 @@ views:
                 opacity: 0.15
                 curve: smooth
                 yaxis_id: power
+                show:
+                  legend_value: false
+                  in_header: false
                 data_generator: |
                   return entity.attributes.detailedForecast.map(f => [
                     new Date(f.period_start).getTime(),
