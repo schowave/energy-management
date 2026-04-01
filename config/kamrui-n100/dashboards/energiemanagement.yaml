@@ -242,17 +242,25 @@ views:
                   duration: 5min
                 yaxis_id: power
               - entity: sensor.solcast_pv_forecast_aktuelle_leistung
-                name: Forecast
+                name: "Forecast"
+                color: "#2196F3"
+                stroke_width: 0
+                yaxis_id: power
+                float_precision: 0
+                show:
+                  in_chart: false
+                  in_header: raw
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: ""
                 color: "#2196F3"
                 stroke_width: 2
                 curve: smooth
                 yaxis_id: power
-                float_precision: 0
-                unit: " W"
-                attribute: false
+                show:
+                  legend_value: false
+                  in_header: false
                 data_generator: |
-                  var entity2 = hass.states['sensor.solcast_pv_forecast_prognose_heute'];
-                  return entity2.attributes.detailedForecast.map(f => [
+                  return entity.attributes.detailedForecast.map(f => [
                     new Date(f.period_start).getTime(),
                     f.pv_estimate * 1000
                   ]);
