@@ -292,48 +292,49 @@ views:
                 intersect: false
             yaxis:
               - id: kosten
+                min: 0
                 apex_config:
                   title:
-                    text: "EUR/h"
+                    text: "EUR"
                   labels:
                     formatter: |
-                      EVAL:function(val) { return val ? val.toFixed(3) : '0'; }
+                      EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
             series:
-              - entity: sensor.1k5_netzbezugskosten_laufend
+              - entity: sensor.1k5_netzbezugskosten_kumuliert
                 name: "1komma5° Real"
                 color: "#F44336"
                 stroke_width: 2
                 curve: smooth
-                float_precision: 4
+                float_precision: 2
                 yaxis_id: kosten
                 extend_to: false
                 group_by:
-                  func: avg
+                  func: last
                   duration: 5min
-              - entity: sensor.emhass_theo_kosten_laufend
+              - entity: sensor.emhass_theo_kosten_kumuliert
                 name: "EMHASS Theoretisch"
                 color: "#2196F3"
                 stroke_width: 2
                 stroke_dash: 5
                 curve: smooth
-                float_precision: 4
+                float_precision: 2
                 yaxis_id: kosten
                 extend_to: false
                 group_by:
-                  func: avg
+                  func: last
                   duration: 5min
-              - entity: sensor.entscheidungs_delta_laufend
+              - entity: sensor.entscheidungs_delta_kumuliert
                 name: "Delta"
                 color: "#FF9800"
                 stroke_width: 1
                 curve: smooth
                 type: area
                 opacity: 0.3
-                float_precision: 4
+                float_precision: 2
                 yaxis_id: kosten
                 extend_to: false
                 group_by:
-                  func: avg
+                  func: last
                   duration: 5min
       # ── Wärmepumpe & Preis ─────────────────────────────
       - type: grid
@@ -484,23 +485,23 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.1k5_netzbezugskosten_laufend
+              - entity: sensor.1k5_netzbezugskosten_kumuliert
                 name: "1komma5° Real"
                 color: "#F44336"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
-              - entity: sensor.emhass_theo_kosten_laufend
+              - entity: sensor.emhass_theo_kosten_kumuliert
                 name: "EMHASS Theoretisch"
                 color: "#2196F3"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
       # ── Delta-Trend 7 Tage ────────────────────────────
       - type: grid
@@ -527,7 +528,7 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.entscheidungs_delta_laufend
+              - entity: sensor.entscheidungs_delta_kumuliert
                 name: "Delta"
                 color: "#FF9800"
                 stroke_width: 2
@@ -537,7 +538,7 @@ views:
                 float_precision: 2
                 yaxis_id: delta
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
       # ── WP-Kosten Woche ───────────────────────────────
       - type: grid
@@ -566,23 +567,23 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.wp_stromkosten_laufend
+              - entity: sensor.wp_stromkosten_kumuliert
                 name: "WP Kosten"
                 color: "#F44336"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
-              - entity: sensor.wp_einsparpotenzial_laufend
+              - entity: sensor.wp_einsparpotenzial_kumuliert
                 name: "Einsparpotenzial"
                 color: "#4CAF50"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
 
   # ════════════════════════════════════════════════════
@@ -670,23 +671,23 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.1k5_netzbezugskosten_laufend
+              - entity: sensor.1k5_netzbezugskosten_kumuliert
                 name: "1komma5° Real"
                 color: "#F44336"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
-              - entity: sensor.emhass_theo_kosten_laufend
+              - entity: sensor.emhass_theo_kosten_kumuliert
                 name: "EMHASS Theoretisch"
                 color: "#2196F3"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
       # ── Kumuliertes Delta Monat ────────────────────────
       - type: grid
@@ -711,7 +712,7 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.entscheidungs_delta_laufend
+              - entity: sensor.entscheidungs_delta_kumuliert
                 name: "Delta"
                 color: "#FF9800"
                 stroke_width: 2
@@ -721,7 +722,7 @@ views:
                 float_precision: 2
                 yaxis_id: delta
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
       # ── WP-Kosten Monat ───────────────────────────────
       - type: grid
@@ -750,23 +751,23 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.wp_stromkosten_laufend
+              - entity: sensor.wp_stromkosten_kumuliert
                 name: "WP Kosten"
                 color: "#F44336"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
-              - entity: sensor.wp_einsparpotenzial_laufend
+              - entity: sensor.wp_einsparpotenzial_kumuliert
                 name: "Einsparpotenzial"
                 color: "#4CAF50"
                 type: column
                 float_precision: 2
                 yaxis_id: kosten
                 group_by:
-                  func: sum
+                  func: delta
                   duration: 1d
       # ── Zusammenfassung ────────────────────────────────
       - type: grid

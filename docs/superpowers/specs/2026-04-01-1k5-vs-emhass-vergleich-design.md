@@ -325,7 +325,7 @@ Eigenes Dashboard: `config/kamrui-n100/dashboards/1k5-vs-emhass.yaml`
 ## Offene Punkte / Risiken
 
 1. **`p_batt_forecast` Verfügbarkeit:** Sensor existiert erst nach erstem EMHASS-Publish. Alle Template-Sensoren müssen graceful mit `unknown`/`unavailable` umgehen (`float(0)` Defaults).
-2. **EMHASS-Vorzeichen verifizieren:** Die Spec geht davon aus, dass `p_batt_forecast` positiv = Entladen, negativ = Laden. Dies muss nach dem ersten EMHASS-Lauf gegen das reale Batterieverhalten verifiziert werden. Bei falschem Vorzeichen invertiert sich der gesamte Vergleich.
+2. **EMHASS-Vorzeichen verifizieren:** Die Spec und Implementierung gehen davon aus, dass `p_batt_forecast` positiv = Laden, negativ = Entladen (Quelle: `docs/emhass-referenz.md`). Dies muss nach dem ersten EMHASS-Lauf gegen das reale Batterieverhalten verifiziert werden. Bei falschem Vorzeichen muss die Formel in `template_sensors.yaml` angepasst werden (`+ batt` → `- batt`).
 3. **EMHASS-Forecast-Staleness:** EMHASS läuft 3x täglich (05:30, 13:30, 18:00). Zwischen den Läufen kann der Fahrplan veraltet sein (unerwartete Wolken, Lastspitzen). Der theoretische Kostenvergleich wird in diesen Phasen ungenauer. Dies ist eine bekannte Limitierung der Simulation.
 4. **Chart 3 Komplexität:** Farbige Hintergrundbänder aus einem kategorischen Sensor sind in ApexCharts nicht nativ möglich. Erfordert Workaround über numerische Umwandlung + Area-Series.
 5. **WP-Einsparpotenzial ist konservativ:** Der Sensor zeigt nur die Preisdifferenz, nicht ob eine Lastverschiebung thermisch möglich wäre (Speicherkapazität Warmwasser, Gebäudemasse). Es ist ein oberes Schätzpotenzial.
