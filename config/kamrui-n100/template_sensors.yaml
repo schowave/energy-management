@@ -179,6 +179,16 @@
           0
         {% endif %}
 
+# ── WP Betriebsmodus (Text) ────────────────────────
+- sensor:
+    - name: "WP Betriebsmodus"
+      unique_id: wp_betriebsmodus
+      icon: mdi:heat-pump-outline
+      state: >
+        {% set mode = states('sensor.licv_8_2r1_3_operation_mode') | float(-1) | int %}
+        {% set modes = {0: 'Heizen', 1: 'Warmwasser', 2: 'Kühlen', 3: 'Abtauen', 4: 'Schwimmbad', 5: 'Standby', 6: 'EVU-Sperre', 7: 'Fehler'} %}
+        {{ modes.get(mode, 'Unbekannt') }}
+
 # ── 1komma5° Heartbeat Modus-Tracking ─────────────
 - sensor:
     - name: "Heartbeat Modus"
