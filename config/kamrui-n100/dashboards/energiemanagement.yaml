@@ -21,7 +21,6 @@ views:
                 entity: sensor.energy_battery_battery_discharging_power_battery_charging_power_net_power
                 state_of_charge: sensor.battery_level
                 display_zero_state: true
-                invert_state: true
               grid:
                 entity: sensor.energy_grid_import_power_export_power_net_power
                 display_zero_state: true
