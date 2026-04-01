@@ -265,3 +265,61 @@
         {% else %}
           {{ [0, wp_kw * (preis - preis_min)] | max | round(4) }}
         {% endif %}
+
+# ── Kumulierte Kosten (Riemann-Summe, jede Minute) ─
+# Integriert EUR/h-Rate × 1/60h = EUR pro Minute.
+# Ersetzt sensor.integration Platform (Boot-Timing-Problem).
+# state_class: total erlaubt Utility Meters als Quelle.
+- trigger:
+    - platform: time_pattern
+      minutes: "/1"
+  sensor:
+    - name: "1k5 Netzbezugskosten kumuliert"
+      unique_id: 1k5_netzbezugskosten_kumuliert
+      unit_of_measurement: "EUR"
+      state_class: total
+      icon: mdi:cash
+      state: >
+        {% set rate = states('sensor.1k5_netzbezugskosten_laufend') | float(0) %}
+        {% set prev = this.state | float(0) %}
+        {{ (prev + rate / 60) | round(4) }}
+
+    - name: "EMHASS Theo Kosten kumuliert"
+      unique_id: emhass_theo_kosten_kumuliert
+      unit_of_measurement: "EUR"
+      state_class: total
+      icon: mdi:robot
+      state: >
+        {% set rate = states('sensor.emhass_theo_kosten_laufend') | float(0) %}
+        {% set prev = this.state | float(0) %}
+        {{ (prev + rate / 60) | round(4) }}
+
+    - name: "Entscheidungs-Delta kumuliert"
+      unique_id: entscheidungs_delta_kumuliert
+      unit_of_measurement: "EUR"
+      state_class: total
+      icon: mdi:swap-horizontal
+      state: >
+        {% set rate = states('sensor.entscheidungs_delta_laufend') | float(0) %}
+        {% set prev = this.state | float(0) %}
+        {{ (prev + rate / 60) | round(4) }}
+
+    - name: "WP Stromkosten kumuliert"
+      unique_id: wp_stromkosten_kumuliert
+      unit_of_measurement: "EUR"
+      state_class: total
+      icon: mdi:heat-pump
+      state: >
+        {% set rate = states('sensor.wp_stromkosten_laufend') | float(0) %}
+        {% set prev = this.state | float(0) %}
+        {{ (prev + rate / 60) | round(4) }}
+
+    - name: "WP Einsparpotenzial kumuliert"
+      unique_id: wp_einsparpotenzial_kumuliert
+      unit_of_measurement: "EUR"
+      state_class: total
+      icon: mdi:piggy-bank
+      state: >
+        {% set rate = states('sensor.wp_einsparpotenzial_laufend') | float(0) %}
+        {% set prev = this.state | float(0) %}
+        {{ (prev + rate / 60) | round(4) }}
