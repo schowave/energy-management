@@ -91,15 +91,15 @@ Einheit: EUR/h. Gibt die momentanen Netto-Stromkosten an.
 **Sensor:** `sensor.emhass_theo_kosten_laufend`
 **Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
 
-**EMHASS-Vorzeichen-Konvention:** `p_batt_forecast` positiv = Laden, negativ = Entladen. (Quelle: `docs/emhass-referenz.md`)
+**EMHASS-Vorzeichen-Konvention:** `p_batt_forecast` positiv = Entladen, negativ = Laden. (Verifiziert 2026-04-01: SOC-Ziel 37% bei Batterie 86% → p_batt_forecast +1321W = Entladen)
 
 ```
 Verbrauch = consumption_power_7fee... (W)
 PV = solar_production_power_7fee... (W)
 EMHASS_Batterie = states('sensor.p_batt_forecast') (W, direkt als State nutzbar)
 
-Theo_Netzbezug = max(0, (Verbrauch - PV + EMHASS_Batterie) / 1000) (kW)
-Theo_Einspeisung = max(0, (PV - EMHASS_Batterie - Verbrauch) / 1000) (kW)
+Theo_Netzbezug = max(0, (Verbrauch - PV - EMHASS_Batterie) / 1000) (kW)
+Theo_Einspeisung = max(0, (PV + EMHASS_Batterie - Verbrauch) / 1000) (kW)
 
 Theo_Kosten = Theo_Netzbezug × Preis - Theo_Einspeisung × Einspeisevergütung  (EUR/h)
 ```

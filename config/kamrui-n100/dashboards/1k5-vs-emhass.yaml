@@ -66,7 +66,7 @@ views:
               columns: full
             header:
               show: true
-              title: "Batterie-Leistung (+ Laden / − Entladen)"
+              title: "Batterie-Leistung (+ Entladen / − Laden)"
               show_states: true
               colorize_states: true
             now:
@@ -106,9 +106,9 @@ views:
                 group_by:
                   func: last
                   duration: 30min
-              - entity: sensor.battery_charging_power
-                name: "Laden (Real)"
-                color: "#22c55e"
+              - entity: sensor.battery_discharging_power
+                name: "Entladen (Real)"
+                color: "#f59e0b"
                 stroke_width: 2
                 curve: smooth
                 float_precision: 0
@@ -119,9 +119,9 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-              - entity: sensor.battery_discharging_power
-                name: "Entladen (Real)"
-                color: "#f59e0b"
+              - entity: sensor.battery_charging_power
+                name: "Laden (Real)"
+                color: "#22c55e"
                 stroke_width: 2
                 curve: smooth
                 float_precision: 0
