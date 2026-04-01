@@ -223,6 +223,11 @@ views:
                   labels:
                     formatter: |
                       EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
+              - id: modus
+                min: 0
+                max: 3
+                opposite: true
+                show: false
             series:
               - entity: sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45
                 name: "Strompreis"
@@ -237,7 +242,7 @@ views:
                   duration: 5min
               - entity: sensor.heartbeat_modus
                 name: "Modus"
-                yaxis_id: preis
+                yaxis_id: modus
                 curve: stepline
                 stroke_width: 0
                 type: area
