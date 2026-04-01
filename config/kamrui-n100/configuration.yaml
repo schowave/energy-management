@@ -40,10 +40,6 @@ input_number:
     icon: mdi:currency-eur
     initial: 0.082
 
-# Integration-Sensoren (Riemann-Summe EUR/h → EUR) werden als
-# UI-Helpers angelegt (Settings → Helpers → Integration sensor),
-# da die YAML-Platform die Template-Sensoren beim Boot nicht findet.
-
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
