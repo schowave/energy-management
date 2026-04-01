@@ -50,3 +50,81 @@ wp_heizung_thermisch_gesamt:
 wp_ww_thermisch_gesamt:
   source: sensor.licv_8_2r1_3_domestic_hot_water_2
   name: "WP Warmwasser thermisch gesamt (seit Tracking)"
+
+# ── 1komma5° vs EMHASS Kostenvergleich ─────────────
+# Batterie-Entscheidungsvergleich
+1k5_real_kosten_tag:
+  source: sensor.1k5_netzbezugskosten_kumuliert
+  name: "1k5 Real Kosten Tag"
+  cycle: daily
+
+emhass_theo_kosten_tag:
+  source: sensor.emhass_theo_kosten_kumuliert
+  name: "EMHASS Theo Kosten Tag"
+  cycle: daily
+
+entscheidungs_delta_tag:
+  source: sensor.entscheidungs_delta_kumuliert
+  name: "Entscheidungs-Delta Tag"
+  cycle: daily
+
+1k5_real_kosten_woche:
+  source: sensor.1k5_netzbezugskosten_kumuliert
+  name: "1k5 Real Kosten Woche"
+  cycle: weekly
+
+emhass_theo_kosten_woche:
+  source: sensor.emhass_theo_kosten_kumuliert
+  name: "EMHASS Theo Kosten Woche"
+  cycle: weekly
+
+entscheidungs_delta_woche:
+  source: sensor.entscheidungs_delta_kumuliert
+  name: "Entscheidungs-Delta Woche"
+  cycle: weekly
+
+1k5_real_kosten_monat:
+  source: sensor.1k5_netzbezugskosten_kumuliert
+  name: "1k5 Real Kosten Monat"
+  cycle: monthly
+
+emhass_theo_kosten_monat:
+  source: sensor.emhass_theo_kosten_kumuliert
+  name: "EMHASS Theo Kosten Monat"
+  cycle: monthly
+
+entscheidungs_delta_monat:
+  source: sensor.entscheidungs_delta_kumuliert
+  name: "Entscheidungs-Delta Monat"
+  cycle: monthly
+
+# Wärmepumpen-Tracking
+wp_stromkosten_tag:
+  source: sensor.wp_stromkosten_kumuliert
+  name: "WP Stromkosten Tag"
+  cycle: daily
+
+wp_einsparpotenzial_tag:
+  source: sensor.wp_einsparpotenzial_kumuliert
+  name: "WP Einsparpotenzial Tag"
+  cycle: daily
+
+wp_stromkosten_woche:
+  source: sensor.wp_stromkosten_kumuliert
+  name: "WP Stromkosten Woche"
+  cycle: weekly
+
+wp_einsparpotenzial_woche:
+  source: sensor.wp_einsparpotenzial_kumuliert
+  name: "WP Einsparpotenzial Woche"
+  cycle: weekly
+
+wp_stromkosten_monat:
+  source: sensor.wp_stromkosten_kumuliert
+  name: "WP Stromkosten Monat"
+  cycle: monthly
+
+wp_einsparpotenzial_monat:
+  source: sensor.wp_einsparpotenzial_kumuliert
+  name: "WP Einsparpotenzial Monat"
+  cycle: monthly

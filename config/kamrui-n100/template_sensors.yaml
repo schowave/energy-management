@@ -178,3 +178,90 @@
         {% else %}
           0
         {% endif %}
+
+# ── 1komma5° Heartbeat Modus-Tracking ─────────────
+- sensor:
+    - name: "Heartbeat Modus"
+      unique_id: heartbeat_modus
+      icon: mdi:heart-pulse
+      state: >
+        {% set charge = states('sensor.battery_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set discharge = states('sensor.battery_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set export = states('sensor.grid_feed_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% if charge > 100 %}laden
+        {% elif discharge > 100 %}entladen
+        {% elif export < 10 and charge < 100 and discharge < 100 %}zero_export
+        {% else %}idle
+        {% endif %}
+
+# ── 1komma5° vs EMHASS Kostenvergleich ─────────────
+- sensor:
+    - name: "1k5 Netzbezugskosten laufend"
+      unique_id: 1k5_netzbezugskosten_laufend
+      unit_of_measurement: "EUR/h"
+      state_class: measurement
+      icon: mdi:cash
+      state: >
+        {% set import_kw = states('sensor.grid_feed_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) / 1000 %}
+        {% set export_kw = states('sensor.grid_feed_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) / 1000 %}
+        {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
+        {{ (import_kw * preis - export_kw * einspeisung) | round(4) }}
+
+    - name: "EMHASS Theo Kosten laufend"
+      unique_id: emhass_theo_kosten_laufend
+      unit_of_measurement: "EUR/h"
+      state_class: measurement
+      icon: mdi:robot
+      state: >
+        {% set verbrauch = states('sensor.consumption_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set pv = states('sensor.solar_production_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set batt = states('sensor.p_batt_forecast') | float(0) %}
+        {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
+        {% set net = (verbrauch - pv + batt) / 1000 %}
+        {% set theo_import = [0, net] | max %}
+        {% set theo_export = [0, -net] | max %}
+        {{ (theo_import * preis - theo_export * einspeisung) | round(4) }}
+
+    - name: "Entscheidungs-Delta laufend"
+      unique_id: entscheidungs_delta_laufend
+      unit_of_measurement: "EUR/h"
+      state_class: measurement
+      icon: mdi:swap-horizontal
+      state: >
+        {% set real = states('sensor.1k5_netzbezugskosten_laufend') | float(0) %}
+        {% set theo = states('sensor.emhass_theo_kosten_laufend') | float(0) %}
+        {{ (real - theo) | round(4) }}
+
+# ── Wärmepumpen-Kostentracking ─────────────────────
+    - name: "WP Stromkosten laufend"
+      unique_id: wp_stromkosten_laufend
+      unit_of_measurement: "EUR/h"
+      state_class: measurement
+      icon: mdi:heat-pump
+      state: >
+        {% set wp_kw = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) / 1000 %}
+        {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {{ (wp_kw * preis) | round(4) }}
+
+    - name: "WP Einsparpotenzial laufend"
+      unique_id: wp_einsparpotenzial_laufend
+      unit_of_measurement: "EUR/h"
+      state_class: measurement
+      icon: mdi:piggy-bank
+      state: >
+        {% set wp_kw = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) / 1000 %}
+        {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set preis_min = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'price_today_min') | float(preis) %}
+        {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
+        {% set pv = states('sensor.solar_production_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set verbrauch = states('sensor.consumption_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set batt_out = states('sensor.battery_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set ueberschuss_kw = [0, (pv - verbrauch + batt_out) / 1000] | max %}
+        {% if wp_kw <= 0 %}0
+        {% elif ueberschuss_kw >= wp_kw %}
+          {{ [0, wp_kw * (preis - einspeisung)] | max | round(4) }}
+        {% else %}
+          {{ [0, wp_kw * (preis - preis_min)] | max | round(4) }}
+        {% endif %}
