@@ -58,9 +58,7 @@ views:
                 content: >-
                   {{ states('sensor.heartbeat_modus') | capitalize }}
                 entity: sensor.heartbeat_modus
-      # ── Batterie-Fahrplan-Vergleich ────────────────────
-      - type: grid
-        cards:
+          # ── Batterie-Fahrplan-Vergleich ────────────────────
           - type: heading
             heading: "Batterie: EMHASS-Plan vs. Realität"
           - type: custom:apexcharts-card
