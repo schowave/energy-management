@@ -40,42 +40,9 @@ input_number:
     icon: mdi:currency-eur
     initial: 0.082
 
-sensor:
-  # ── Riemann-Summe: EUR/h → kumulierte EUR ────────
-  - platform: integration
-    source: sensor.1k5_netzbezugskosten_laufend
-    name: "1k5 Netzbezugskosten kumuliert"
-    unit_prefix: ""
-    round: 4
-    method: left
-
-  - platform: integration
-    source: sensor.emhass_theo_kosten_laufend
-    name: "EMHASS Theo Kosten kumuliert"
-    unit_prefix: ""
-    round: 4
-    method: left
-
-  - platform: integration
-    source: sensor.entscheidungs_delta_laufend
-    name: "Entscheidungs-Delta kumuliert"
-    unit_prefix: ""
-    round: 4
-    method: left
-
-  - platform: integration
-    source: sensor.wp_stromkosten_laufend
-    name: "WP Stromkosten kumuliert"
-    unit_prefix: ""
-    round: 4
-    method: left
-
-  - platform: integration
-    source: sensor.wp_einsparpotenzial_laufend
-    name: "WP Einsparpotenzial kumuliert"
-    unit_prefix: ""
-    round: 4
-    method: left
+# Integration-Sensoren (Riemann-Summe EUR/h → EUR) werden als
+# UI-Helpers angelegt (Settings → Helpers → Integration sensor),
+# da die YAML-Platform die Template-Sensoren beim Boot nicht findet.
 
 automation: !include automations.yaml
 script: !include scripts.yaml
