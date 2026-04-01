@@ -2,29 +2,36 @@
 # Eingebunden via configuration.yaml → homeassistant.packages.emhass
 
 rest_command:
-  # Day-Ahead Optimierung mit ENTSO-e Börsenpreisen + Solcast PV-Forecast
-  # 48 Werte (24h × 2 bei 30-Min-Schritten), ab aktueller Stunde
+  # Day-Ahead Optimierung mit 1komma5° Preisen + Solcast PV-Forecast
+  # 48 Werte (24h × 2 bei 30-Min-Schritten), ab aktueller halben Stunde
+  # Preisquelle: 1komma5° Forecast (15-Min-Auflösung, je 2 gemittelt → 30 Min)
   emhass_dayahead:
     url: "http://5b918bf2-emhass:5000/action/dayahead-optim"
     method: POST
     content_type: "application/json"
     timeout: 120
     payload: >-
-      {%- set all_prices = state_attr('sensor.average_electricity_price', 'prices') or [] -%}
+      {%- set forecast = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') or [] -%}
       {%- set now_ts = as_timestamp(now()) -%}
-      {%- set current_hour_start = as_timestamp(now().replace(minute=0, second=0, microsecond=0)) -%}
       {%- set ns = namespace(prices=[]) -%}
-      {%- for f in all_prices -%}
-        {%- if as_timestamp(f.time) >= current_hour_start -%}
-          {%- set ns.prices = ns.prices + [f.price, f.price] -%}
-        {%- endif -%}
+      {%- for i in range(0, forecast | length - 1, 2) -%}
+        {%- set p1 = forecast[i].price | float(0) -%}
+        {%- set p2 = forecast[i+1].price | float(0) -%}
+        {%- set ns.prices = ns.prices + [((p1 + p2) / 2) | round(4)] -%}
       {%- endfor -%}
       {%- set ns.prices = ns.prices[:48] -%}
+      {%- if ns.prices | length < 48 -%}
+        {%- set last_price = ns.prices[-1] if ns.prices | length > 0 else 0.30 -%}
+        {%- for i in range(48 - ns.prices | length) -%}
+          {%- set ns.prices = ns.prices + [last_price] -%}
+        {%- endfor -%}
+      {%- endif -%}
       {%- set pv_today = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') or [] -%}
       {%- set pv_tomorrow = state_attr('sensor.solcast_pv_forecast_prognose_morgen', 'detailedForecast') or [] -%}
+      {%- set current_half_hour = as_timestamp(now().replace(minute=(now().minute // 30 * 30), second=0, microsecond=0)) -%}
       {%- set ns2 = namespace(pv=[]) -%}
       {%- for f in pv_today -%}
-        {%- if as_timestamp(f.period_start) >= current_hour_start -%}
+        {%- if as_timestamp(f.period_start) >= current_half_hour -%}
           {%- set ns2.pv = ns2.pv + [(f.pv_estimate * 1000) | round(0)] -%}
         {%- endif -%}
       {%- endfor -%}
@@ -41,7 +48,7 @@ rest_command:
         "load_cost_forecast": {{ ns.prices | to_json }},
         "prod_price_forecast": [
           {%- for i in range(ns.prices | length) -%}
-            0.082{% if not loop.last %},{% endif %}
+            {{ states('input_number.einspeiseverguetung') | float(0.082) }}{% if not loop.last %},{% endif %}
           {%- endfor -%}
         ],
         "pv_power_forecast": {{ ns2.pv | to_json }},
@@ -58,16 +65,12 @@ automation:
   - id: emhass_dayahead_daily
     alias: "EMHASS Day-Ahead Optimierung"
     description: >-
-      EMHASS-Optimierung 3x täglich:
-      05:30 Morgens (Tagesplan), 13:30 (neue ENTSO-e Preise für morgen),
-      18:00 (aktualisierter Solcast + Abendplan)
+      EMHASS-Optimierung alle 2 Stunden (12x täglich) für fairen
+      Vergleich mit 1komma5° Heartbeat. Nutzt 1komma5° Preise.
     trigger:
-      - platform: time
-        at: "05:30:00"
-      - platform: time
-        at: "13:30:00"
-      - platform: time
-        at: "18:00:00"
+      - platform: time_pattern
+        hours: "/2"
+        minutes: "30"
     action:
       - service: rest_command.emhass_dayahead
       - delay: "00:00:30"
