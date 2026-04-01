@@ -5,7 +5,7 @@ views:
   - type: sections
     title: "Live"
     icon: mdi:chart-timeline-variant
-    max_columns: 1
+    max_columns: 2
     sections:
       # ── KPI-Chips ──────────────────────────────────────
       - type: grid
@@ -429,7 +429,7 @@ views:
   - type: sections
     title: "Woche"
     icon: mdi:calendar-week
-    max_columns: 1
+    max_columns: 2
     sections:
       # ── Wochen-KPIs ────────────────────────────────────
       - type: grid
@@ -597,7 +597,7 @@ views:
   - type: sections
     title: "Monat"
     icon: mdi:calendar-month
-    max_columns: 1
+    max_columns: 2
     sections:
       # ── Monats-KPIs ────────────────────────────────────
       - type: grid
