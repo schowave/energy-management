@@ -460,9 +460,7 @@ views:
                 content: >-
                   WP-Potenzial {{ states('sensor.wp_einsparpotenzial_woche') | float(0) | round(2) }}€
                 entity: sensor.wp_einsparpotenzial_woche
-      # ── Kostenvergleich 7 Tage ─────────────────────────
-      - type: grid
-        cards:
+          # ── Kostenvergleich 7 Tage ─────────────────────────
           - type: heading
             heading: "Kosten: Real vs. EMHASS (7 Tage)"
           - type: custom:apexcharts-card
@@ -647,8 +645,6 @@ views:
                   Eigenverbr. {{ states('sensor.eigenverbrauchsquote') }}%
                 entity: sensor.eigenverbrauchsquote
       # ── Kostenvergleich 30 Tage ────────────────────────
-      - type: grid
-        cards:
           - type: heading
             heading: "Kosten: Real vs. EMHASS (30 Tage)"
           - type: custom:apexcharts-card
