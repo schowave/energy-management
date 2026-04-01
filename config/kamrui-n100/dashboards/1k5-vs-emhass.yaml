@@ -776,21 +776,18 @@ views:
           - type: markdown
             grid_options:
               columns: full
-            content: >-
+            content: |
               {% set real = states('sensor.1k5_real_kosten_monat') | float(0) %}
               {% set theo = states('sensor.emhass_theo_kosten_monat') | float(0) %}
               {% set delta = states('sensor.entscheidungs_delta_monat') | float(0) %}
               {% set wp_kosten = states('sensor.wp_stromkosten_monat') | float(0) %}
               {% set wp_potenzial = states('sensor.wp_einsparpotenzial_monat') | float(0) %}
-
               ## Batterie-Entscheidungen
-
               | | Kosten |
               |---|---|
               | **1komma5° Real** | {{ real | round(2) }} € |
               | **EMHASS Theoretisch** | {{ theo | round(2) }} € |
               | **Delta** | {{ delta | round(2) }} € |
-
               {% if delta > 0 %}
               1komma5° war **{{ delta | round(2) }} € teurer** als EMHASS empfohlen hätte.
               {% elif delta < 0 %}
@@ -798,18 +795,14 @@ views:
               {% else %}
               Beide Systeme haben gleich abgeschnitten.
               {% endif %}
-
               {% if theo != 0 %}
               Abweichung: **{{ ((delta / theo) * 100) | round(1) }}%**
               {% endif %}
-
               ## Wärmepumpe
-
               | | Betrag |
               |---|---|
               | **WP Stromkosten** | {{ wp_kosten | round(2) }} € |
               | **Einsparpotenzial** | {{ wp_potenzial | round(2) }} € |
-
               {% if wp_kosten > 0 and wp_potenzial > 0 %}
               Durch Lastverschiebung der WP hätten **{{ wp_potenzial | round(2) }} € ({{ ((wp_potenzial / wp_kosten) * 100) | round(0) }}%)** eingespart werden können.
               {% endif %}
