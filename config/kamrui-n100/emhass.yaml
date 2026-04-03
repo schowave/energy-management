@@ -120,6 +120,8 @@ automation:
       für den 24h-Überblick im Energiemanagement-Dashboard.
     trigger:
       - platform: time
+        at: "00:01:00"
+      - platform: time
         at: "05:30:00"
     action:
       - service: rest_command.emhass_dayahead
