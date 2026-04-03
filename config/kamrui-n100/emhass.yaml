@@ -2,9 +2,8 @@
 # Eingebunden via configuration.yaml → homeassistant.packages.emhass
 
 rest_command:
-  # Day-Ahead Optimierung mit 1komma5° Preisen + Solcast PV-Forecast
-  # 48 Werte (24h × 2 bei 30-Min-Schritten), ab aktueller halben Stunde
-  # Preisquelle: 1komma5° Forecast (15-Min-Auflösung, je 2 gemittelt → 30 Min)
+  # Day-Ahead: 1× täglich für 24h-Überblick + Forecast-Cache
+  # Prefix dh_ damit MPC-Sensoren nicht überschrieben werden
   emhass_dayahead:
     url: "http://5b918bf2-emhass:5000/action/dayahead-optim"
     method: POST
@@ -12,7 +11,6 @@ rest_command:
     timeout: 120
     payload: >-
       {%- set forecast = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') or [] -%}
-      {%- set now_ts = as_timestamp(now()) -%}
       {%- set ns = namespace(prices=[]) -%}
       {%- for i in range(0, forecast | length - 1, 2) -%}
         {%- set p1 = forecast[i].price | float(0) -%}
@@ -45,6 +43,7 @@ rest_command:
         {%- endfor -%}
       {%- endif -%}
       {
+        "publish_prefix": "dh_",
         "load_cost_forecast": {{ ns.prices | to_json }},
         "prod_price_forecast": [
           {%- for i in range(ns.prices | length) -%}
@@ -56,23 +55,90 @@ rest_command:
         "soc_final": 0.1
       }
 
+  # MPC: Alle 5 Min mit Echtzeit-Daten, 4h Horizont, 5-Min-Schritte
+  # 48 Schritte × 5 Min = 240 Min = 4 Stunden
+  emhass_mpc:
+    url: "http://5b918bf2-emhass:5000/action/naive-mpc-optim"
+    method: POST
+    content_type: "application/json"
+    timeout: 90
+    payload: >-
+      {%- set horizon = 48 -%}
+      {%- set forecast = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') or [] -%}
+      {%- set ns = namespace(prices=[]) -%}
+      {%- for f in forecast[:16] -%}
+        {%- set ns.prices = ns.prices + [f.price | float(0), f.price | float(0), f.price | float(0)] -%}
+      {%- endfor -%}
+      {%- set ns.prices = ns.prices[:horizon] -%}
+      {%- if ns.prices | length < horizon -%}
+        {%- set last_price = ns.prices[-1] if ns.prices | length > 0 else 0.30 -%}
+        {%- for i in range(horizon - ns.prices | length) -%}
+          {%- set ns.prices = ns.prices + [last_price] -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- set pv_today = state_attr('sensor.solcast_pv_forecast_prognose_heute', 'detailedForecast') or [] -%}
+      {%- set pv_tomorrow = state_attr('sensor.solcast_pv_forecast_prognose_morgen', 'detailedForecast') or [] -%}
+      {%- set current_half_hour = as_timestamp(now().replace(minute=(now().minute // 30 * 30), second=0, microsecond=0)) -%}
+      {%- set ns2 = namespace(pv=[]) -%}
+      {%- for f in pv_today + pv_tomorrow -%}
+        {%- if as_timestamp(f.period_start) >= current_half_hour -%}
+          {%- set val = (f.pv_estimate * 1000) | round(0) -%}
+          {%- set ns2.pv = ns2.pv + [val, val, val, val, val, val] -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set ns2.pv = ns2.pv[:horizon] -%}
+      {%- if ns2.pv | length < horizon -%}
+        {%- for i in range(horizon - ns2.pv | length) -%}
+          {%- set ns2.pv = ns2.pv + [0] -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- set load = states('sensor.load_power') | float(500) | round(0) -%}
+      {%- set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) -%}
+      {
+        "prediction_horizon": {{ horizon }},
+        "optimization_time_step": 5,
+        "publish_prefix": "mpc_",
+        "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
+        "soc_final": 0.1,
+        "load_cost_forecast": {{ ns.prices | to_json }},
+        "prod_price_forecast": [{% for i in range(horizon) %}{{ einspeisung }}{% if not loop.last %},{% endif %}{% endfor %}],
+        "pv_power_forecast": {{ ns2.pv | to_json }},
+        "load_power_forecast": [{% for i in range(horizon) %}{{ load }}{% if not loop.last %},{% endif %}{% endfor %}]
+      }
+
   # Publish: Aktualisiert EMHASS-Sensoren in HA
   emhass_publish:
     url: "http://5b918bf2-emhass:5000/action/publish-data"
     method: POST
 
 automation:
+  # Day-Ahead: 1× täglich morgens für 24h-Plan + Forecast-Cache
   - id: emhass_dayahead_daily
-    alias: "EMHASS Day-Ahead Optimierung"
+    alias: "EMHASS Day-Ahead (täglich)"
     description: >-
-      EMHASS-Optimierung alle 30 Minuten (48x täglich) für fairen
-      Vergleich mit 1komma5° Heartbeat. Nutzt 1komma5° Preise.
-      Passend zur 30-Min-Schrittweite des EMHASS-Plans.
+      Tägliche Day-Ahead Optimierung um 05:30. Erzeugt dh_* Sensoren
+      für den 24h-Überblick im Energiemanagement-Dashboard.
     trigger:
-      - platform: time_pattern
-        minutes: "/30"
+      - platform: time
+        at: "05:30:00"
     action:
       - service: rest_command.emhass_dayahead
+      - delay: "00:00:30"
+      - service: rest_command.emhass_publish
+    mode: single
+
+  # MPC: Alle 5 Min für Echtzeit-Simulation
+  - id: emhass_mpc_realtime
+    alias: "EMHASS MPC (alle 5 Min)"
+    description: >-
+      MPC-Optimierung alle 5 Minuten mit Echtzeit-Verbrauch,
+      4h Horizont, 5-Min-Schrittweite. Erzeugt mpc_* Sensoren
+      für den 1k5-vs-EMHASS Vergleich.
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"
+    action:
+      - service: rest_command.emhass_mpc
       - delay: "00:00:30"
       - service: rest_command.emhass_publish
     mode: single
