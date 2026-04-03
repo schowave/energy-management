@@ -52,7 +52,7 @@ rest_command:
           {%- endfor -%}
         ],
         "pv_power_forecast": {{ ns2.pv | to_json }},
-        "soc_init": {{ states('sensor.battery_level') | float(50) / 100 }},
+        "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
         "soc_final": 0.1
       }
 
@@ -65,12 +65,12 @@ automation:
   - id: emhass_dayahead_daily
     alias: "EMHASS Day-Ahead Optimierung"
     description: >-
-      EMHASS-Optimierung alle 2 Stunden (12x täglich) für fairen
+      EMHASS-Optimierung alle 30 Minuten (48x täglich) für fairen
       Vergleich mit 1komma5° Heartbeat. Nutzt 1komma5° Preise.
+      Passend zur 30-Min-Schrittweite des EMHASS-Plans.
     trigger:
       - platform: time_pattern
-        hours: "/2"
-        minutes: "30"
+        minutes: "/30"
     action:
       - service: rest_command.emhass_dayahead
       - delay: "00:00:30"
