@@ -15,7 +15,7 @@ views:
               - type: template
                 icon: mdi:cash
                 icon_color: >-
-                  {% set d = states('sensor.entscheidungs_delta_laufend') | float(0) %}
+                  {% set d = states('sensor.1k5_netzbezugskosten_laufend') | float(0) - states('sensor.emhass_theo_kosten_laufend') | float(0) %}
                   {% if d > 0 %}red{% elif d < 0 %}green{% else %}grey{% endif %}
                 content: >-
                   Real {{ states('sensor.1k5_real_kosten_tag') | float(0) | round(2) }}€
@@ -340,19 +340,6 @@ views:
                 group_by:
                   func: last
                   duration: 5min
-              - entity: sensor.entscheidungs_delta_kumuliert
-                name: "Delta"
-                color: "#FF9800"
-                stroke_width: 1
-                curve: smooth
-                type: area
-                opacity: 0.3
-                float_precision: 2
-                yaxis_id: kosten
-                extend_to: false
-                group_by:
-                  func: last
-                  duration: 5min
       # ── Wärmepumpe & Preis ─────────────────────────────
       - type: grid
         cards:
@@ -463,11 +450,12 @@ views:
               - type: template
                 icon: mdi:swap-horizontal
                 icon_color: >-
-                  {% set d = states('sensor.entscheidungs_delta_woche') | float(0) %}
+                  {% set d = states('sensor.1k5_real_kosten_woche') | float(0) - states('sensor.emhass_theo_kosten_woche') | float(0) %}
                   {% if d > 0 %}red{% elif d < 0 %}green{% else %}grey{% endif %}
                 content: >-
-                  Delta {{ states('sensor.entscheidungs_delta_woche') | float(0) | round(2) }}€
-                entity: sensor.entscheidungs_delta_woche
+                  {% set d = states('sensor.1k5_real_kosten_woche') | float(0) - states('sensor.emhass_theo_kosten_woche') | float(0) %}
+                  Delta {{ d | round(2) }}€
+                entity: sensor.1k5_real_kosten_woche
               - type: template
                 icon: mdi:piggy-bank
                 icon_color: green
@@ -543,13 +531,19 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.entscheidungs_delta_kumuliert
-                name: "Delta"
-                color: "#FF9800"
-                stroke_width: 2
-                curve: smooth
-                type: area
-                opacity: 0.3
+              - entity: sensor.1k5_netzbezugskosten_kumuliert
+                name: "1komma5° Real"
+                color: "#F44336"
+                type: column
+                float_precision: 2
+                yaxis_id: delta
+                group_by:
+                  func: delta
+                  duration: 1d
+              - entity: sensor.emhass_theo_kosten_kumuliert
+                name: "EMHASS Theoretisch"
+                color: "#2196F3"
+                type: column
                 float_precision: 2
                 yaxis_id: delta
                 group_by:
@@ -629,11 +623,12 @@ views:
               - type: template
                 icon: mdi:swap-horizontal
                 icon_color: >-
-                  {% set d = states('sensor.entscheidungs_delta_monat') | float(0) %}
+                  {% set d = states('sensor.1k5_real_kosten_monat') | float(0) - states('sensor.emhass_theo_kosten_monat') | float(0) %}
                   {% if d > 0 %}red{% elif d < 0 %}green{% else %}grey{% endif %}
                 content: >-
-                  Delta {{ states('sensor.entscheidungs_delta_monat') | float(0) | round(2) }}€
-                entity: sensor.entscheidungs_delta_monat
+                  {% set d = states('sensor.1k5_real_kosten_monat') | float(0) - states('sensor.emhass_theo_kosten_monat') | float(0) %}
+                  Delta {{ d | round(2) }}€
+                entity: sensor.1k5_real_kosten_monat
               - type: template
                 icon: mdi:heat-pump
                 icon_color: orange
@@ -725,13 +720,19 @@ views:
                   title:
                     text: "EUR"
             series:
-              - entity: sensor.entscheidungs_delta_kumuliert
-                name: "Delta"
-                color: "#FF9800"
-                stroke_width: 2
-                curve: smooth
-                type: area
-                opacity: 0.3
+              - entity: sensor.1k5_netzbezugskosten_kumuliert
+                name: "1komma5° Real"
+                color: "#F44336"
+                type: column
+                float_precision: 2
+                yaxis_id: delta
+                group_by:
+                  func: delta
+                  duration: 1d
+              - entity: sensor.emhass_theo_kosten_kumuliert
+                name: "EMHASS Theoretisch"
+                color: "#2196F3"
+                type: column
                 float_precision: 2
                 yaxis_id: delta
                 group_by:

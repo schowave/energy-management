@@ -234,16 +234,6 @@
         {% set theo_export = [0, -net] | max %}
         {{ (theo_import * preis - theo_export * einspeisung) | round(4) }}
 
-    - name: "Entscheidungs-Delta laufend"
-      unique_id: entscheidungs_delta_laufend
-      unit_of_measurement: "EUR/h"
-      state_class: measurement
-      icon: mdi:swap-horizontal
-      state: >
-        {% set real = states('sensor.1k5_netzbezugskosten_laufend') | float(0) %}
-        {% set theo = states('sensor.emhass_theo_kosten_laufend') | float(0) %}
-        {{ (real - theo) | round(4) }}
-
 # ── Wärmepumpen-Kostentracking ─────────────────────
     - name: "WP Stromkosten laufend"
       unique_id: wp_stromkosten_laufend
@@ -301,16 +291,6 @@
       icon: mdi:robot
       state: >
         {% set rate = states('sensor.emhass_theo_kosten_laufend') | float(0) %}
-        {% set prev = this.state | float(0) %}
-        {{ (prev + rate / 60) | round(4) }}
-
-    - name: "Entscheidungs-Delta kumuliert"
-      unique_id: entscheidungs_delta_kumuliert
-      unit_of_measurement: "EUR"
-      state_class: total
-      icon: mdi:swap-horizontal
-      state: >
-        {% set rate = states('sensor.entscheidungs_delta_laufend') | float(0) %}
         {% set prev = this.state | float(0) %}
         {{ (prev + rate / 60) | round(4) }}
 
