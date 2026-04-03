@@ -55,17 +55,16 @@ rest_command:
         "soc_final": 0.1
       }
 
-  # MPC: Alle 5 Min mit Echtzeit-Daten, 4h Horizont, 30-Min-Schritte
-  # 8 Schritte × 30 Min = 240 Min = 4 Stunden
-  # optimization_time_step bleibt bei 30 (EMHASS Publish-Bug bei 5 Min)
-  # Alle 5 Min neu berechnet → Echtzeit-Reaktion trotz 30-Min-Schritte
+  # MPC: Alle 5 Min mit Echtzeit-Daten, 24h Horizont, 30-Min-Schritte
+  # 48 Schritte × 30 Min = 24h (muss zu EMHASS-Config passen)
+  # Alle 5 Min neu berechnet → Echtzeit-Reaktion mit aktuellem SOC/Load
   emhass_mpc:
     url: "http://5b918bf2-emhass:5000/action/naive-mpc-optim"
     method: POST
     content_type: "application/json"
     timeout: 90
     payload: >-
-      {%- set horizon = 8 -%}
+      {%- set horizon = 48 -%}
       {%- set forecast = state_attr('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45', 'forecast') or [] -%}
       {%- set ns = namespace(prices=[]) -%}
       {%- for i in range(0, forecast | length - 1, 2) -%}
@@ -99,7 +98,6 @@ rest_command:
       {%- set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) -%}
       {
         "prediction_horizon": {{ horizon }},
-        "publish_prefix": "",
         "load_power_forecast": [{% for i in range(horizon) %}{{ load }}{% if not loop.last %},{% endif %}{% endfor %}],
         "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
         "soc_final": 0.1,
