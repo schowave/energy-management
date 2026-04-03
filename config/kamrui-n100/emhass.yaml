@@ -3,7 +3,6 @@
 
 rest_command:
   # Day-Ahead: 1× täglich für 24h-Überblick + Forecast-Cache
-  # Prefix dh_ damit MPC-Sensoren nicht überschrieben werden
   emhass_dayahead:
     url: "http://5b918bf2-emhass:5000/action/dayahead-optim"
     method: POST
@@ -43,7 +42,6 @@ rest_command:
         {%- endfor -%}
       {%- endif -%}
       {
-        "publish_prefix": "",
         "load_cost_forecast": {{ ns.prices | to_json }},
         "prod_price_forecast": [
           {%- for i in range(ns.prices | length) -%}
@@ -116,8 +114,8 @@ automation:
   - id: emhass_dayahead_daily
     alias: "EMHASS Day-Ahead (täglich)"
     description: >-
-      Tägliche Day-Ahead Optimierung um 05:30. Erzeugt dh_* Sensoren
-      für den 24h-Überblick im Energiemanagement-Dashboard.
+      Tägliche Day-Ahead Optimierung um 00:01 + 05:30 für den
+      24h-Überblick im Energiemanagement-Dashboard.
     trigger:
       - platform: time
         at: "00:01:00"
@@ -137,8 +135,8 @@ automation:
     alias: "EMHASS MPC (alle 5 Min)"
     description: >-
       MPC-Optimierung alle 5 Minuten mit Echtzeit-Verbrauch,
-      4h Horizont, 5-Min-Schrittweite. Erzeugt mpc_* Sensoren
-      für den 1k5-vs-EMHASS Vergleich.
+      24h Horizont, 30-Min-Schrittweite. Überschreibt die gleichen
+      Sensoren wie Day-Ahead mit aktuellen Werten.
     trigger:
       - platform: time_pattern
         minutes: "/5"
