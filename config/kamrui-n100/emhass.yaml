@@ -50,7 +50,7 @@ rest_command:
         ],
         "pv_power_forecast": {{ ns2.pv | to_json }},
         "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
-        "soc_final": 0.1
+        "soc_final": 0.5
       }
 
   # MPC: Alle 5 Min mit Echtzeit-Daten, 24h Horizont, 30-Min-Schritte
@@ -96,7 +96,7 @@ rest_command:
       {
         "prediction_horizon": {{ horizon }},
         "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
-        "soc_final": 0.1,
+        "soc_final": 0.5,
         "load_cost_forecast": {{ ns.prices | to_json }},
         "prod_price_forecast": [{% for i in range(horizon) %}{{ einspeisung }}{% if not loop.last %},{% endif %}{% endfor %}],
         "pv_power_forecast": {{ ns2.pv | to_json }}
