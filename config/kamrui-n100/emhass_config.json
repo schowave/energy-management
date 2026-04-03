@@ -37,7 +37,7 @@
   "inverter_stress_cost": 0,
   "inverter_stress_segments": 10,
   "load_cost_forecast_method": "hp_hc_periods",
-  "load_forecast_method": "naive",
+  "load_forecast_method": "mlforecaster",
   "load_negative": false,
   "load_offpeak_hours_cost": 0.1419,
   "load_peak_hour_periods": {

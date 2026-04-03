@@ -107,6 +107,34 @@ rest_command:
     url: "http://5b918bf2-emhass:5000/action/publish-data"
     method: POST
 
+  # ML-Forecaster: Trainiert das Lastprognose-Modell
+  emhass_ml_fit:
+    url: "http://5b918bf2-emhass:5000/action/forecast-model-fit"
+    method: POST
+    content_type: "application/json"
+    timeout: 300
+    payload: >-
+      {
+        "historic_days_to_retrieve": 30,
+        "model_type": "load_forecast",
+        "var_model": "sensor.load_power",
+        "sklearn_model": "KNeighborsRegressor",
+        "num_lags": 48,
+        "split_date_delta": "48h",
+        "perform_backtest": false
+      }
+
+  # ML-Forecaster: Erzeugt die Lastprognose
+  emhass_ml_predict:
+    url: "http://5b918bf2-emhass:5000/action/forecast-model-predict"
+    method: POST
+    content_type: "application/json"
+    timeout: 60
+    payload: >-
+      {
+        "model_type": "load_forecast"
+      }
+
 automation:
   # Day-Ahead: 1× täglich morgens für 24h-Plan + Forecast-Cache
   - id: emhass_dayahead_daily
@@ -125,10 +153,26 @@ automation:
       - service: rest_command.emhass_publish
     mode: single
 
+  # ML-Forecaster: Wöchentliches Training (Montag 04:00)
+  - id: emhass_ml_weekly_train
+    alias: "EMHASS ML Forecaster Training (wöchentlich)"
+    description: >-
+      Trainiert das ML-Lastprognosemodell wöchentlich mit 30 Tagen
+      historischer Daten. KNeighborsRegressor mit 48 Lags (24h).
+    trigger:
+      - platform: time
+        at: "04:00:00"
+    condition:
+      - condition: time
+        weekday:
+          - mon
+    action:
+      - service: rest_command.emhass_ml_fit
+    mode: single
+
   # MPC: Alle 5 Min für Echtzeit-Simulation
   # Kein separater publish-data Aufruf nötig — continual_publish: true
   # in emhass_config.json sorgt für automatisches Publishing.
-  # Manuelles publish-data scheitert weil es 30-Min-Frequenz erwartet.
   - id: emhass_mpc_realtime
     alias: "EMHASS MPC (alle 5 Min)"
     description: >-
