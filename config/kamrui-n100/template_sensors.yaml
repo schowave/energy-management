@@ -139,15 +139,21 @@
         {% endif %}
 
     # ── Gesamt (seit Tracking) ─────────────────────
+    # Nutzt den Shelly-Gesamtzähler für alle COP-Berechnungen,
+    # da die Tarif-Meter (heizen/warmwasser/sonstig) zurückgesetzt wurden.
+    # Strom wird proportional zur thermischen Energie aufgeteilt.
     - name: "WP COP Heizung gesamt"
       unique_id: wp_cop_heating_total
       state_class: measurement
       icon: mdi:heat-pump
       state: >
-        {% set th = states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) %}
-        {% set el = states('sensor.wp_strom_modus_gesamt_heizen') | float(0) %}
-        {% if el > 1 %}
-          {{ (th / el) | round(2) }}
+        {% set th_h = states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) %}
+        {% set th_w = states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0) %}
+        {% set th_total = th_h + th_w %}
+        {% set el_total = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
+        {% if el_total > 1 and th_total > 0 %}
+          {% set el_h = el_total * (th_h / th_total) %}
+          {{ (th_h / el_h) | round(2) if el_h > 0 else 0 }}
         {% else %}
           0
         {% endif %}
@@ -157,10 +163,13 @@
       state_class: measurement
       icon: mdi:water-boiler
       state: >
-        {% set th = states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0) %}
-        {% set el = states('sensor.wp_strom_modus_gesamt_warmwasser') | float(0) %}
-        {% if el > 1 %}
-          {{ (th / el) | round(2) }}
+        {% set th_h = states('sensor.wp_heizung_thermisch_gesamt_seit_tracking') | float(0) %}
+        {% set th_w = states('sensor.wp_warmwasser_thermisch_gesamt_seit_tracking') | float(0) %}
+        {% set th_total = th_h + th_w %}
+        {% set el_total = states('sensor.wp_strom_gesamt_seit_tracking') | float(0) %}
+        {% if el_total > 1 and th_total > 0 %}
+          {% set el_w = el_total * (th_w / th_total) %}
+          {{ (th_w / el_w) | round(2) if el_w > 0 else 0 }}
         {% else %}
           0
         {% endif %}
