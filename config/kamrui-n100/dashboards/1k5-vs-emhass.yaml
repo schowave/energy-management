@@ -29,12 +29,12 @@ views:
               - type: template
                 icon: mdi:swap-horizontal
                 icon_color: >-
-                  {% set d = states('sensor.entscheidungs_delta_tag') | float(0) %}
+                  {% set d = states('sensor.1k5_real_kosten_tag') | float(0) - states('sensor.emhass_theo_kosten_tag') | float(0) %}
                   {% if d > 0 %}red{% elif d < 0 %}green{% else %}grey{% endif %}
                 content: >-
-                  {% set d = states('sensor.entscheidungs_delta_tag') | float(0) %}
+                  {% set d = states('sensor.1k5_real_kosten_tag') | float(0) - states('sensor.emhass_theo_kosten_tag') | float(0) %}
                   Delta {{ d | round(2) }}€
-                entity: sensor.entscheidungs_delta_tag
+                entity: sensor.1k5_real_kosten_tag
               - type: template
                 icon: mdi:heat-pump
                 icon_color: orange
@@ -793,7 +793,7 @@ views:
             content: |
               {% set real = states('sensor.1k5_real_kosten_monat') | float(0) %}
               {% set theo = states('sensor.emhass_theo_kosten_monat') | float(0) %}
-              {% set delta = states('sensor.entscheidungs_delta_monat') | float(0) %}
+              {% set delta = real - theo %}
               {% set wp_kosten = states('sensor.wp_stromkosten_monat') | float(0) %}
               {% set wp_potenzial = states('sensor.wp_einsparpotenzial_monat') | float(0) %}
               ## Batterie-Entscheidungen
