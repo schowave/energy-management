@@ -1,14 +1,14 @@
 # 1komma5° vs EMHASS — Entscheidungsvergleich
 
-**Datum:** 2026-04-01
-**Status:** Draft
-**Ziel:** Objektiver Vergleich der Batterie-Steuerungsentscheidungen von 1komma5° Heartbeat vs. EMHASS-Optimierung, inkl. Bewertung des ungenutzten Wärmepumpen-Optimierungspotenzials.
+**Datum:** 2026-04-01 (aktualisiert 2026-04-03)
+**Status:** Implementiert
+**Ziel:** Objektiver Vergleich der Batterie-Steuerungsentscheidungen von 1komma5° Heartbeat vs. EMHASS MPC-Optimierung, inkl. Bewertung des ungenutzten Wärmepumpen-Optimierungspotenzials.
 
 ---
 
 ## Kontext
 
-Ab 01.04.2026 läuft ein dynamischer Stromtarif über 1komma5°. Der Heartbeat steuert die Batterie (Sungrow SBR128, 12.8 kWh) in Echtzeit. EMHASS läuft parallel im Simulationsmodus (3x täglich Day-Ahead-Optimierung) und gibt einen optimalen Batterie-Fahrplan aus, kontrolliert aber die Hardware nicht.
+Ab 01.04.2026 läuft ein dynamischer Stromtarif über 1komma5°. Der Heartbeat steuert die Batterie (Sungrow SBR128, 12.8 kWh) in Echtzeit. EMHASS läuft parallel im MPC-Simulationsmodus (alle 5 Min) und gibt einen optimalen Batterie-Fahrplan aus, kontrolliert aber die Hardware nicht.
 
 **Kernfragen:**
 1. Trifft 1komma5° Heartbeat gute Batterie-Entscheidungen, oder hätte EMHASS besser optimiert?
@@ -18,314 +18,144 @@ Ab 01.04.2026 läuft ein dynamischer Stromtarif über 1komma5°. Der Heartbeat s
 
 ### Preisbasis
 
-- EMHASS optimiert gegen ENTSO-e-Börsenpreise (keine Änderung nötig)
-- 1komma5° schlägt fixe Aufschläge auf den Börsenpreis auf (Netzentgelte, Steuern, Marge)
-- Die relative Preisstruktur ist identisch → gleiche optimale Lade-/Entladezeitpunkte
-- Für den Kostenvergleich werden beide Seiten mit den realen 1komma5°-Preisen nachgerechnet
+- EMHASS optimiert gegen **1komma5°-Preise** (gleiche Preisbasis wie die realen Kosten)
+- 1k5 Forecast: 15-Min-Auflösung, je 2 Werte gemittelt → 30-Min für EMHASS
+- Einspeisevergütung: `input_number.einspeiseverguetung` (aktuell 0.082 EUR/kWh)
 
-### Vier Vergleichsebenen
+### Vergleichsebenen
 
 1. **Batterie-Steuerung** — Wann lädt/entlädt Heartbeat vs. wann hätte EMHASS es getan?
 2. **Preisoptimierung** — Zu welchen Stunden wird Strom bezogen/eingespeist, zu welchem Preis?
-3. **Gesamtergebnis** — Tägliche/wöchentliche/monatliche Kosten, Autarkie, Eigenverbrauch
-4. **Wärmepumpen-Potenzial** — Wie viel WP-Strom fließt zu teuren Zeiten, obwohl Vorheizen/Überschussnutzung möglich wäre?
+3. **Gesamtergebnis** — Tägliche/wöchentliche/monatliche Kosten
+4. **Wärmepumpen-Potenzial** — Wie viel WP-Strom fließt zu teuren Zeiten?
 
 ---
 
 ## Architektur
 
-### Ansatz: Template-Sensoren + Integration-Sensoren + Utility Meters + Dashboard
+### EMHASS-Konfiguration
 
-- **Template-Sensoren** berechnen laufend Kosten-Raten (EUR/h) und Deltas
-- **Integration-Sensoren** (`sensor.integration` / Riemann-Summe) integrieren EUR/h über die Zeit zu kumulierten EUR-Werten
-- **Utility Meters** aggregieren die kumulierten EUR-Sensoren auf Tages-/Wochen-/Monatsbasis
-- **Dashboard** visualisiert Live-Vergleich und historische Trends
+```
+00:01 + 05:30:  Day-Ahead → sensor.p_batt_forecast (24h-Überblick)
+Alle 5 Min:     MPC       → sensor.p_batt_forecast (überschreibt mit Echtzeit)
+                             48 Schritte × 30 Min = 24h Horizont
+                             Echtzeit-Load + Theo-SOC + 1k5-Preise
+```
 
-**Wichtig:** Utility Meters tracken State-Änderungen (Deltas), nicht zeitgewichtete Integrale. Daher muss zwischen den EUR/h-Template-Sensoren und den Utility Meters jeweils ein `sensor.integration` stehen, der die Riemann-Summe bildet.
+Day-Ahead und MPC nutzen die gleichen Sensornamen (kein Prefix).
+MPC überschreibt alle 5 Min mit frischen Werten.
 
-Keine externen Skripte, alles in HA-YAML.
+### Simulations-Pipeline
 
-### Einspeisevergütung
+```
+sensor.p_batt_forecast (MPC, alle 5 Min)
+    ↓
+sensor.emhass_theo_soc (simulierter Akkustand, jede Minute)
+    ↓ SOC-Clipping (Entladen nur wenn Theo-SOC > 12%, Laden nur wenn < 94%)
+sensor.emhass_theo_kosten_laufend (EUR/h)
+    ↓ Riemann-Summe (trigger-basiert, jede Minute)
+sensor.emhass_theo_kosten_kumuliert (EUR)
+    ↓
+utility_meter (Tag/Woche/Monat)
+```
 
-Die EEG-Einspeisevergütung (aktuell 0.082 EUR/kWh) wird als `input_number.einspeiseverguetung` definiert, um sie zentral ändern zu können. Alle Sensoren referenzieren diesen Helper.
+### Theo-SOC-Tracker
+
+Simuliert den Akkustand als ob EMHASS die Batterie steuern würde:
+- **Jede Minute:** SOC ± (p_batt_forecast × 1/60h / 12800Wh × 100%)
+- **Effizienz:** 95% Laden, 95% Entladen
+- **Grenzen:** 10% ≤ SOC ≤ 95%
+- **Midnight-Reset:** Um 00:00 wird Theo-SOC auf den realen SOC synchronisiert → fairer Tagesvergleich
+
+### EMHASS-Vorzeichen-Konvention
+
+`p_batt_forecast` **positiv = Entladen**, negativ = Laden.
+(Verifiziert 2026-04-01: SOC-Ziel 37% bei Batterie 86% → p_batt_forecast +1321W = Entladen)
 
 ---
 
-## Komponente 1: Template-Sensoren
+## Komponenten
 
-Alle neuen Template-Sensoren benötigen `state_class: measurement` damit Utility Meters sie als Quelle akzeptieren.
+### Template-Sensoren (`template_sensors.yaml`)
 
-### 1.1 Heartbeat-Modus-Tracking
-
-**Sensor:** `sensor.heartbeat_modus`
-
-Leitet den aktuellen 1komma5°-Betriebsmodus aus dem Batterieverhalten ab:
-
-| Bedingung | Modus |
-|-----------|-------|
-| `battery_in_power_7fee...` > 100W | `laden` |
-| `battery_out_power_7fee...` > 100W | `entladen` |
-| `grid_feed_out_power_7fee...` < 10W und kein Laden/Entladen | `zero_export` |
-| sonst | `idle` |
-
-Schwellwert 100W filtert Standby-Verluste. Wird als Zeitreihe im Recorder gespeichert für historische Auswertung.
-
-### 1.2 Laufende Ist-Kosten (1komma5° Realität)
-
-**Sensor:** `sensor.1k5_netzbezugskosten_laufend`
-**Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
-
-```
-Netzbezug_kW = grid_feed_in_power_7fee... / 1000
-Einspeisung_kW = grid_feed_out_power_7fee... / 1000
-Preis = electricity_price_7fee... (EUR/kWh)
-Einspeisevergütung = input_number.einspeiseverguetung (EUR/kWh)
-
-Kosten = Netzbezug_kW × Preis - Einspeisung_kW × Einspeisevergütung  (EUR/h)
-```
-
-Einheit: EUR/h. Gibt die momentanen Netto-Stromkosten an.
-
-### 1.3 EMHASS-theoretische Kosten
-
-**Sensor:** `sensor.emhass_theo_kosten_laufend`
-**Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
-
-**EMHASS-Vorzeichen-Konvention:** `p_batt_forecast` positiv = Entladen, negativ = Laden. (Verifiziert 2026-04-01: SOC-Ziel 37% bei Batterie 86% → p_batt_forecast +1321W = Entladen)
-
-```
-Verbrauch = consumption_power_7fee... (W)
-PV = solar_production_power_7fee... (W)
-EMHASS_Batterie = states('sensor.p_batt_forecast') (W, direkt als State nutzbar)
-
-Theo_Netzbezug = max(0, (Verbrauch - PV - EMHASS_Batterie) / 1000) (kW)
-Theo_Einspeisung = max(0, (PV + EMHASS_Batterie - Verbrauch) / 1000) (kW)
-
-Theo_Kosten = Theo_Netzbezug × Preis - Theo_Einspeisung × Einspeisevergütung  (EUR/h)
-```
-
-Verwendet reale PV- und Verbrauchsdaten, aber den EMHASS-Batterie-Fahrplan statt der realen Batteriesteuerung. Gleiche 1komma5°-Preisbasis.
-
-`sensor.p_batt_forecast` wird direkt als State gelesen — EMHASS publiziert den aktuellen Schrittwert als Sensorstate, kein Index-Zugriff nötig.
-
-**Bekannte Vereinfachung:** Batterie-Roundtrip-Verluste (je 5% Lade-/Entladeeffizienz, ~10% gesamt) sind in der EMHASS-Optimierung intern berücksichtigt, werden aber in der Kostenformel nicht separat modelliert. Der Fahrplan selbst ist bereits effizienzbereinigt.
-
-### 1.4 Delta-Sensor
-
-**Sensor:** `sensor.entscheidungs_delta_laufend`
-**Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
-
-```
-Delta = 1k5_netzbezugskosten_laufend - emhass_theo_kosten_laufend
-```
-
-- Positiv → 1komma5° ist gerade teurer als EMHASS empfohlen hätte
-- Negativ → 1komma5° ist gerade günstiger
-
-### 1.5 Wärmepumpen-Preisindikator
-
-**Sensor:** `sensor.wp_stromkosten_laufend`
-**Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
-
-Trackt die laufenden Stromkosten der Wärmepumpe zum aktuellen dynamischen Preis:
-
-```
-WP_Leistung_kW = kg_technik_waermepumpe_3em_leistung / 1000 (kW)
-Preis = electricity_price_7fee... (EUR/kWh)
-
-WP_Kosten = WP_Leistung_kW × Preis  (EUR/h)
-```
-
-### 1.6 Wärmepumpen-Optimierungspotenzial
-
-**Sensor:** `sensor.wp_einsparpotenzial_laufend`
-**Attribute:** `state_class: measurement`, `unit_of_measurement: "EUR/h"`
-
-Berechnet, wie viel günstiger die WP hätte laufen können:
-
-```
-WP_Leistung_kW = kg_technik_waermepumpe_3em_leistung / 1000 (kW)
-Preis_aktuell = electricity_price_7fee... (EUR/kWh)
-Preis_tagesmin = state_attr('sensor.electricity_price_7fee...', 'price_today_min') (EUR/kWh)
-PV_Überschuss_kW = max(0, (solar_production_power - consumption_power + battery_out_power) / 1000)
-
-# Wenn PV-Überschuss die WP decken könnte → Kosten wären ~0 (nur Einspeisevergütung entgangen)
-# Sonst: Differenz zum günstigsten Preis des Tages
-Wenn PV_Überschuss_kW >= WP_Leistung_kW:
-    Potenzial = WP_Leistung_kW × (Preis_aktuell - Einspeisevergütung)
-Sonst:
-    Potenzial = WP_Leistung_kW × (Preis_aktuell - Preis_tagesmin)
-
-# Nur positiv — wenn WP gerade eh günstig läuft, kein Potenzial
-Potenzial = max(0, Potenzial)
-```
-
-Zeigt in Echtzeit: "Die WP verbraucht gerade X EUR/h, hätte aber Y EUR/h günstiger laufen können."
-
----
-
-## Komponente 1b: Integration-Sensoren (Riemann-Summe)
-
-Zwischen den EUR/h-Template-Sensoren und den Utility Meters stehen `sensor.integration`-Sensoren, die EUR/h über die Zeit zu kumulierten EUR integrieren:
-
-| Integration Sensor | Source (EUR/h) | Unit |
+| Sensor | Einheit | Beschreibung |
 |---|---|---|
-| `sensor.1k5_netzbezugskosten_kumuliert` | `sensor.1k5_netzbezugskosten_laufend` | EUR |
-| `sensor.emhass_theo_kosten_kumuliert` | `sensor.emhass_theo_kosten_laufend` | EUR |
-| `sensor.entscheidungs_delta_kumuliert` | `sensor.entscheidungs_delta_laufend` | EUR |
-| `sensor.wp_stromkosten_kumuliert` | `sensor.wp_stromkosten_laufend` | EUR |
-| `sensor.wp_einsparpotenzial_kumuliert` | `sensor.wp_einsparpotenzial_laufend` | EUR |
+| `sensor.wp_betriebsmodus` | Text | WP-Modus: Heizen/Warmwasser/Standby/... |
+| `sensor.heartbeat_modus` | Text | Heartbeat: laden/entladen/idle/zero_export |
+| `sensor.1k5_netzbezugskosten_laufend` | EUR/h | Reale Netzkosten (Import × Preis - Export × Einspeisevergütung) |
+| `sensor.emhass_theo_kosten_laufend` | EUR/h | Theoretische EMHASS-Kosten (mit SOC-Clipping) |
+| `sensor.wp_stromkosten_laufend` | EUR/h | WP-Stromkosten zum aktuellen Preis |
+| `sensor.wp_einsparpotenzial_laufend` | EUR/h | Wie viel günstiger WP hätte laufen können |
+| `sensor.emhass_theo_soc` | % | Simulierter EMHASS-Akkustand |
 
-Methode: `left` (Riemann links), `unit_prefix: ""`, `round: 4`.
+### Kumulierte Sensoren (trigger-basiert, jede Minute)
 
-## Komponente 2: Utility Meters
+| Sensor | Beschreibung |
+|---|---|
+| `sensor.1k5_netzbezugskosten_kumuliert` | Aufsummierte reale Netzkosten (EUR) |
+| `sensor.emhass_theo_kosten_kumuliert` | Aufsummierte theoretische Kosten (EUR) |
+| `sensor.wp_stromkosten_kumuliert` | Aufsummierte WP-Kosten (EUR) |
+| `sensor.wp_einsparpotenzial_kumuliert` | Aufsummiertes WP-Potenzial (EUR) |
 
-Aggregation der kumulierten EUR-Sensoren auf drei Zeitebenen:
+### Utility Meters (`utility_meter.yaml`)
 
-### Batterie-Entscheidungsvergleich
+12 Meter: je Tag/Woche/Monat für Real-Kosten, EMHASS-Kosten, WP-Kosten, WP-Potenzial.
+Delta wird inline berechnet (real - emhass), nicht als eigener Sensor.
 
-| Utility Meter | Source Sensor | Cycle |
-|--------------|---------------|-------|
-| `utility_meter.1k5_real_kosten_tag` | `sensor.1k5_netzbezugskosten_kumuliert` | daily |
-| `utility_meter.emhass_theo_kosten_tag` | `sensor.emhass_theo_kosten_kumuliert` | daily |
-| `utility_meter.entscheidungs_delta_tag` | `sensor.entscheidungs_delta_kumuliert` | daily |
-| `utility_meter.1k5_real_kosten_woche` | `sensor.1k5_netzbezugskosten_kumuliert` | weekly |
-| `utility_meter.emhass_theo_kosten_woche` | `sensor.emhass_theo_kosten_kumuliert` | weekly |
-| `utility_meter.entscheidungs_delta_woche` | `sensor.entscheidungs_delta_kumuliert` | weekly |
-| `utility_meter.1k5_real_kosten_monat` | `sensor.1k5_netzbezugskosten_kumuliert` | monthly |
-| `utility_meter.emhass_theo_kosten_monat` | `sensor.emhass_theo_kosten_kumuliert` | monthly |
-| `utility_meter.entscheidungs_delta_monat` | `sensor.entscheidungs_delta_kumuliert` | monthly |
+### EMHASS REST-Commands (`emhass.yaml`)
 
-### Wärmepumpen-Tracking
+**emhass_dayahead** — Day-Ahead, 1× täglich (00:01 + 05:30)
+- 48 × 30-Min, 1k5-Preise, Solcast-PV, Theo-SOC als soc_init
 
-| Utility Meter | Source Sensor | Cycle |
-|--------------|---------------|-------|
-| `utility_meter.wp_stromkosten_tag` | `sensor.wp_stromkosten_kumuliert` | daily |
-| `utility_meter.wp_einsparpotenzial_tag` | `sensor.wp_einsparpotenzial_kumuliert` | daily |
-| `utility_meter.wp_stromkosten_woche` | `sensor.wp_stromkosten_kumuliert` | weekly |
-| `utility_meter.wp_einsparpotenzial_woche` | `sensor.wp_einsparpotenzial_kumuliert` | weekly |
-| `utility_meter.wp_stromkosten_monat` | `sensor.wp_stromkosten_kumuliert` | monthly |
-| `utility_meter.wp_einsparpotenzial_monat` | `sensor.wp_einsparpotenzial_kumuliert` | monthly |
-
-Alle Meter resetten automatisch am Beginn des jeweiligen Zeitraums.
+**emhass_mpc** — MPC, alle 5 Min
+- `/action/naive-mpc-optim`
+- 48 × 30-Min (24h Horizont)
+- Echtzeit-Load (`sensor.load_power` × 48, naive Annahme)
+- 1k5-Preise, Solcast-PV, Theo-SOC als soc_init
+- Kein separates publish-data nötig (`continual_publish: true`)
 
 ---
 
-## Komponente 3: Dashboard
-
-Eigenes Dashboard: `config/kamrui-n100/dashboards/1k5-vs-emhass.yaml`
+## Dashboard (`1k5-vs-emhass.yaml`)
 
 ### Tab 1: Live (Tagesansicht, 5-Min-Auflösung)
 
-**Chart 1: Batterie-Fahrplan-Vergleich** (ApexCharts, Dual-Line)
-- EMHASS `p_batt_forecast` als gestrichelte Stufenlinie (grün, 30-Min)
-- Reale Batterieleistung (blau, durchgezogen, 5-Min)
-- Y-Achse: Leistung (W), positiv = Entladen, negativ = Laden
-
-**Chart 2: SOC-Vergleich** (ApexCharts, Dual-Line)
-- `sensor.soc_batt_forecast` (EMHASS-Soll-SOC) vs. realer `sensor.battery_level`
-
-**Chart 3: Preis + Heartbeat-Modus** (ApexCharts, Combo)
-- 1komma5°-Preis als Linie (EUR/kWh)
-- Heartbeat-Modus als farbige Hintergrundbänder (via `color_threshold` oder sekundäre Area-Series mit Opacity):
-  - Laden = grün
-  - Entladen = orange
-  - Zero Export = rot
-  - Idle = grau
-
-**Hinweis:** Farbige Hintergrundbänder aus einem kategorischen Sensor sind in ApexCharts nicht nativ unterstützt. Umsetzung über `data_generator` mit numerischer Modus-Umwandlung + `type: area` mit Opacity-Trick.
-
-**Chart 4: Laufende Kosten** (ApexCharts, Dual-Line + Area)
-- Kumulierte reale Kosten vs. EMHASS-theoretische Kosten über den Tag
-- Delta als gefüllte Fläche (grün = 1komma5° günstiger, rot = teurer)
-
-**Chart 5: Wärmepumpe** (ApexCharts, Combo)
-- WP-Leistung als Fläche (W)
-- 1komma5°-Preis als Linie (EUR/kWh, zweite Y-Achse)
-- PV-Überschuss als gestrichelte Linie (W)
-- Farbcodierung: WP-Fläche grün wenn Preis < Tagesdurchschnitt oder PV-Überschuss vorhanden, rot wenn Preis > Tagesdurchschnitt
-
-**KPI-Chips:** Tageskosten real | Tageskosten EMHASS | Delta EUR | WP-Kosten heute | WP-Einsparpotenzial | Heartbeat-Modus aktuell
+- KPI-Chips: Real €, EMHASS €, Delta €, WP €, WP-Potenzial €, Heartbeat-Modus
+- Batterie: EMHASS-Plan vs. Realität (+ Entladen / − Laden)
+- SOC: EMHASS-Empfehlung vs. Heartbeat (real) vs. Simulation (theo)
+- Preis + Heartbeat-Modus (separate Y-Achsen)
+- Kostenvergleich kumuliert (EUR)
+- WP-Leistung vs. Strompreis
+- Betriebsmodus-Verlauf (History-Graph: Heartbeat + WP Modus)
 
 ### Tab 2: Woche (7-Tage-Trend)
 
-**Chart: Tägliche Kostenbalken** (ApexCharts, Grouped Bar)
-- Pro Tag: Balken real vs. EMHASS nebeneinander, Delta als Label
-- Datenquelle: `statistics` mit `period: day` auf den Utility-Meter-Sensoren
-
-**Chart: Kumuliertes Delta** (ApexCharts, Line)
-- Aufsummiertes Delta über 7 Tage — zeigt Trend
-
-**Chart: WP-Kosten vs. Einsparpotenzial** (ApexCharts, Stacked Bar)
-- Pro Tag: Tatsächliche WP-Kosten + verpasstes Einsparpotenzial
-
-**KPI-Cards:** Wochenkosten real | EMHASS | Delta | WP-Einsparpotenzial | Durchschnittspreis
+- KPI-Chips + Tägliche Kostenbalken + Delta-Trend + WP-Kosten
 
 ### Tab 3: Monat (Monatsübersicht)
 
-**Chart: Tägliche Kostenbalken** (wie Tab 2, 30 Tage)
-
-**Chart: Kumuliertes Delta** (Line, seit Monatsbeginn)
-
-**Chart: WP-Monatskosten** (Stacked Bar, 30 Tage)
-
-**KPI-Cards:** Monatskosten real | EMHASS | Delta | WP-Kosten | WP-Einsparpotenzial | Autarkie | Eigenverbrauch
-
-**Zusammenfassung:** Markdown-Card mit automatischer Bewertung:
-- "1komma5° war X% teurer/günstiger als EMHASS"
-- "WP-Einsparpotenzial: X EUR (Y% der WP-Kosten) durch Lastverschiebung"
-- Basierend auf Monatswerten der Utility Meters
+- KPI-Chips + Tägliche Kostenbalken + Delta-Trend + WP-Kosten
+- Monatszusammenfassung (Markdown mit Tabellen + Bewertung)
 
 ---
 
-## Verwendete Entity-IDs
+## Bekannte Limitierungen
 
-### 1komma5° (HACS Integration)
-- `sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Aktueller Preis + Forecast
-- `sensor.battery_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Batterie-Ladeleistung
-- `sensor.battery_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Batterie-Entladeleistung
-- `sensor.grid_feed_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Netzbezugsleistung
-- `sensor.grid_feed_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Netzeinspeisung
-- `sensor.consumption_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Haushaltsverbrauch
-- `sensor.solar_production_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — PV-Leistung
-- `sensor.battery_state_of_charge_7fee2e61_1ff6_4eaf_8a8e_7509522abb45` — Batterie-SOC
-
-### Sungrow (Modbus)
-- `sensor.battery_level` — SOC (%)
-- `sensor.battery_charging_power` — Ladeleistung (W)
-- `sensor.battery_discharging_power` — Entladeleistung (W)
-
-### EMHASS
-- `sensor.p_batt_forecast` — Batterie-Fahrplan (aktueller Schritt als State, W)
-- `sensor.soc_batt_forecast` — SOC-Fahrplan (%)
-- `sensor.total_cost_fun_value` — Kostenfunktionswert
-
-### Wärmepumpe
-- `sensor.kg_technik_waermepumpe_3em_leistung` — WP-Stromverbrauch (W)
-
-### ENTSO-e
-- `sensor.average_electricity_price` — Börsenpreis (EUR/kWh)
-
-### Neuer Helper
-- `input_number.einspeiseverguetung` — EEG-Einspeisevergütung (initial 0.082 EUR/kWh)
+1. **EMHASS plant mit Forecasts, nicht Ist-Werten** — Solcast-PV und naiver Lastforecast weichen von der Realität ab. MPC alle 5 Min reduziert diesen Effekt deutlich.
+2. **SOC-Clipping nutzt den simulierten Theo-SOC** — fair, aber der Theo-SOC akkumuliert kleine Fehler über den Tag. Midnight-Reset begrenzt die Drift auf 24h.
+3. **Load-Forecast ist naiv** — aktueller Verbrauch × 48 Schritte. Könnte durch ML-basierte Prognose verbessert werden.
+4. **EMHASS publish_prefix funktioniert nicht** — EMHASS-Bug: Sensoren mit Prefix werden nicht in HA erstellt. Workaround: kein Prefix, MPC und Day-Ahead überschreiben dieselben Sensoren.
+5. **EMHASS optimization_time_step ≠ 30 crasht Publish** — EMHASS-Bug: 5-Min-Schritte erzeugen ValueError beim Publish. Workaround: 30-Min-Schritte, aber MPC alle 5 Min neu berechnen.
 
 ---
 
 ## Dateien
 
 | Datei | Beschreibung |
-|-------|-------------|
-| `config/kamrui-n100/template_sensors.yaml` | Neue Sensoren (Heartbeat-Modus, Kosten, Delta, WP-Tracking) |
-| `config/kamrui-n100/configuration.yaml` | `input_number.einspeiseverguetung` + 5 Integration-Sensoren |
-| `config/kamrui-n100/utility_meter.yaml` | Neue Utility Meters (15 Stück, Quelle: Integration-Sensoren) |
-| `config/kamrui-n100/dashboards/1k5-vs-emhass.yaml` | Neues Vergleichs-Dashboard |
-
----
-
-## Offene Punkte / Risiken
-
-1. **`p_batt_forecast` Verfügbarkeit:** Sensor existiert erst nach erstem EMHASS-Publish. Alle Template-Sensoren müssen graceful mit `unknown`/`unavailable` umgehen (`float(0)` Defaults).
-2. **EMHASS-Vorzeichen verifizieren:** Die Spec und Implementierung gehen davon aus, dass `p_batt_forecast` positiv = Laden, negativ = Entladen (Quelle: `docs/emhass-referenz.md`). Dies muss nach dem ersten EMHASS-Lauf gegen das reale Batterieverhalten verifiziert werden. Bei falschem Vorzeichen muss die Formel in `template_sensors.yaml` angepasst werden (`+ batt` → `- batt`).
-3. **EMHASS-Forecast-Staleness:** EMHASS läuft 3x täglich (05:30, 13:30, 18:00). Zwischen den Läufen kann der Fahrplan veraltet sein (unerwartete Wolken, Lastspitzen). Der theoretische Kostenvergleich wird in diesen Phasen ungenauer. Dies ist eine bekannte Limitierung der Simulation.
-4. **Chart 3 Komplexität:** Farbige Hintergrundbänder aus einem kategorischen Sensor sind in ApexCharts nicht nativ möglich. Erfordert Workaround über numerische Umwandlung + Area-Series.
-5. **WP-Einsparpotenzial ist konservativ:** Der Sensor zeigt nur die Preisdifferenz, nicht ob eine Lastverschiebung thermisch möglich wäre (Speicherkapazität Warmwasser, Gebäudemasse). Es ist ein oberes Schätzpotenzial.
+|---|---|
+| `config/kamrui-n100/emhass.yaml` | Day-Ahead + MPC REST-Commands + Automationen |
+| `config/kamrui-n100/template_sensors.yaml` | Alle Sensoren (Modus, Kosten, Theo-SOC, kumuliert) |
+| `config/kamrui-n100/utility_meter.yaml` | 12 Utility Meters (Tag/Woche/Monat) |
+| `config/kamrui-n100/configuration.yaml` | input_number.einspeiseverguetung |
+| `config/kamrui-n100/dashboards/1k5-vs-emhass.yaml` | Vergleichs-Dashboard (3 Tabs) |
+| `config/kamrui-n100/dashboards/energiemanagement.yaml` | Energiemanagement-Dashboard (nutzt gleiche Sensoren) |
