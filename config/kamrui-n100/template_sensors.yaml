@@ -226,9 +226,13 @@
       state: >
         {% set verbrauch = states('sensor.consumption_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set pv = states('sensor.solar_production_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
-        {% set batt = states('sensor.p_batt_forecast') | float(0) %}
+        {% set batt_raw = states('sensor.p_batt_forecast') | float(0) %}
+        {% set soc = states('sensor.battery_level') | float(50) %}
         {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
+        {% set batt = batt_raw %}
+        {% if batt > 0 and soc <= 12 %}{% set batt = 0 %}{% endif %}
+        {% if batt < 0 and soc >= 94 %}{% set batt = 0 %}{% endif %}
         {% set net = (verbrauch - pv - batt) / 1000 %}
         {% set theo_import = [0, net] | max %}
         {% set theo_export = [0, -net] | max %}
