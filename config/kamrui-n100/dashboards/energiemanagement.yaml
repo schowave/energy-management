@@ -93,16 +93,16 @@ views:
             heading: EMHASS-Empfehlung
           - type: custom:mushroom-template-card
             primary: >-
-              {% set p = states('sensor.dh_p_batt_forecast') | float(0) %}
-              {% if states('sensor.dh_p_batt_forecast') in ['unknown', 'unavailable'] %}Akku: —
-              {% elif p > 50 %}Akku laden · Ziel {{ states('sensor.dh_soc_batt_forecast') | float(0) | round(0) }}%
-              {% elif p < -50 %}Akku entladen · Ziel {{ states('sensor.dh_soc_batt_forecast') | float(0) | round(0) }}%
-              {% else %}Akku halten · SOC {{ states('sensor.dh_soc_batt_forecast') | float(0) | round(0) }}%
+              {% set p = states('sensor.p_batt_forecast') | float(0) %}
+              {% if states('sensor.p_batt_forecast') in ['unknown', 'unavailable'] %}Akku: —
+              {% elif p > 50 %}Akku laden · Ziel {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
+              {% elif p < -50 %}Akku entladen · Ziel {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
+              {% else %}Akku halten · SOC {{ states('sensor.soc_batt_forecast') | float(0) | round(0) }}%
               {% endif %}
             secondary: >-
-              {% set status = states('sensor.dh_optim_status') %}
+              {% set status = states('sensor.optim_status') %}
               {% set last = state_attr('automation.emhass_day_ahead_optimierung', 'last_triggered') %}
-              {% set gain = states('sensor.dh_total_cost_fun_value') | float(0) | round(2) %}
+              {% set gain = states('sensor.total_cost_fun_value') | float(0) | round(2) %}
               {% set mode = states('select.battery_forced_charge_discharge') %}
               {{ status if status not in ['unknown', 'unavailable', ''] else 'Keine Daten' }}
               · {{ gain }}€
@@ -110,13 +110,13 @@ views:
               · {% if mode == 'Forced charge' %}Zwangsladen{% elif mode == 'Forced discharge' %}Zwangsentladen{% else %}Eigenverbrauch{% endif %}
             icon: mdi:robot
             icon_color: >-
-              {% if states('sensor.dh_optim_status') == 'Optimal' %}green
-              {% elif states('sensor.dh_optim_status') in ['unknown', 'unavailable', ''] %}grey
+              {% if states('sensor.optim_status') == 'Optimal' %}green
+              {% elif states('sensor.optim_status') in ['unknown', 'unavailable', ''] %}grey
               {% else %}red{% endif %}
-            entity: sensor.dh_p_batt_forecast
+            entity: sensor.p_batt_forecast
             tap_action:
               action: more-info
-              entity: sensor.dh_p_batt_forecast
+              entity: sensor.p_batt_forecast
             badge_icon: >-
               {% set mode = states('select.battery_forced_charge_discharge') %}
               {% if mode == 'Forced charge' %}mdi:battery-arrow-up
@@ -415,7 +415,7 @@ views:
                   group_by:
                     func: avg
                     duration: 30min
-                - entity: sensor.dh_p_pv_forecast
+                - entity: sensor.p_pv_forecast
                   name: "PV Forecast"
                   color: "#d97706"
                   stroke_width: 2
@@ -446,7 +446,7 @@ views:
                   group_by:
                     func: avg
                     duration: 30min
-                - entity: sensor.dh_p_load_forecast
+                - entity: sensor.p_load_forecast
                   name: "Verbrauch Forecast"
                   color: "#be185d"
                   stroke_width: 2
@@ -462,7 +462,7 @@ views:
                     var fc = entity.attributes.forecasts || [];
                     return fc.filter((e) => new Date(e.date).getTime() >= now)
                       .map((e) => [new Date(e.date).getTime(), parseFloat(e.p_load_forecast)]);
-                - entity: sensor.dh_p_batt_forecast
+                - entity: sensor.p_batt_forecast
                   name: "Akku (+Entladen / −Laden)"
                   color: "#22c55e"
                   stroke_width: 2
@@ -488,7 +488,7 @@ views:
                   group_by:
                     func: avg
                     duration: 30min
-                - entity: sensor.dh_p_grid_forecast
+                - entity: sensor.p_grid_forecast
                   name: "Netz Forecast"
                   color: "#0891b2"
                   stroke_width: 2
@@ -558,7 +558,7 @@ views:
                     func: avg
                     duration: 1h
                   yaxis_id: power
-                - entity: sensor.dh_p_batt_forecast
+                - entity: sensor.p_batt_forecast
                   name: "Akku"
                   color: "#22c55e"
                   stroke_width: 2
@@ -632,7 +632,7 @@ views:
                     func: avg
                     duration: 2h
                   yaxis_id: power
-                - entity: sensor.dh_p_batt_forecast
+                - entity: sensor.p_batt_forecast
                   name: "Akku"
                   color: "#22c55e"
                   stroke_width: 2
@@ -687,7 +687,7 @@ views:
                     title:
                       text: "%"
               series:
-                - entity: sensor.dh_soc_batt_forecast
+                - entity: sensor.soc_batt_forecast
                   name: "Empfehlung"
                   color: "#4CAF50"
                   stroke_width: 2
@@ -697,7 +697,7 @@ views:
                   group_by:
                     func: last
                     duration: 30min
-                - entity: sensor.dh_soc_batt_forecast
+                - entity: sensor.soc_batt_forecast
                   name: "Empfehlung (Forecast)"
                   color: "#4CAF50"
                   stroke_width: 2

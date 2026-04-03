@@ -226,7 +226,7 @@
       state: >
         {% set verbrauch = states('sensor.consumption_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set pv = states('sensor.solar_production_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
-        {% set batt_raw = states('sensor.mpc_p_batt_forecast') | float(0) %}
+        {% set batt_raw = states('sensor.p_batt_forecast') | float(0) %}
         {% set soc = states('sensor.emhass_theo_soc') | float(50) %}
         {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
@@ -291,7 +291,7 @@
       state_class: measurement
       icon: mdi:battery-sync
       state: >
-        {% set batt_raw = states('sensor.mpc_p_batt_forecast') | float(0) %}
+        {% set batt_raw = states('sensor.p_batt_forecast') | float(0) %}
         {% set midnight_reset = now().hour == 0 and now().minute < 1 %}
         {% if midnight_reset %}
           {% set prev_soc = states('sensor.battery_level') | float(50) %}

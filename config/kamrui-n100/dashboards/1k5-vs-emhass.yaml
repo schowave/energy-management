@@ -92,7 +92,7 @@ views:
                     formatter: |
                       EVAL:function(val) { return val ? Math.round(val) : '0'; }
             series:
-              - entity: sensor.mpc_p_batt_forecast
+              - entity: sensor.p_batt_forecast
                 name: "EMHASS Plan"
                 color: "#4CAF50"
                 stroke_width: 2
@@ -166,7 +166,7 @@ views:
                   title:
                     text: "%"
             series:
-              - entity: sensor.mpc_soc_batt_forecast
+              - entity: sensor.soc_batt_forecast
                 name: "EMHASS Empfehlung"
                 color: "#4CAF50"
                 stroke_width: 2
