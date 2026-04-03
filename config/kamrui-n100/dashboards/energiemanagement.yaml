@@ -696,7 +696,7 @@ views:
                   yaxis_id: soc
                   group_by:
                     func: last
-                    duration: 30min
+                    duration: 5min
                 - entity: sensor.soc_batt_forecast
                   name: "Empfehlung (Forecast)"
                   color: "#4CAF50"
@@ -721,7 +721,7 @@ views:
                   yaxis_id: soc
                   group_by:
                     func: avg
-                    duration: 15min
+                    duration: 5min
                 - entity: sensor.emhass_theo_soc
                   name: "Simulation (EMHASS)"
                   color: "#2196F3"

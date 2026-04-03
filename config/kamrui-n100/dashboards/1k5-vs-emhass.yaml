@@ -105,7 +105,7 @@ views:
                 extend_to: false
                 group_by:
                   func: last
-                  duration: 30min
+                  duration: 5min
               - entity: sensor.battery_discharging_power
                 name: "Entladen (Real)"
                 color: "#f59e0b"
@@ -176,7 +176,7 @@ views:
                 yaxis_id: soc
                 group_by:
                   func: last
-                  duration: 30min
+                  duration: 5min
               - entity: sensor.battery_level
                 name: "Aktuell (Heartbeat)"
                 color: "#FF9800"
