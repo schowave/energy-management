@@ -130,6 +130,9 @@ automation:
     mode: single
 
   # MPC: Alle 5 Min für Echtzeit-Simulation
+  # Kein separater publish-data Aufruf nötig — continual_publish: true
+  # in emhass_config.json sorgt für automatisches Publishing.
+  # Manuelles publish-data scheitert weil es 30-Min-Frequenz erwartet.
   - id: emhass_mpc_realtime
     alias: "EMHASS MPC (alle 5 Min)"
     description: >-
@@ -141,6 +144,4 @@ automation:
         minutes: "/5"
     action:
       - service: rest_command.emhass_mpc
-      - delay: "00:00:30"
-      - service: rest_command.emhass_publish
     mode: single
