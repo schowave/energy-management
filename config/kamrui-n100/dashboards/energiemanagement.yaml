@@ -713,7 +713,7 @@ views:
                     return fc.filter((e) => new Date(e.date).getTime() >= now)
                       .map((e) => [new Date(e.date).getTime(), parseFloat(e.soc_batt_forecast)]);
                 - entity: sensor.battery_level
-                  name: "Aktuell"
+                  name: "Aktuell (Heartbeat)"
                   color: "#FF9800"
                   stroke_width: 2
                   curve: smooth
@@ -722,6 +722,16 @@ views:
                   group_by:
                     func: avg
                     duration: 15min
+                - entity: sensor.emhass_theo_soc
+                  name: "Simulation (EMHASS)"
+                  color: "#2196F3"
+                  stroke_width: 2
+                  curve: smooth
+                  extend_to: false
+                  yaxis_id: soc
+                  group_by:
+                    func: avg
+                    duration: 5min
           # ── Akkustand: 3 Tage ────────────────────────────
           - type: conditional
             conditions:
