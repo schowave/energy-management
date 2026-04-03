@@ -292,7 +292,12 @@
       icon: mdi:battery-sync
       state: >
         {% set batt_raw = states('sensor.p_batt_forecast') | float(0) %}
-        {% set prev_soc = this.state | float(states('sensor.battery_level') | float(50)) %}
+        {% set midnight_reset = now().hour == 0 and now().minute < 1 %}
+        {% if midnight_reset %}
+          {% set prev_soc = states('sensor.battery_level') | float(50) %}
+        {% else %}
+          {% set prev_soc = this.state | float(states('sensor.battery_level') | float(50)) %}
+        {% endif %}
         {% set cap = 12800 %}
         {% set eff = 0.95 %}
         {% if batt_raw > 0 %}
