@@ -288,6 +288,8 @@ views:
             entities:
               - entity: sensor.heartbeat_modus
                 name: Heartbeat
+              - entity: sensor.emhass_modus
+                name: EMHASS
               - entity: sensor.wp_betriebsmodus
                 name: WP Modus
       # ── Kostenvergleich kumuliert ──────────────────────

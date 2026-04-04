@@ -188,6 +188,18 @@
           0
         {% endif %}
 
+# ── EMHASS Simulierter Modus ───────────────────────
+- sensor:
+    - name: "EMHASS Modus"
+      unique_id: emhass_modus
+      icon: mdi:robot
+      state: >
+        {% set batt = states('sensor.p_batt_forecast') | float(0) %}
+        {% if batt > 100 %}entladen
+        {% elif batt < -100 %}laden
+        {% else %}idle
+        {% endif %}
+
 # ── WP Betriebsmodus (Text) ────────────────────────
 - sensor:
     - name: "WP Betriebsmodus"
