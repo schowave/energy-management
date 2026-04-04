@@ -1407,7 +1407,86 @@ views:
               {% if is_state('binary_sensor.licv_8_2r1_3_alarm', 'on') %}red{% else %}green{% endif %}
             entity: binary_sensor.licv_8_2r1_3_alarm
 
-      # ── Section 2: Temperaturen ────────────────────────
+      # ── Section 2: Steuerung (Luxtronik) ────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Steuerung (Luxtronik)"
+          - type: custom:mushroom-climate-card
+            entity: climate.luxtronik_341205_065_heating
+            name: Heizung
+            icon: mdi:radiator
+            show_temperature_control: true
+          - type: custom:mushroom-entity-card
+            entity: water_heater.luxtronik_341205_065_domestic_water
+            name: Warmwasser
+            icon: mdi:water-boiler
+            icon_color: orange
+          - type: custom:mushroom-number-card
+            entity: number.luxtronik_341205_065_dhw_target_temperature
+            name: Warmwasser Soll
+            icon: mdi:thermometer-water
+            icon_color: orange
+          - type: custom:mushroom-select-card
+            entity: select.luxtronik_341205_065_heating_mode
+            name: Heizmodus
+            icon: mdi:thermostat
+          - type: custom:mushroom-select-card
+            entity: select.luxtronik_341205_065_dhw_mode
+            name: WW-Modus
+            icon: mdi:water-boiler-auto
+          - type: custom:mushroom-entity-card
+            entity: switch.luxtronik_341205_065_smartgrid
+            name: Smart Grid
+            icon: mdi:transmission-tower
+            icon_color: green
+            tap_action:
+              action: toggle
+          - type: custom:mushroom-number-card
+            entity: number.luxtronik_341205_065_heating_curve_end_temperature
+            name: Heizkurve Endpunkt
+            icon: mdi:chart-bell-curve-cumulative
+          - type: custom:mushroom-number-card
+            entity: number.luxtronik_341205_065_heating_curve_parallel_shift_temperature
+            name: Heizkurve Parallelverschiebung
+            icon: mdi:arrow-up-down
+          - type: custom:mushroom-number-card
+            entity: number.luxtronik_341205_065_electrical_power_limitation_value
+            name: Leistungslimit
+            icon: mdi:speedometer
+            icon_color: red
+          - type: custom:mushroom-chips-card
+            grid_options:
+              columns: full
+            chips:
+              - type: template
+                content: >-
+                  Verdichter {{ 'AN' if is_state('binary_sensor.luxtronik_341205_065_compressor', 'on') else 'AUS' }}
+                icon: mdi:heat-pump
+                icon_color: >-
+                  {{ 'blue' if is_state('binary_sensor.luxtronik_341205_065_compressor', 'on') else 'grey' }}
+                entity: binary_sensor.luxtronik_341205_065_compressor
+              - type: template
+                content: >-
+                  EVU {{ 'Frei' if is_state('binary_sensor.luxtronik_341205_065_evu_unlocked', 'on') else 'Sperre!' }}
+                icon: mdi:transmission-tower
+                icon_color: >-
+                  {{ 'green' if is_state('binary_sensor.luxtronik_341205_065_evu_unlocked', 'on') else 'red' }}
+                entity: binary_sensor.luxtronik_341205_065_evu_unlocked
+              - type: template
+                content: >-
+                  {{ states('sensor.luxtronik_341205_065_outdoor_temperature') }}°C außen
+                icon: mdi:thermometer
+                icon_color: cyan
+                entity: sensor.luxtronik_341205_065_outdoor_temperature
+              - type: template
+                content: >-
+                  {{ states('sensor.luxtronik_341205_065_status') | capitalize }}
+                icon: mdi:information
+                icon_color: blue
+                entity: sensor.luxtronik_341205_065_status
+
+      # ── Section 3: Temperaturen ────────────────────────
       - type: grid
         cards:
           - type: heading
