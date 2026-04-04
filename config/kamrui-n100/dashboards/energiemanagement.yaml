@@ -1439,6 +1439,16 @@ views:
             icon: mdi:speedometer
             icon_color: red
             display_mode: buttons
+          - type: custom:mushroom-number-card
+            entity: number.luxtronik_341205_065_heating_curve_night_temperature
+            name: Heizkurve Nachtabsenkung
+            icon: mdi:weather-night
+            display_mode: buttons
+          - type: custom:mushroom-number-card
+            entity: number.luxtronik_341205_065_heating_threshold_temperature
+            name: Heizgrenze (Außentemp.)
+            icon: mdi:thermometer-alert
+            display_mode: buttons
           - type: custom:mushroom-entity-card
             entity: switch.luxtronik_341205_065_smartgrid
             name: Smart Grid
@@ -1446,6 +1456,25 @@ views:
             icon_color: green
             tap_action:
               action: toggle
+          - type: custom:mushroom-template-card
+            primary: >-
+              SG Status: {{ states('sensor.luxtronik_341205_065_smart_grid_status') }}
+            secondary: >-
+              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}Smart Grid aktiv{% else %}Smart Grid deaktiviert{% endif %}
+            icon: mdi:lightning-bolt-circle
+            icon_color: >-
+              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}green{% else %}grey{% endif %}
+            entity: sensor.luxtronik_341205_065_smart_grid_status
+          - type: custom:mushroom-template-card
+            primary: >-
+              WW Energie: {{ states('sensor.luxtronik_341205_065_dhw_energy_input') }} kWh
+            secondary: >-
+              {% set th = states('sensor.luxtronik_341205_065_dhw_heat_amount') | float(0) %}
+              {% set el = states('sensor.luxtronik_341205_065_dhw_energy_input') | float(0) %}
+              {% if el > 1 %}WW-COP (Luxtronik): {{ (th / el) | round(2) }}{% else %}Keine Daten{% endif %}
+            icon: mdi:water-boiler-alert
+            icon_color: orange
+            entity: sensor.luxtronik_341205_065_dhw_energy_input
 
       # ── Section 4: Diagnose & Statistik ────────────────
       - type: grid
