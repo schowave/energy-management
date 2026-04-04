@@ -1449,28 +1449,31 @@ views:
             name: Heizgrenze (Außentemp.)
             icon: mdi:thermometer-alert
             display_mode: buttons
-          - type: custom:mushroom-entity-card
-            entity: switch.luxtronik_341205_065_smartgrid
-            name: Smart Grid
+          - type: custom:mushroom-select-card
+            entity: select.licv_8_2r1_3_power_control_mode
+            name: SG-Ready Stufe
             icon: mdi:transmission-tower
-            icon_color: green
-            tap_action:
-              action: toggle
           - type: custom:mushroom-template-card
             primary: >-
-              {% set sg = states('sensor.luxtronik_341205_065_smart_grid_status') %}
-              {% set m = {'evu_locked': '1 · EVU-Sperre', 'reduced_operation': '2 · Reduziert', 'normal_operation': '3 · Normal', 'increased_operation': '4 · Erhöht'} %}
+              {% set sg = states('select.licv_8_2r1_3_power_control_mode') %}
+              {% set m = {'Blocked': '1 · EVU-Sperre', 'Normal': '2 · Normal', 'Encouraged': '3 · Empfehlung', 'Ordered': '4 · Zwang', 'Individually': 'Manuell'} %}
               SG-Ready: {{ m.get(sg, sg) }}
             secondary: >-
-              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}Switch AN → Erhöhter Betrieb{% else %}Switch AUS → Normalbetrieb{% endif %}
+              {% set sg = states('select.licv_8_2r1_3_power_control_mode') %}
+              {% if sg == 'Ordered' %}WP MUSS einschalten (PV-Überschuss)
+              {% elif sg == 'Encouraged' %}WP SOLL einschalten (günstiger Strom)
+              {% elif sg == 'Blocked' %}WP gesperrt (Netzüberlast)
+              {% elif sg == 'Normal' %}Normalbetrieb
+              {% else %}Individuelle Steuerung{% endif %}
             icon: mdi:lightning-bolt-circle
             icon_color: >-
-              {% set sg = states('sensor.luxtronik_341205_065_smart_grid_status') %}
-              {% if sg == 'increased_operation' %}green
-              {% elif sg == 'evu_locked' %}red
-              {% elif sg == 'reduced_operation' %}orange
-              {% else %}blue{% endif %}
-            entity: sensor.luxtronik_341205_065_smart_grid_status
+              {% set sg = states('select.licv_8_2r1_3_power_control_mode') %}
+              {% if sg == 'Ordered' %}green
+              {% elif sg == 'Encouraged' %}cyan
+              {% elif sg == 'Blocked' %}red
+              {% elif sg == 'Normal' %}blue
+              {% else %}grey{% endif %}
+            entity: select.licv_8_2r1_3_power_control_mode
           - type: custom:mushroom-template-card
             primary: >-
               WW Energie: {{ states('sensor.luxtronik_341205_065_dhw_energy_input') }} kWh
