@@ -49,6 +49,11 @@ input_number:
     icon: mdi:battery-sync
     initial: 50
 
+# Luxtronik (Novelan LICV 8.2) — lokale Steuerung via BenPru Integration
+luxtronik:
+  host: 192.168.1.225
+  port: 8889
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
