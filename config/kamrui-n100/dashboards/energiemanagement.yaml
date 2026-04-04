@@ -1458,12 +1458,18 @@ views:
               action: toggle
           - type: custom:mushroom-template-card
             primary: >-
-              SG Status: {{ states('sensor.luxtronik_341205_065_smart_grid_status') }}
+              {% set sg = states('sensor.luxtronik_341205_065_smart_grid_status') %}
+              {% set m = {'evu_locked': '1 · EVU-Sperre', 'reduced_operation': '2 · Reduziert', 'normal_operation': '3 · Normal', 'increased_operation': '4 · Erhöht'} %}
+              SG-Ready: {{ m.get(sg, sg) }}
             secondary: >-
-              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}Smart Grid aktiv{% else %}Smart Grid deaktiviert{% endif %}
+              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}Switch AN → Erhöhter Betrieb{% else %}Switch AUS → Normalbetrieb{% endif %}
             icon: mdi:lightning-bolt-circle
             icon_color: >-
-              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}green{% else %}grey{% endif %}
+              {% set sg = states('sensor.luxtronik_341205_065_smart_grid_status') %}
+              {% if sg == 'increased_operation' %}green
+              {% elif sg == 'evu_locked' %}red
+              {% elif sg == 'reduced_operation' %}orange
+              {% else %}blue{% endif %}
             entity: sensor.luxtronik_341205_065_smart_grid_status
           - type: custom:mushroom-template-card
             primary: >-
