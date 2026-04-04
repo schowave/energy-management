@@ -1334,7 +1334,7 @@ views:
           - type: custom:mushroom-template-card
             primary: >-
               {% set s = states('sensor.luxtronik_341205_065_status') %}
-              {% set m = {'heating': 'Heizen', 'hot water': 'Warmwasser', 'cooling': 'Kühlen', 'defrost': 'Abtauen', 'standby': 'Standby', 'error': 'Fehler', 'evu': 'EVU-Sperre'} %}
+              {% set m = {'heating': 'Heizen', 'hot water': 'Warmwasser', 'cooling': 'Kühlen', 'defrost': 'Abtauen', 'standby': 'Standby', 'no_request': 'Standby', 'error': 'Fehler', 'evu': 'EVU-Sperre'} %}
               {{ m.get(s, s | capitalize) }} · {{ states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) | round(0) }} W
             secondary: >-
               {% set cap = states('sensor.licv_8_2r1_3_heating_capacity') | float(0) %}
