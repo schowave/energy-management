@@ -1594,7 +1594,7 @@ views:
                   title:
                     text: "W (elektr.)"
             series:
-              - entity: sensor.luxtronik_341205_065_heat_amount_heating_capacity
+              - entity: sensor.licv_8_2r1_3_heating_capacity
                 name: Heizleistung (therm.)
                 color: "#F44336"
                 stroke_width: 2
@@ -1706,7 +1706,7 @@ views:
             icon_color: blue
             entity: sensor.wp_cop_kombiniert_gesamt
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_heat_amount_heating_capacity
+            entity: sensor.licv_8_2r1_3_heating_capacity
             name: Heizleistung
             icon: mdi:fire
             icon_color: red
