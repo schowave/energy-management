@@ -136,6 +136,25 @@ rest_command:
       }
 
 automation:
+  # EMHASS Add-on nach HA-Start neustarten (behebt continual_publish Bug)
+  - id: emhass_restart_on_ha_start
+    alias: "EMHASS Add-on Restart nach HA-Start"
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - delay: "00:00:30"
+      - service: hassio.addon_restart
+        data:
+          addon: 5b918bf2_emhass
+      - delay: "00:00:15"
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.emhass_theo_soc
+        data:
+          value: "{{ states('sensor.battery_level') | float(50) }}"
+    mode: single
+
   # Day-Ahead: 1× täglich morgens für 24h-Plan + Forecast-Cache
   - id: emhass_dayahead_daily
     alias: "EMHASS Day-Ahead (täglich)"
