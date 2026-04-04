@@ -1427,6 +1427,7 @@ views:
             name: Warmwasser Soll
             icon: mdi:thermometer-water
             icon_color: orange
+            display_mode: buttons
           - type: custom:mushroom-select-card
             entity: select.luxtronik_341205_065_heating_mode
             name: Heizmodus
@@ -1446,15 +1447,18 @@ views:
             entity: number.luxtronik_341205_065_heating_curve_end_temperature
             name: Heizkurve Endpunkt
             icon: mdi:chart-bell-curve-cumulative
+            display_mode: buttons
           - type: custom:mushroom-number-card
             entity: number.luxtronik_341205_065_heating_curve_parallel_shift_temperature
             name: Heizkurve Parallelverschiebung
             icon: mdi:arrow-up-down
+            display_mode: buttons
           - type: custom:mushroom-number-card
             entity: number.luxtronik_341205_065_electrical_power_limitation_value
             name: Leistungslimit
             icon: mdi:speedometer
             icon_color: red
+            display_mode: buttons
           - type: custom:mushroom-chips-card
             grid_options:
               columns: full
