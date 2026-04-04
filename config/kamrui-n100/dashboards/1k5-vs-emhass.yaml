@@ -187,7 +187,7 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-              - entity: sensor.emhass_theo_soc
+              - entity: input_number.emhass_theo_soc
                 name: "Simulation (EMHASS)"
                 color: "#2196F3"
                 stroke_width: 2

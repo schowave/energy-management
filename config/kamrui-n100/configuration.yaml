@@ -40,6 +40,15 @@ input_number:
     icon: mdi:currency-eur
     initial: 0.082
 
+  emhass_theo_soc:
+    name: "EMHASS Theo SOC"
+    min: 0
+    max: 100
+    step: 0.1
+    unit_of_measurement: "%"
+    icon: mdi:battery-sync
+    initial: 50
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml

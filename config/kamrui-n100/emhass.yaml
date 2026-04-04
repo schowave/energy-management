@@ -49,7 +49,7 @@ rest_command:
           {%- endfor -%}
         ],
         "pv_power_forecast": {{ ns2.pv | to_json }},
-        "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
+        "soc_init": {{ states('input_number.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
         "soc_final": 0.8
       }
 
@@ -95,7 +95,7 @@ rest_command:
       {%- set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) -%}
       {
         "prediction_horizon": {{ horizon }},
-        "soc_init": {{ states('sensor.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
+        "soc_init": {{ states('input_number.emhass_theo_soc') | float(states('sensor.battery_level') | float(50)) / 100 }},
         "soc_final": 0.8,
         "load_cost_forecast": {{ ns.prices | to_json }},
         "prod_price_forecast": [{% for i in range(horizon) %}{{ einspeisung }}{% if not loop.last %},{% endif %}{% endfor %}],
@@ -170,15 +170,54 @@ automation:
       - service: rest_command.emhass_ml_fit
     mode: single
 
+  # Theo-SOC: Jede Minute den simulierten EMHASS-Akkustand aktualisieren
+  # Nutzt input_number statt this.state (zuverlässiger nach Restart/API-Set)
+  - id: emhass_theo_soc_update
+    alias: "EMHASS Theo SOC Update (jede Minute)"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.emhass_theo_soc
+        data:
+          value: >
+            {% set batt = states('sensor.p_batt_forecast') | float(0) %}
+            {% set prev = states('input_number.emhass_theo_soc') | float(50) %}
+            {% set cap = 12800 %}
+            {% set eff = 0.95 %}
+            {% if batt > 0 %}
+              {% set delta = -batt / 60 / cap * 100 / eff %}
+            {% elif batt < 0 %}
+              {% set delta = -batt / 60 / cap * 100 * eff %}
+            {% else %}
+              {% set delta = 0 %}
+            {% endif %}
+            {% set new_soc = prev + delta %}
+            {{ [10, [95, new_soc] | min] | max | round(1) }}
+    mode: single
+
+  # Theo-SOC: Midnight-Reset auf realen SOC
+  - id: emhass_theo_soc_midnight_reset
+    alias: "EMHASS Theo SOC Midnight Reset"
+    trigger:
+      - platform: time
+        at: "00:00:30"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.emhass_theo_soc
+        data:
+          value: "{{ states('sensor.battery_level') | float(50) }}"
+    mode: single
+
   # MPC: Alle 5 Min für Echtzeit-Simulation
-  # Kein separater publish-data Aufruf nötig — continual_publish: true
-  # in emhass_config.json sorgt für automatisches Publishing.
   - id: emhass_mpc_realtime
     alias: "EMHASS MPC (alle 5 Min)"
     description: >-
       MPC-Optimierung alle 5 Minuten mit Echtzeit-Verbrauch,
-      24h Horizont, 30-Min-Schrittweite. Überschreibt die gleichen
-      Sensoren wie Day-Ahead mit aktuellen Werten.
+      24h Horizont, 30-Min-Schrittweite.
     trigger:
       - platform: time_pattern
         minutes: "/5"

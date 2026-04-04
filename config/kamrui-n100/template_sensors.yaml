@@ -236,7 +236,7 @@
         {% set verbrauch = states('sensor.consumption_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set pv = states('sensor.solar_production_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set batt_raw = states('sensor.p_batt_forecast') | float(0) %}
-        {% set soc = states('sensor.emhass_theo_soc') | float(50) %}
+        {% set soc = states('input_number.emhass_theo_soc') | float(50) %}
         {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
         {% set batt = batt_raw %}
@@ -281,44 +281,11 @@
 
 # ── Kumulierte Kosten (Riemann-Summe, jede Minute) ─
 # Integriert EUR/h-Rate × 1/60h = EUR pro Minute.
-# Ersetzt sensor.integration Platform (Boot-Timing-Problem).
 # state_class: total erlaubt Utility Meters als Quelle.
 - trigger:
     - platform: time_pattern
       minutes: "/1"
   sensor:
-    # Theoretischer EMHASS-SOC: Simuliert den Akkustand
-    # wenn EMHASS die Batterie steuern würde.
-    # Batterie: 12800 Wh, Effizienz: 95% Laden, 95% Entladen
-    # batt > 0 = Entladen, batt < 0 = Laden
-    # SOC-Änderung pro Minute: batt(W) × 1/60(h) / 12800(Wh) × 100(%)
-    # Bei Entladung: SOC sinkt um batt/60/12800*100 / 0.95
-    # Bei Ladung: SOC steigt um |batt|/60/12800*100 * 0.95
-    - name: "EMHASS Theo SOC"
-      unique_id: emhass_theo_soc
-      unit_of_measurement: "%"
-      state_class: measurement
-      icon: mdi:battery-sync
-      state: >
-        {% set batt_raw = states('sensor.p_batt_forecast') | float(0) %}
-        {% set midnight_reset = now().hour == 0 and now().minute < 1 %}
-        {% if midnight_reset %}
-          {% set prev_soc = states('sensor.battery_level') | float(50) %}
-        {% else %}
-          {% set prev_soc = this.state | float(states('sensor.battery_level') | float(50)) %}
-        {% endif %}
-        {% set cap = 12800 %}
-        {% set eff = 0.95 %}
-        {% if batt_raw > 0 %}
-          {% set delta = -batt_raw / 60 / cap * 100 / eff %}
-        {% elif batt_raw < 0 %}
-          {% set delta = -batt_raw / 60 / cap * 100 * eff %}
-        {% else %}
-          {% set delta = 0 %}
-        {% endif %}
-        {% set new_soc = prev_soc + delta %}
-        {{ [10, [95, new_soc] | min] | max | round(1) }}
-
     - name: "1k5 Netzbezugskosten kumuliert"
       unique_id: 1k5_netzbezugskosten_kumuliert
       unit_of_measurement: "EUR"
