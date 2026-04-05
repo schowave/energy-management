@@ -224,6 +224,15 @@ views:
                   labels:
                     formatter: |
                       EVAL:function(val) { return val ? val.toFixed(2) : '0'; }
+              - id: power
+                opposite: true
+                min: 0
+                apex_config:
+                  title:
+                    text: "Watt"
+                  labels:
+                    formatter: |
+                      EVAL:function(val) { return val ? Math.round(val) : '0'; }
               - id: modus
                 min: 0
                 max: 3
@@ -240,6 +249,19 @@ views:
                 extend_to: false
                 group_by:
                   func: last
+                  duration: 5min
+              - entity: sensor.import_power
+                name: "Netzbezug"
+                color: "#F44336"
+                stroke_width: 1
+                curve: smooth
+                type: area
+                opacity: 0.2
+                float_precision: 0
+                yaxis_id: power
+                extend_to: false
+                group_by:
+                  func: avg
                   duration: 5min
               - entity: sensor.heartbeat_modus
                 name: "Laden"
