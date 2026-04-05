@@ -243,12 +243,12 @@ views:
                   duration: 5min
               - entity: sensor.heartbeat_modus
                 name: "Laden"
-                color: "#4CAF50"
+                color: "#00E676"
                 yaxis_id: modus
                 curve: stepline
                 stroke_width: 0
                 type: area
-                opacity: 0.15
+                opacity: 0.3
                 extend_to: false
                 show:
                   legend_value: false
@@ -258,12 +258,12 @@ views:
                 transform: "return x === 'laden' ? 3 : 0;"
               - entity: sensor.heartbeat_modus
                 name: "Entladen"
-                color: "#FF9800"
+                color: "#FFAB00"
                 yaxis_id: modus
                 curve: stepline
                 stroke_width: 0
                 type: area
-                opacity: 0.15
+                opacity: 0.3
                 extend_to: false
                 show:
                   legend_value: false
@@ -273,12 +273,12 @@ views:
                 transform: "return x === 'entladen' ? 3 : 0;"
               - entity: sensor.heartbeat_modus
                 name: "Zero Export"
-                color: "#F44336"
+                color: "#FF1744"
                 yaxis_id: modus
                 curve: stepline
                 stroke_width: 0
                 type: area
-                opacity: 0.15
+                opacity: 0.3
                 extend_to: false
                 show:
                   legend_value: false
@@ -288,12 +288,12 @@ views:
                 transform: "return x === 'zero_export' ? 3 : 0;"
               - entity: sensor.heartbeat_modus
                 name: "Idle"
-                color: "#9E9E9E"
+                color: "#90A4AE"
                 yaxis_id: modus
                 curve: stepline
                 stroke_width: 0
                 type: area
-                opacity: 0.1
+                opacity: 0.15
                 extend_to: false
                 show:
                   legend_value: false
