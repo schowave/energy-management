@@ -1,6 +1,6 @@
 views:
   # ════════════════════════════════════════════════════
-  # Tab 1: Live — Tagesvergleich (5-Min-Auflösung)
+  # Tab 1: Live — Rollierende 24h
   # ════════════════════════════════════════════════════
   - type: sections
     title: "Live"
@@ -73,8 +73,6 @@ views:
               show: true
               label: Jetzt
             graph_span: 24h
-            span:
-              start: day
             apex_config:
               chart:
                 height: 300
@@ -148,8 +146,6 @@ views:
               show: true
               label: Jetzt
             graph_span: 24h
-            span:
-              start: day
             apex_config:
               chart:
                 height: 220
@@ -212,8 +208,6 @@ views:
               show: true
               label: Jetzt
             graph_span: 24h
-            span:
-              start: day
             apex_config:
               chart:
                 height: 250
@@ -224,7 +218,6 @@ views:
                 intersect: false
             yaxis:
               - id: preis
-                min: 0
                 apex_config:
                   title:
                     text: "EUR/kWh"
@@ -249,7 +242,8 @@ views:
                   func: last
                   duration: 5min
               - entity: sensor.heartbeat_modus
-                name: "Modus"
+                name: "Laden"
+                color: "#4CAF50"
                 yaxis_id: modus
                 curve: stepline
                 stroke_width: 0
@@ -257,41 +251,41 @@ views:
                 opacity: 0.15
                 extend_to: false
                 show:
-                  in_header: false
                   legend_value: false
                 group_by:
                   func: last
                   duration: 5min
-                color_threshold:
-                  - value: 0
-                    color: grey
-                  - value: 1
-                    color: green
-                  - value: 2
-                    color: orange
-                  - value: 3
-                    color: red
-                transform: >-
-                  if (x === 'laden') return 1;
-                  if (x === 'entladen') return 2;
-                  if (x === 'zero_export') return 3;
-                  return 0;
-      # ── Zustandsverlauf ─────────────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Betriebsmodus-Verlauf"
-          - type: history-graph
-            grid_options:
-              columns: full
-            hours_to_show: 24
-            entities:
+                transform: "return x === 'laden' ? 3 : 0;"
               - entity: sensor.heartbeat_modus
-                name: Heartbeat
-              - entity: sensor.emhass_modus
-                name: EMHASS
-              - entity: sensor.wp_betriebsmodus
-                name: WP Modus
+                name: "Entladen"
+                color: "#FF9800"
+                yaxis_id: modus
+                curve: stepline
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                extend_to: false
+                show:
+                  legend_value: false
+                group_by:
+                  func: last
+                  duration: 5min
+                transform: "return x === 'entladen' ? 3 : 0;"
+              - entity: sensor.heartbeat_modus
+                name: "Zero Export"
+                color: "#F44336"
+                yaxis_id: modus
+                curve: stepline
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                extend_to: false
+                show:
+                  legend_value: false
+                group_by:
+                  func: last
+                  duration: 5min
+                transform: "return x === 'zero_export' ? 3 : 0;"
       # ── Kostenvergleich kumuliert ──────────────────────
       - type: grid
         cards:
@@ -309,8 +303,6 @@ views:
               show: true
               label: Jetzt
             graph_span: 24h
-            span:
-              start: day
             apex_config:
               chart:
                 height: 300
@@ -321,7 +313,6 @@ views:
                 intersect: false
             yaxis:
               - id: kosten
-                min: 0
                 apex_config:
                   title:
                     text: "EUR"
@@ -369,8 +360,6 @@ views:
               show: true
               label: Jetzt
             graph_span: 24h
-            span:
-              start: day
             apex_config:
               chart:
                 height: 300
@@ -387,7 +376,6 @@ views:
                     text: Watt
               - id: preis
                 opposite: true
-                min: 0
                 apex_config:
                   title:
                     text: "EUR/kWh"
@@ -433,18 +421,36 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-
-  # ════════════════════════════════════════════════════
-  # Tab 2: Woche — 7-Tage-Trend
-  # ════════════════════════════════════════════════════
-  - type: sections
-    title: "Woche"
-    icon: mdi:calendar-week
-    max_columns: 2
-    sections:
-      # ── Wochen-KPIs ────────────────────────────────────
+      # ── Zustandsverlauf ─────────────────────────────────
       - type: grid
         cards:
+          - type: heading
+            heading: "Betriebsmodus-Verlauf"
+          - type: history-graph
+            grid_options:
+              columns: full
+            hours_to_show: 24
+            entities:
+              - entity: sensor.heartbeat_modus
+                name: Heartbeat
+              - entity: sensor.emhass_modus
+                name: EMHASS
+              - entity: sensor.wp_betriebsmodus
+                name: WP Modus
+
+  # ════════════════════════════════════════════════════
+  # Tab 2: Bilanz — Woche & Monat
+  # ════════════════════════════════════════════════════
+  - type: sections
+    title: "Bilanz"
+    icon: mdi:calendar-month
+    max_columns: 2
+    sections:
+      # ── Wochen-KPIs + Kosten ──────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Woche"
           - type: custom:mushroom-chips-card
             chips:
               - type: template
@@ -474,15 +480,12 @@ views:
                 content: >-
                   WP-Potenzial {{ states('sensor.wp_einsparpotenzial_woche') | float(0) | round(2) }}€
                 entity: sensor.wp_einsparpotenzial_woche
-          # ── Kostenvergleich 7 Tage ─────────────────────────
-          - type: heading
-            heading: "Kosten: Real vs. EMHASS (7 Tage)"
           - type: custom:apexcharts-card
             grid_options:
               columns: full
             header:
               show: true
-              title: "Tägliche Kosten"
+              title: "Kosten: Real vs. EMHASS (7 Tage)"
             graph_span: 7d
             span:
               start: isoWeek
@@ -518,60 +521,12 @@ views:
                 group_by:
                   func: delta
                   duration: 1d
-      # ── Delta-Trend 7 Tage ────────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Kumuliertes Delta (7 Tage)"
           - type: custom:apexcharts-card
             grid_options:
               columns: full
             header:
               show: true
-              title: "Delta-Trend (positiv = 1komma5° teurer)"
-            graph_span: 7d
-            span:
-              start: isoWeek
-            apex_config:
-              chart:
-                height: 250
-              legend:
-                show: true
-            yaxis:
-              - id: delta
-                apex_config:
-                  title:
-                    text: "EUR"
-            series:
-              - entity: sensor.1k5_netzbezugskosten_kumuliert
-                name: "1komma5° Real"
-                color: "#F44336"
-                type: column
-                float_precision: 2
-                yaxis_id: delta
-                group_by:
-                  func: delta
-                  duration: 1d
-              - entity: sensor.emhass_theo_kosten_kumuliert
-                name: "EMHASS Theoretisch"
-                color: "#2196F3"
-                type: column
-                float_precision: 2
-                yaxis_id: delta
-                group_by:
-                  func: delta
-                  duration: 1d
-      # ── WP-Kosten Woche ───────────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Wärmepumpe: Kosten & Einsparpotenzial"
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: "WP Tageskosten vs. verpasstes Potenzial"
+              title: "WP Tageskosten vs. Einsparpotenzial (7 Tage)"
             graph_span: 7d
             span:
               start: isoWeek
@@ -606,18 +561,11 @@ views:
                 group_by:
                   func: delta
                   duration: 1d
-
-  # ════════════════════════════════════════════════════
-  # Tab 3: Monat — Monatsübersicht
-  # ════════════════════════════════════════════════════
-  - type: sections
-    title: "Monat"
-    icon: mdi:calendar-month
-    max_columns: 2
-    sections:
-      # ── Monats-KPIs ────────────────────────────────────
+      # ── Monats-KPIs + Kosten ──────────────────────────
       - type: grid
         cards:
+          - type: heading
+            heading: "Monat"
           - type: custom:mushroom-chips-card
             chips:
               - type: template
@@ -665,15 +613,12 @@ views:
                 content: >-
                   Eigenverbr. {{ states('sensor.eigenverbrauchsquote') }}%
                 entity: sensor.eigenverbrauchsquote
-      # ── Kostenvergleich 30 Tage ────────────────────────
-          - type: heading
-            heading: "Kosten: Real vs. EMHASS (30 Tage)"
           - type: custom:apexcharts-card
             grid_options:
               columns: full
             header:
               show: true
-              title: "Tägliche Kosten"
+              title: "Kosten: Real vs. EMHASS (30 Tage)"
             graph_span: 31d
             span:
               start: month
@@ -709,58 +654,12 @@ views:
                 group_by:
                   func: delta
                   duration: 1d
-      # ── Kumuliertes Delta Monat ────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Kumuliertes Delta (Monat)"
           - type: custom:apexcharts-card
             grid_options:
               columns: full
             header:
               show: true
-              title: "Delta-Trend (positiv = 1komma5° teurer)"
-            graph_span: 31d
-            span:
-              start: month
-            apex_config:
-              chart:
-                height: 250
-            yaxis:
-              - id: delta
-                apex_config:
-                  title:
-                    text: "EUR"
-            series:
-              - entity: sensor.1k5_netzbezugskosten_kumuliert
-                name: "1komma5° Real"
-                color: "#F44336"
-                type: column
-                float_precision: 2
-                yaxis_id: delta
-                group_by:
-                  func: delta
-                  duration: 1d
-              - entity: sensor.emhass_theo_kosten_kumuliert
-                name: "EMHASS Theoretisch"
-                color: "#2196F3"
-                type: column
-                float_precision: 2
-                yaxis_id: delta
-                group_by:
-                  func: delta
-                  duration: 1d
-      # ── WP-Kosten Monat ───────────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Wärmepumpe Monat"
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: "WP Tageskosten vs. verpasstes Potenzial"
+              title: "WP Tageskosten vs. Einsparpotenzial (30 Tage)"
             graph_span: 31d
             span:
               start: month
@@ -795,7 +694,7 @@ views:
                 group_by:
                   func: delta
                   duration: 1d
-      # ── Zusammenfassung ────────────────────────────────
+      # ── Monatszusammenfassung ─────────────────────────
       - type: grid
         cards:
           - type: heading
