@@ -218,7 +218,7 @@
       state: >
         {% set charge = states('sensor.battery_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set discharge = states('sensor.battery_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
-        {% set export = states('sensor.grid_feed_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
+        {% set export = states('sensor.grid_feed_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% if charge > 100 %}laden
         {% elif discharge > 100 %}entladen
         {% elif export < 10 and charge < 100 and discharge < 100 %}zero_export
@@ -233,8 +233,8 @@
       state_class: measurement
       icon: mdi:cash
       state: >
-        {% set import_kw = states('sensor.grid_feed_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) / 1000 %}
-        {% set export_kw = states('sensor.grid_feed_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) / 1000 %}
+        {% set import_kw = states('sensor.grid_feed_out_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) / 1000 %}
+        {% set export_kw = states('sensor.grid_feed_in_power_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) / 1000 %}
         {% set preis = states('sensor.electricity_price_7fee2e61_1ff6_4eaf_8a8e_7509522abb45') | float(0) %}
         {% set einspeisung = states('input_number.einspeiseverguetung') | float(0.082) %}
         {{ (import_kw * preis - export_kw * einspeisung) | round(4) }}
