@@ -195,8 +195,8 @@
       icon: mdi:robot
       state: >
         {% set batt = states('sensor.p_batt_forecast') | float(0) %}
-        {% if batt > 100 %}entladen
-        {% elif batt < -100 %}laden
+        {% if batt > 200 %}entladen
+        {% elif batt < -200 %}laden
         {% else %}idle
         {% endif %}
 
