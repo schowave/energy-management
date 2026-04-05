@@ -286,6 +286,21 @@ views:
                   func: last
                   duration: 5min
                 transform: "return x === 'zero_export' ? 3 : 0;"
+              - entity: sensor.heartbeat_modus
+                name: "Idle"
+                color: "#9E9E9E"
+                yaxis_id: modus
+                curve: stepline
+                stroke_width: 0
+                type: area
+                opacity: 0.1
+                extend_to: false
+                show:
+                  legend_value: false
+                group_by:
+                  func: last
+                  duration: 5min
+                transform: "return x === 'idle' ? 3 : 0;"
       # ── Kostenvergleich kumuliert ──────────────────────
       - type: grid
         cards:
