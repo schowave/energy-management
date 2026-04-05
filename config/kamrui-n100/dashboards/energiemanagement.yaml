@@ -1,9 +1,9 @@
 views:
   # ════════════════════════════════════════════════════
-  # Tab 1: Cockpit — Quick-Check + Steuerung
+  # Tab 1: Übersicht — Was passiert gerade?
   # ════════════════════════════════════════════════════
   - type: sections
-    title: "Cockpit"
+    title: "Übersicht"
     icon: mdi:home-lightning-bolt
     max_columns: 1
     sections:
@@ -184,15 +184,6 @@ views:
               service: rest_command.emhass_publish
               confirmation:
                 text: "EMHASS Sensoren in HA aktualisieren?"
-
-  # ════════════════════════════════════════════════════
-  # Tab 2: Analyse — Zeitreihen & Charts
-  # ════════════════════════════════════════════════════
-  - type: sections
-    title: "Analyse"
-    icon: mdi:chart-line
-    max_columns: 3
-    sections:
       # ── Zeitraum-Auswahl ────────────────────────────────
       - type: grid
         cards:
@@ -201,167 +192,11 @@ views:
             name: Zeitraum
             icon: mdi:calendar-range
             fill_container: true
-      # ── Section 1: PV & Forecast ──────────────────────
+      # ── Leistungsverlauf: Heute ──────────────────────
       - type: grid
         cards:
           - type: heading
-            heading: "PV & Forecast"
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: PV Real vs. Solcast Forecast
-            graph_span: 24h
-            span:
-              start: day
-            apex_config:
-              chart:
-                height: 300
-              legend:
-                show: true
-              tooltip:
-                shared: true
-                intersect: false
-            yaxis:
-              - id: power
-                min: 0
-                apex_config:
-                  title:
-                    text: Watt
-            series:
-              - entity: sensor.total_dc_power
-                name: PV Real
-                color: "#f59e0b"
-                stroke_width: 2
-                curve: smooth
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 5min
-                yaxis_id: power
-              - entity: sensor.solcast_pv_forecast_aktuelle_leistung
-                name: "Forecast"
-                color: "#2196F3"
-                stroke_width: 0
-                yaxis_id: power
-                float_precision: 0
-                show:
-                  in_chart: false
-                  in_header: raw
-              - entity: sensor.solcast_pv_forecast_prognose_heute
-                name: ""
-                color: "#2196F3"
-                stroke_width: 2
-                curve: smooth
-                yaxis_id: power
-                show:
-                  legend_value: false
-                  in_header: false
-                data_generator: |
-                  return entity.attributes.detailedForecast.map(f => [
-                    new Date(f.period_start).getTime(),
-                    f.pv_estimate * 1000
-                  ]);
-              - entity: sensor.solcast_pv_forecast_prognose_heute
-                name: Optimistisch (90)
-                color: "#2196F3"
-                stroke_width: 0
-                type: area
-                opacity: 0.15
-                curve: smooth
-                yaxis_id: power
-                show:
-                  legend_value: false
-                  in_header: false
-                data_generator: |
-                  return entity.attributes.detailedForecast.map(f => [
-                    new Date(f.period_start).getTime(),
-                    f.pv_estimate90 * 1000
-                  ]);
-              - entity: sensor.solcast_pv_forecast_prognose_heute
-                name: Pessimistisch (10)
-                color: "#2196F3"
-                stroke_width: 0
-                type: area
-                opacity: 0.15
-                curve: smooth
-                yaxis_id: power
-                show:
-                  legend_value: false
-                  in_header: false
-                data_generator: |
-                  return entity.attributes.detailedForecast.map(f => [
-                    new Date(f.period_start).getTime(),
-                    f.pv_estimate10 * 1000
-                  ]);
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: "MPPT1 (West) vs. MPPT2 (Ost)"
-            graph_span: 24h
-            apex_config:
-              chart:
-                height: 250
-              legend:
-                show: true
-              tooltip:
-                shared: true
-                intersect: false
-            yaxis:
-              - id: power
-                min: 0
-                apex_config:
-                  title:
-                    text: Watt
-            series:
-              - entity: sensor.mppt1_power
-                name: "MPPT1 (West)"
-                color: "#2196F3"
-                stroke_width: 2
-                curve: smooth
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 5min
-                yaxis_id: power
-              - entity: sensor.mppt2_power
-                name: "MPPT2 (Ost)"
-                color: "#FF9800"
-                stroke_width: 2
-                curve: smooth
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 5min
-                yaxis_id: power
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: entity
-                entity: sensor.solcast_pv_forecast_prognose_heute
-                icon: mdi:solar-power
-                name: Heute
-              - type: entity
-                entity: sensor.solcast_pv_forecast_prognose_morgen
-                icon: mdi:weather-sunny
-                name: Morgen
-              - type: entity
-                entity: sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute
-                icon: mdi:sun-clock
-                name: Verbleibend
-              - type: entity
-                entity: sensor.daily_pv_generation
-                icon: mdi:solar-power-variant
-                name: Real heute
-
-      # ── Section 2: Batterie & EMHASS-Plan ─────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Batterie & EMHASS-Plan"
-          # ── Leistungsverlauf: Heute ──────────────────────
+            heading: "Leistungsverlauf"
           - type: conditional
             conditions:
               - condition: state
@@ -652,7 +487,11 @@ views:
                     func: avg
                     duration: 2h
                   yaxis_id: power
-          # ── Akkustand: Heute ────────────────────────────
+      # ── Akkustand ────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Akkustand"
           - type: conditional
             conditions:
               - condition: state
@@ -732,7 +571,6 @@ views:
                   group_by:
                     func: avg
                     duration: 5min
-          # ── Akkustand: 3 Tage ────────────────────────────
           - type: conditional
             conditions:
               - condition: state
@@ -774,7 +612,6 @@ views:
                   group_by:
                     func: avg
                     duration: 30min
-          # ── Akkustand: 7 Tage ────────────────────────────
           - type: conditional
             conditions:
               - condition: state
@@ -816,84 +653,68 @@ views:
                   group_by:
                     func: avg
                     duration: 1h
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: Batterie Lade-/Entladeleistung
-            graph_span: 24h
-            apex_config:
-              chart:
-                height: 250
-              legend:
-                show: true
-              tooltip:
-                shared: true
-                intersect: false
-            series:
-              - entity: sensor.battery_charging_power
-                name: Laden
-                color: "#4CAF50"
-                type: column
-                group_by:
-                  func: avg
-                  duration: 15min
-              - entity: sensor.battery_discharging_power
-                name: Entladen
-                color: "#F44336"
-                type: column
-                invert: true
-                group_by:
-                  func: avg
-                  duration: 15min
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: entity
-                entity: sensor.daily_battery_charge
-                icon: mdi:battery-plus
-                name: Geladen
-              - type: entity
-                entity: sensor.daily_battery_discharge
-                icon: mdi:battery-minus
-                name: Entladen
-
-      # ── Section 3: Netz & Strompreis ──────────────────
+      # ── WP Status (kompakt) ──────────────────────────
       - type: grid
         cards:
           - type: heading
-            heading: "Netz & Strompreis"
-          - type: custom:apexcharts-card
+            heading: "Wärmepumpe"
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set s = states('sensor.luxtronik_341205_065_status') %}
+              {% set m = {'heating': 'Heizen', 'hot water': 'Warmwasser', 'cooling': 'Kühlen', 'defrost': 'Abtauen', 'standby': 'Standby', 'no_request': 'Standby', 'error': 'Fehler', 'evu': 'EVU-Sperre'} %}
+              {{ m.get(s, s | capitalize) }} · {{ states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) | round(0) }} W
+            secondary: >-
+              {% set cap = states('sensor.licv_8_2r1_3_heating_capacity') | float(0) %}
+              {% set pow = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) / 1000 %}
+              {% if pow > 0.1 and cap > 0 %}COP {{ (cap / pow) | round(1) }} · {{ cap }} kW therm.
+              {% elif pow > 0.1 %}Verdichter läuft
+              {% else %}Standby{% endif %}
+              {% if is_state('binary_sensor.luxtronik_341205_065_compressor_heater', 'on') %} · Heizstab!{% endif %}
+            icon: >-
+              {% set s = states('sensor.luxtronik_341205_065_status') %}
+              {% if s == 'heating' %}mdi:radiator{% elif s == 'hot water' %}mdi:water-boiler{% elif s == 'defrost' %}mdi:snowflake-melt{% elif s == 'error' %}mdi:alert{% else %}mdi:heat-pump-outline{% endif %}
+            icon_color: >-
+              {% set p = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) %}
+              {% if p < 100 %}grey{% elif p < 2000 %}blue{% else %}red{% endif %}
+            entity: sensor.kg_technik_waermepumpe_3em_leistung
+          - type: custom:mushroom-chips-card
             grid_options:
               columns: full
-            header:
-              show: true
-              title: Netzbezug / Einspeisung
-            graph_span: 24h
-            apex_config:
-              chart:
-                height: 250
-              legend:
-                show: true
-              tooltip:
-                shared: true
-                intersect: false
-            series:
-              - entity: sensor.import_power
-                name: Bezug
-                color: "#F44336"
-                type: column
-                group_by:
-                  func: avg
-                  duration: 15min
-              - entity: sensor.export_power
-                name: Einspeisung
-                color: "#4CAF50"
-                type: column
-                invert: true
-                group_by:
-                  func: avg
-                  duration: 15min
+            chips:
+              - type: template
+                content: "VL {{ states('sensor.luxtronik_341205_065_flow_in_temperature') }}°C"
+                icon: mdi:thermometer-chevron-up
+                icon_color: red
+                entity: sensor.luxtronik_341205_065_flow_in_temperature
+              - type: template
+                content: "RL {{ states('sensor.luxtronik_341205_065_flow_out_temperature') }}°C → Soll {{ states('sensor.luxtronik_341205_065_flow_out_temperature_target') }}°C"
+                icon: mdi:thermometer-chevron-down
+                icon_color: blue
+                entity: sensor.luxtronik_341205_065_flow_out_temperature
+              - type: template
+                content: "WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C"
+                icon: mdi:water-thermometer
+                icon_color: orange
+                entity: sensor.luxtronik_341205_065_dhw_temperature
+              - type: template
+                content: "Außen {{ states('sensor.luxtronik_341205_065_outdoor_temperature') }}°C"
+                icon: mdi:home-thermometer-outline
+                icon_color: green
+                entity: sensor.luxtronik_341205_065_outdoor_temperature
+
+  # ════════════════════════════════════════════════════
+  # Tab 2: Details & Steuerung
+  # ════════════════════════════════════════════════════
+  - type: sections
+    title: "Details"
+    icon: mdi:chart-line
+    max_columns: 2
+    sections:
+      # ── Preisverlauf ────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Strompreis"
           # ── Preisverlauf: Heute ──────────────────────────
           - type: conditional
             conditions:
@@ -1125,285 +946,12 @@ views:
             name: "ENTSO-e Maximum"
             icon: mdi:arrow-up-bold
             icon_color: red
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: entity
-                entity: sensor.daily_imported_energy
-                icon: mdi:transmission-tower-import
-                name: Import heute
-              - type: entity
-                entity: sensor.daily_exported_energy
-                icon: mdi:transmission-tower-export
-                name: Export heute
 
-      # ── Section 4: Verbrauch ──────────────────────────
+      # ── WP Steuerung ────────────────────────────────────
       - type: grid
         cards:
           - type: heading
-            heading: "Verbrauch"
-          - type: custom:mushroom-template-card
-            primary: "{{ states('sensor.load_power') }} W"
-            secondary: "Hausverbrauch"
-            icon: mdi:home
-            icon_color: >-
-              {% set p = states('sensor.load_power') | float(0) %}
-              {% if p < 2000 %}green{% elif p < 3500 %}amber{% else %}red{% endif %}
-            entity: sensor.load_power
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: Energiequellen Hausverbrauch
-            graph_span: 24h
-            apex_config:
-              chart:
-                height: 250
-                stacked: true
-              legend:
-                show: true
-              tooltip:
-                shared: true
-                intersect: false
-            yaxis:
-              - id: power
-                min: 0
-                apex_config:
-                  title:
-                    text: Watt
-            series:
-              - entity: sensor.total_dc_power
-                name: PV-Eigenverbrauch
-                color: "#f59e0b"
-                stroke_width: 0
-                type: area
-                opacity: 0.7
-                curve: smooth
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 15min
-                yaxis_id: power
-              - entity: sensor.battery_discharging_power
-                name: Batterie
-                color: "#22c55e"
-                stroke_width: 0
-                type: area
-                opacity: 0.7
-                curve: smooth
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 15min
-                yaxis_id: power
-              - entity: sensor.import_power
-                name: Netzbezug
-                color: "#F44336"
-                stroke_width: 0
-                type: area
-                opacity: 0.7
-                curve: smooth
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 15min
-                yaxis_id: power
-          - type: custom:apexcharts-card
-            grid_options:
-              columns: full
-            header:
-              show: true
-              title: "Tagesbilanz: Erzeugung vs. Bezug/Einspeisung"
-            graph_span: 24h
-            apex_config:
-              chart:
-                height: 250
-              legend:
-                show: true
-              tooltip:
-                shared: true
-                intersect: false
-            yaxis:
-              - id: energy
-                min: 0
-                apex_config:
-                  title:
-                    text: kWh
-            series:
-              - entity: sensor.daily_pv_generation
-                name: "PV-Erzeugung"
-                color: "#f59e0b"
-                stroke_width: 2
-                curve: smooth
-                extend_to: false
-                yaxis_id: energy
-              - entity: sensor.daily_imported_energy
-                name: "Netzbezug"
-                color: "#F44336"
-                type: area
-                opacity: 0.3
-                stroke_width: 2
-                curve: smooth
-                extend_to: false
-                yaxis_id: energy
-              - entity: sensor.daily_exported_energy
-                name: "Einspeisung"
-                color: "#4CAF50"
-                type: area
-                opacity: 0.3
-                stroke_width: 2
-                curve: smooth
-                extend_to: false
-                yaxis_id: energy
-          - type: custom:mushroom-template-card
-            grid_options:
-              columns: full
-            primary: "Grundlast-Übersicht"
-            secondary: >-
-              Serverschrank {{ states('sensor.kg_technik_serverschrank_leistung') }} W
-              · Kühlschrank {{ states('sensor.kg_flur_kuehlschrank_leistung') }} W
-              · Workstation {{ states('sensor.dg_buero_workstation_leistung') }} W
-            icon: mdi:power-plug
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.kg_technik_serverschrank_leistung
-            name: Serverschrank
-            icon: mdi:server
-            icon_color: blue
-          - type: custom:mushroom-entity-card
-            entity: sensor.kg_flur_kuehlschrank_leistung
-            name: Kühlschrank
-            icon: mdi:fridge
-            icon_color: cyan
-          - type: custom:mushroom-entity-card
-            entity: sensor.dg_buero_workstation_leistung
-            name: Workstation
-            icon: mdi:desktop-tower-monitor
-            icon_color: purple
-          - type: custom:mushroom-entity-card
-            entity: sensor.kg_technik_waschmaschine_leistung
-            name: Waschmaschine
-            icon: mdi:washing-machine
-            icon_color: teal
-          - type: custom:mushroom-entity-card
-            entity: sensor.kg_technik_trockner_leistung
-            name: Trockner
-            icon: mdi:tumble-dryer
-            icon_color: orange
-
-      # ── Section 5: Hardware ───────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Hardware"
-          - type: custom:mushroom-entity-card
-            entity: sensor.battery_temperature
-            name: Batterie-Temperatur
-            icon: mdi:thermometer
-            icon_color: >-
-              {% set t = states('sensor.battery_temperature') | float(0) %}
-              {% if t > 40 %}red{% elif t > 35 %}amber{% else %}green{% endif %}
-          - type: custom:mushroom-entity-card
-            entity: sensor.inverter_temperature
-            name: Wechselrichter-Temperatur
-            icon: mdi:thermometer
-            icon_color: >-
-              {% set t = states('sensor.inverter_temperature') | float(0) %}
-              {% if t > 55 %}red{% elif t > 45 %}amber{% else %}green{% endif %}
-          - type: custom:mushroom-entity-card
-            entity: sensor.battery_state_of_health
-            name: "Batterie SOH"
-            icon: mdi:battery-heart-variant
-            icon_color: >-
-              {% set soh = states('sensor.battery_state_of_health') | float(100) %}
-              {% if soh < 80 %}red{% elif soh < 90 %}amber{% else %}green{% endif %}
-
-  # ════════════════════════════════════════════════════
-  # Tab 3: Wärmepumpe — Novelan LICV 8.2 via Luxtronik2
-  # ════════════════════════════════════════════════════
-  - type: sections
-    title: "Wärmepumpe"
-    icon: mdi:heat-pump-outline
-    max_columns: 2
-    sections:
-      # ── Status + Temperaturen ──────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Status & Temperaturen"
-          - type: custom:mushroom-template-card
-            primary: >-
-              {% set s = states('sensor.luxtronik_341205_065_status') %}
-              {% set m = {'heating': 'Heizen', 'hot water': 'Warmwasser', 'cooling': 'Kühlen', 'defrost': 'Abtauen', 'standby': 'Standby', 'no_request': 'Standby', 'error': 'Fehler', 'evu': 'EVU-Sperre'} %}
-              {{ m.get(s, s | capitalize) }} · {{ states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) | round(0) }} W
-            secondary: >-
-              {% set cap = states('sensor.licv_8_2r1_3_heating_capacity') | float(0) %}
-              {% set pow = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) / 1000 %}
-              {% if pow > 0.1 and cap > 0 %}COP {{ (cap / pow) | round(1) }} · {{ cap }} kW therm.
-              {% elif pow > 0.1 %}Verdichter läuft
-              {% else %}Standby{% endif %}
-              {% if is_state('binary_sensor.luxtronik_341205_065_compressor_heater', 'on') %} · Heizstab!{% endif %}
-            icon: >-
-              {% set s = states('sensor.luxtronik_341205_065_status') %}
-              {% if s == 'heating' %}mdi:radiator{% elif s == 'hot water' %}mdi:water-boiler{% elif s == 'defrost' %}mdi:snowflake-melt{% elif s == 'error' %}mdi:alert{% else %}mdi:heat-pump-outline{% endif %}
-            icon_color: >-
-              {% set p = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) %}
-              {% if p < 100 %}grey{% elif p < 2000 %}blue{% else %}red{% endif %}
-            entity: sensor.kg_technik_waermepumpe_3em_leistung
-          - type: custom:mushroom-chips-card
-            grid_options:
-              columns: full
-            chips:
-              - type: template
-                content: "VL {{ states('sensor.luxtronik_341205_065_flow_in_temperature') }}°C"
-                icon: mdi:thermometer-chevron-up
-                icon_color: red
-                entity: sensor.luxtronik_341205_065_flow_in_temperature
-              - type: template
-                content: "RL {{ states('sensor.luxtronik_341205_065_flow_out_temperature') }}°C → Soll {{ states('sensor.luxtronik_341205_065_flow_out_temperature_target') }}°C"
-                icon: mdi:thermometer-chevron-down
-                icon_color: blue
-                entity: sensor.luxtronik_341205_065_flow_out_temperature
-              - type: template
-                content: "WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C"
-                icon: mdi:water-thermometer
-                icon_color: orange
-                entity: sensor.luxtronik_341205_065_dhw_temperature
-              - type: template
-                content: "Außen {{ states('sensor.luxtronik_341205_065_outdoor_temperature') }}°C"
-                icon: mdi:home-thermometer-outline
-                icon_color: green
-                entity: sensor.luxtronik_341205_065_outdoor_temperature
-          - type: custom:mushroom-chips-card
-            grid_options:
-              columns: full
-            chips:
-              - type: template
-                content: "Verdichter {{ 'AN' if is_state('binary_sensor.luxtronik_341205_065_compressor', 'on') else 'AUS' }}"
-                icon: mdi:heat-pump
-                icon_color: "{{ 'blue' if is_state('binary_sensor.luxtronik_341205_065_compressor', 'on') else 'grey' }}"
-                entity: binary_sensor.luxtronik_341205_065_compressor
-              - type: template
-                content: "HUP {{ 'AN' if is_state('binary_sensor.luxtronik_341205_065_circulation_pump_heating', 'on') else 'AUS' }}"
-                icon: mdi:pump
-                icon_color: "{{ 'cyan' if is_state('binary_sensor.luxtronik_341205_065_circulation_pump_heating', 'on') else 'grey' }}"
-                entity: binary_sensor.luxtronik_341205_065_circulation_pump_heating
-              - type: template
-                content: "EVU {{ 'Frei' if is_state('binary_sensor.luxtronik_341205_065_evu_unlocked', 'on') else 'Sperre!' }}"
-                icon: mdi:transmission-tower
-                icon_color: "{{ 'green' if is_state('binary_sensor.luxtronik_341205_065_evu_unlocked', 'on') else 'red' }}"
-                entity: binary_sensor.luxtronik_341205_065_evu_unlocked
-              - type: template
-                content: "{{ 'Alarm!' if is_state('binary_sensor.luxtronik_341205_065_disturbance_output', 'on') else 'OK' }}"
-                icon: "{{ 'mdi:alert-circle' if is_state('binary_sensor.luxtronik_341205_065_disturbance_output', 'on') else 'mdi:check-circle' }}"
-                icon_color: "{{ 'red' if is_state('binary_sensor.luxtronik_341205_065_disturbance_output', 'on') else 'green' }}"
-                entity: binary_sensor.luxtronik_341205_065_disturbance_output
-
-      # ── Steuerung ────────────────────────────────────────
-      - type: grid
-        cards:
-          - type: heading
-            heading: "Steuerung"
+            heading: "WP Steuerung"
           - type: custom:mushroom-climate-card
             entity: climate.luxtronik_341205_065_heating
             name: Heizung
@@ -1493,11 +1041,11 @@ views:
             icon_color: orange
             entity: sensor.luxtronik_341205_065_dhw_energy_input
 
-      # ── Section 4: Diagnose & Statistik ────────────────
+      # ── WP Diagnose ─────────────────────────────────────
       - type: grid
         cards:
           - type: heading
-            heading: "Diagnose & Statistik"
+            heading: "WP Diagnose"
           - type: custom:apexcharts-card
             grid_options:
               columns: full
@@ -1675,7 +1223,10 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-          # ── Monatliche Bilanz ──────────────────────────
+
+      # ── Monatliche Bilanz + Gesamt ──────────────────────
+      - type: grid
+        cards:
           - type: heading
             heading: "Monatliche Bilanz"
           - type: custom:mushroom-template-card
@@ -1797,7 +1348,7 @@ views:
             icon: mdi:counter
             icon_color: orange
 
-      # ── Section: Betriebsmodus-Zeitleiste ─────────────
+      # ── Betriebsmodus-Verlauf ───────────────────────────
       - type: grid
         cards:
           - type: heading
@@ -1858,3 +1409,430 @@ views:
                 name: EMHASS
               - entity: sensor.wp_betriebsmodus
                 name: WP Modus
+
+      # ── PV & Forecast (Detail) ──────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "PV & Forecast"
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: PV Real vs. Solcast Forecast
+            graph_span: 24h
+            span:
+              start: day
+            apex_config:
+              chart:
+                height: 300
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.total_dc_power
+                name: PV Real
+                color: "#f59e0b"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.solcast_pv_forecast_aktuelle_leistung
+                name: "Forecast"
+                color: "#2196F3"
+                stroke_width: 0
+                yaxis_id: power
+                float_precision: 0
+                show:
+                  in_chart: false
+                  in_header: raw
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: ""
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                yaxis_id: power
+                show:
+                  legend_value: false
+                  in_header: false
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate * 1000
+                  ]);
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Optimistisch (90)
+                color: "#2196F3"
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                curve: smooth
+                yaxis_id: power
+                show:
+                  legend_value: false
+                  in_header: false
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate90 * 1000
+                  ]);
+              - entity: sensor.solcast_pv_forecast_prognose_heute
+                name: Pessimistisch (10)
+                color: "#2196F3"
+                stroke_width: 0
+                type: area
+                opacity: 0.15
+                curve: smooth
+                yaxis_id: power
+                show:
+                  legend_value: false
+                  in_header: false
+                data_generator: |
+                  return entity.attributes.detailedForecast.map(f => [
+                    new Date(f.period_start).getTime(),
+                    f.pv_estimate10 * 1000
+                  ]);
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "MPPT1 (West) vs. MPPT2 (Ost)"
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.mppt1_power
+                name: "MPPT1 (West)"
+                color: "#2196F3"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+              - entity: sensor.mppt2_power
+                name: "MPPT2 (Ost)"
+                color: "#FF9800"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 5min
+                yaxis_id: power
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.solcast_pv_forecast_prognose_heute
+                icon: mdi:solar-power
+                name: Heute
+              - type: entity
+                entity: sensor.solcast_pv_forecast_prognose_morgen
+                icon: mdi:weather-sunny
+                name: Morgen
+              - type: entity
+                entity: sensor.solcast_pv_forecast_prognose_verbleibende_leistung_heute
+                icon: mdi:sun-clock
+                name: Verbleibend
+              - type: entity
+                entity: sensor.daily_pv_generation
+                icon: mdi:solar-power-variant
+                name: Real heute
+
+      # ── Batterie Detail ─────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Batterie Detail"
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: Batterie Lade-/Entladeleistung
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            series:
+              - entity: sensor.battery_charging_power
+                name: Laden
+                color: "#4CAF50"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.battery_discharging_power
+                name: Entladen
+                color: "#F44336"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.daily_battery_charge
+                icon: mdi:battery-plus
+                name: Geladen
+              - type: entity
+                entity: sensor.daily_battery_discharge
+                icon: mdi:battery-minus
+                name: Entladen
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: Netzbezug / Einspeisung
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            series:
+              - entity: sensor.import_power
+                name: Bezug
+                color: "#F44336"
+                type: column
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.export_power
+                name: Einspeisung
+                color: "#4CAF50"
+                type: column
+                invert: true
+                group_by:
+                  func: avg
+                  duration: 15min
+
+      # ── Verbrauch ───────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Verbrauch"
+          - type: custom:mushroom-template-card
+            primary: "{{ states('sensor.load_power') }} W"
+            secondary: "Hausverbrauch"
+            icon: mdi:home
+            icon_color: >-
+              {% set p = states('sensor.load_power') | float(0) %}
+              {% if p < 2000 %}green{% elif p < 3500 %}amber{% else %}red{% endif %}
+            entity: sensor.load_power
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: Energiequellen Hausverbrauch
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 250
+                stacked: true
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: power
+                min: 0
+                apex_config:
+                  title:
+                    text: Watt
+            series:
+              - entity: sensor.total_dc_power
+                name: PV-Eigenverbrauch
+                color: "#f59e0b"
+                stroke_width: 0
+                type: area
+                opacity: 0.7
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 15min
+                yaxis_id: power
+              - entity: sensor.battery_discharging_power
+                name: Batterie
+                color: "#22c55e"
+                stroke_width: 0
+                type: area
+                opacity: 0.7
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 15min
+                yaxis_id: power
+              - entity: sensor.import_power
+                name: Netzbezug
+                color: "#F44336"
+                stroke_width: 0
+                type: area
+                opacity: 0.7
+                curve: smooth
+                extend_to: false
+                group_by:
+                  func: avg
+                  duration: 15min
+                yaxis_id: power
+          - type: custom:apexcharts-card
+            grid_options:
+              columns: full
+            header:
+              show: true
+              title: "Tagesbilanz: Erzeugung vs. Bezug/Einspeisung"
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 250
+              legend:
+                show: true
+              tooltip:
+                shared: true
+                intersect: false
+            yaxis:
+              - id: energy
+                min: 0
+                apex_config:
+                  title:
+                    text: kWh
+            series:
+              - entity: sensor.daily_pv_generation
+                name: "PV-Erzeugung"
+                color: "#f59e0b"
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                yaxis_id: energy
+              - entity: sensor.daily_imported_energy
+                name: "Netzbezug"
+                color: "#F44336"
+                type: area
+                opacity: 0.3
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                yaxis_id: energy
+              - entity: sensor.daily_exported_energy
+                name: "Einspeisung"
+                color: "#4CAF50"
+                type: area
+                opacity: 0.3
+                stroke_width: 2
+                curve: smooth
+                extend_to: false
+                yaxis_id: energy
+          - type: custom:mushroom-template-card
+            grid_options:
+              columns: full
+            primary: "Grundlast-Übersicht"
+            secondary: >-
+              Serverschrank {{ states('sensor.kg_technik_serverschrank_leistung') }} W
+              · Kühlschrank {{ states('sensor.kg_flur_kuehlschrank_leistung') }} W
+              · Workstation {{ states('sensor.dg_buero_workstation_leistung') }} W
+            icon: mdi:power-plug
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_serverschrank_leistung
+            name: Serverschrank
+            icon: mdi:server
+            icon_color: blue
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_flur_kuehlschrank_leistung
+            name: Kühlschrank
+            icon: mdi:fridge
+            icon_color: cyan
+          - type: custom:mushroom-entity-card
+            entity: sensor.dg_buero_workstation_leistung
+            name: Workstation
+            icon: mdi:desktop-tower-monitor
+            icon_color: purple
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_waschmaschine_leistung
+            name: Waschmaschine
+            icon: mdi:washing-machine
+            icon_color: teal
+          - type: custom:mushroom-entity-card
+            entity: sensor.kg_technik_trockner_leistung
+            name: Trockner
+            icon: mdi:tumble-dryer
+            icon_color: orange
+
+      # ── Hardware ────────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Hardware"
+          - type: custom:mushroom-entity-card
+            entity: sensor.battery_temperature
+            name: Batterie-Temperatur
+            icon: mdi:thermometer
+            icon_color: >-
+              {% set t = states('sensor.battery_temperature') | float(0) %}
+              {% if t > 40 %}red{% elif t > 35 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-entity-card
+            entity: sensor.inverter_temperature
+            name: Wechselrichter-Temperatur
+            icon: mdi:thermometer
+            icon_color: >-
+              {% set t = states('sensor.inverter_temperature') | float(0) %}
+              {% if t > 55 %}red{% elif t > 45 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-entity-card
+            entity: sensor.battery_state_of_health
+            name: "Batterie SOH"
+            icon: mdi:battery-heart-variant
+            icon_color: >-
+              {% set soh = states('sensor.battery_state_of_health') | float(100) %}
+              {% if soh < 80 %}red{% elif soh < 90 %}amber{% else %}green{% endif %}
+          - type: custom:mushroom-chips-card
+            grid_options:
+              columns: full
+            chips:
+              - type: entity
+                entity: sensor.daily_imported_energy
+                icon: mdi:transmission-tower-import
+                name: Import heute
+              - type: entity
+                entity: sensor.daily_exported_energy
+                icon: mdi:transmission-tower-export
+                name: Export heute
