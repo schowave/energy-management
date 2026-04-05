@@ -104,9 +104,9 @@ views:
                 group_by:
                   func: last
                   duration: 5min
-              - entity: sensor.battery_discharging_power
-                name: "Entladen (Real)"
-                color: "#f59e0b"
+              - entity: sensor.energy_battery_battery_discharging_power_battery_charging_power_net_power
+                name: "Real (netto)"
+                color: "#FF9800"
                 stroke_width: 2
                 curve: smooth
                 float_precision: 0
@@ -117,20 +117,6 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-              - entity: sensor.battery_charging_power
-                name: "Laden (Real)"
-                color: "#22c55e"
-                stroke_width: 2
-                curve: smooth
-                float_precision: 0
-                yaxis_id: power
-                show:
-                  in_header: raw
-                extend_to: false
-                group_by:
-                  func: avg
-                  duration: 5min
-                transform: "return -x;"
       # ── SOC-Vergleich ──────────────────────────────────
       - type: grid
         cards:
