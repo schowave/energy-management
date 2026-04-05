@@ -1423,6 +1423,19 @@ views:
             icon: mdi:thermometer-water
             icon_color: orange
             display_mode: buttons
+          - type: custom:mushroom-template-card
+            primary: "Extra WW (2h)"
+            secondary: >-
+              {% if is_state('switch.licv_8_2r1_3_extra_dhw', 'on') %}Läuft · WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C
+              {% else %}Aus · Tap zum Starten{% endif %}
+            icon: mdi:water-boiler-alert
+            icon_color: >-
+              {% if is_state('switch.licv_8_2r1_3_extra_dhw', 'on') %}orange{% else %}grey{% endif %}
+            entity: switch.licv_8_2r1_3_extra_dhw
+            tap_action:
+              action: toggle
+              confirmation:
+                text: "Extra Warmwasser für 2 Stunden starten/stoppen?"
           - type: custom:mushroom-number-card
             entity: number.luxtronik_341205_065_heating_curve_end_temperature
             name: Heizkurve Endpunkt
