@@ -1446,12 +1446,12 @@ views:
             display_mode: buttons
           - type: custom:mushroom-number-card
             entity: number.luxtronik_341205_065_heating_threshold_temperature
-            name: Heizgrenze (Außentemp.)
+            name: Heizgrenze
             icon: mdi:thermometer-alert
             display_mode: buttons
           - type: custom:mushroom-entity-card
             entity: switch.luxtronik_341205_065_smartgrid
-            name: "SG-Ready (Lokal)"
+            name: "SG-Ready"
             icon: mdi:transmission-tower
             icon_color: >-
               {{ 'green' if is_state('switch.luxtronik_341205_065_smartgrid', 'on') else 'grey' }}
@@ -1461,7 +1461,7 @@ views:
                 text: "Smart Grid umschalten? ON = Erhöhter Betrieb, OFF = Normal"
           - type: custom:mushroom-template-card
             primary: >-
-              SG-Ready: {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}Erhöhter Betrieb{% else %}Normalbetrieb{% endif %}
+              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}SG: Erhöht{% else %}SG: Normal{% endif %}
             secondary: >-
               {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}WP läuft mit erhöhter Leistung (PV-Überschuss/günstiger Strom)
               {% else %}WP im Normalbetrieb · Tap zum Aktivieren{% endif %}
@@ -1471,7 +1471,7 @@ views:
             entity: switch.luxtronik_341205_065_smartgrid
           - type: custom:mushroom-template-card
             primary: >-
-              WW Energie: {{ states('sensor.luxtronik_341205_065_dhw_energy_input') }} kWh
+              WW {{ states('sensor.luxtronik_341205_065_dhw_energy_input') }} kWh
             secondary: >-
               {% set th = states('sensor.luxtronik_341205_065_dhw_heat_amount') | float(0) %}
               {% set el = states('sensor.luxtronik_341205_065_dhw_energy_input') | float(0) %}
