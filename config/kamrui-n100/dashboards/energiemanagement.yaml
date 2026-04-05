@@ -744,7 +744,6 @@ views:
                   intersect: false
               yaxis:
                 - id: price
-                  min: 0
                   apex_config:
                     title:
                       text: EUR/kWh
@@ -833,7 +832,6 @@ views:
                   intersect: false
               yaxis:
                 - id: price
-                  min: 0
                   apex_config:
                     title:
                       text: EUR/kWh
@@ -886,7 +884,6 @@ views:
                   intersect: false
               yaxis:
                 - id: price
-                  min: 0
                   apex_config:
                     title:
                       text: EUR/kWh
