@@ -73,3 +73,90 @@
       data:
         option: "{{ tarif }}"
   mode: single
+
+# ── PV-Überschuss → Warmwasser aufheizen ──
+- id: pv_ueberschuss_warmwasser
+  alias: "PV-Überschuss → Warmwasser aufheizen"
+  description: >-
+    Aktiviert Extra-Warmwasser wenn Batterie voll und PV-Überschuss vorhanden.
+    Schaltet ab wenn Batterie sinkt, WW warm genug oder kein Überschuss mehr.
+  trigger:
+    # Einschalten: Batterie voll + Export + WW kalt
+    - platform: numeric_state
+      entity_id: sensor.battery_level
+      above: 95
+      id: batterie_voll
+    - platform: numeric_state
+      entity_id: sensor.export_power
+      above: 500
+      id: export_hoch
+    # Ausschalten: Batterie sinkt
+    - platform: numeric_state
+      entity_id: sensor.battery_level
+      below: 90
+      id: batterie_sinkt
+    # Ausschalten: Kein Überschuss mehr
+    - platform: numeric_state
+      entity_id: sensor.export_power
+      below: 100
+      for: "00:05:00"
+      id: export_niedrig
+    # Ausschalten: WW warm genug
+    - platform: numeric_state
+      entity_id: sensor.luxtronik_341205_065_dhw_temperature
+      above: 48
+      id: ww_warm
+  condition: []
+  action:
+    - choose:
+        # ── Einschalten ──
+        - conditions:
+            - condition: trigger
+              id:
+                - batterie_voll
+                - export_hoch
+            - condition: numeric_state
+              entity_id: sensor.battery_level
+              above: 95
+            - condition: numeric_state
+              entity_id: sensor.export_power
+              above: 500
+            - condition: numeric_state
+              entity_id: sensor.luxtronik_341205_065_dhw_temperature
+              below: 45
+            - condition: state
+              entity_id: switch.licv_8_2r1_3_extra_dhw
+              state: "off"
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.licv_8_2r1_3_extra_dhw
+            - service: persistent_notification.create
+              data:
+                title: "PV → Warmwasser"
+                message: >-
+                  Extra-WW gestartet (Batterie {{ states('sensor.battery_level') }}%,
+                  Export {{ states('sensor.export_power') }}W,
+                  WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C)
+        # ── Ausschalten ──
+        - conditions:
+            - condition: trigger
+              id:
+                - batterie_sinkt
+                - export_niedrig
+                - ww_warm
+            - condition: state
+              entity_id: switch.licv_8_2r1_3_extra_dhw
+              state: "on"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.licv_8_2r1_3_extra_dhw
+            - service: persistent_notification.create
+              data:
+                title: "PV → Warmwasser"
+                message: >-
+                  Extra-WW gestoppt ({{ trigger.id }}: Batterie {{ states('sensor.battery_level') }}%,
+                  Export {{ states('sensor.export_power') }}W,
+                  WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C)
+  mode: single
