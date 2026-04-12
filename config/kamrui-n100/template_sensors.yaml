@@ -206,9 +206,9 @@
       unique_id: wp_betriebsmodus
       icon: mdi:heat-pump-outline
       state: >
-        {% set s = states('sensor.luxtronik_341205_065_status') %}
-        {% set m = {'heating': 'Heizen', 'hot water': 'Warmwasser', 'cooling': 'Kühlen', 'defrost': 'Abtauen', 'standby': 'Standby', 'no_request': 'Standby', 'error': 'Fehler', 'evu': 'EVU-Sperre'} %}
-        {{ m.get(s, s | capitalize) }}
+        {% set s = states('sensor.licv_8_2r1_3_operation_mode') | float(-1) | int %}
+        {% set m = {0: 'Heizen', 1: 'Warmwasser', 2: 'Kühlen', 3: 'Abtauen', 5: 'Standby', 6: 'EVU-Sperre', 7: 'Fehler'} %}
+        {{ m.get(s, 'Unbekannt') }}
 
 # ── 1komma5° Heartbeat Modus-Tracking ─────────────
 - sensor:

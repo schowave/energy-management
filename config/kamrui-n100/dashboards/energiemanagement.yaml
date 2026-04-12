@@ -660,19 +660,19 @@ views:
             heading: "Wärmepumpe"
           - type: custom:mushroom-template-card
             primary: >-
-              {% set s = states('sensor.luxtronik_341205_065_status') %}
-              {% set m = {'heating': 'Heizen', 'hot water': 'Warmwasser', 'cooling': 'Kühlen', 'defrost': 'Abtauen', 'standby': 'Standby', 'no_request': 'Standby', 'error': 'Fehler', 'evu': 'EVU-Sperre'} %}
-              {{ m.get(s, s | capitalize) }} · {{ states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) | round(0) }} W
+              {% set s = states('sensor.licv_8_2r1_3_operation_mode') | float(-1) | int %}
+              {% set m = {0: 'Heizen', 1: 'Warmwasser', 2: 'Kühlen', 3: 'Abtauen', 5: 'Standby', 6: 'EVU-Sperre', 7: 'Fehler'} %}
+              {{ m.get(s, 'Unbekannt') }} · {{ states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) | round(0) }} W
             secondary: >-
               {% set cap = states('sensor.licv_8_2r1_3_heating_capacity') | float(0) %}
               {% set pow = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) / 1000 %}
               {% if pow > 0.1 and cap > 0 %}COP {{ (cap / pow) | round(1) }} · {{ cap }} kW therm.
               {% elif pow > 0.1 %}Verdichter läuft
               {% else %}Standby{% endif %}
-              {% if is_state('binary_sensor.luxtronik_341205_065_compressor_heater', 'on') %} · Heizstab!{% endif %}
+              {% if is_state('binary_sensor.licv_8_2r1_3_el_heater', 'on') %} · Heizstab!{% endif %}
             icon: >-
-              {% set s = states('sensor.luxtronik_341205_065_status') %}
-              {% if s == 'heating' %}mdi:radiator{% elif s == 'hot water' %}mdi:water-boiler{% elif s == 'defrost' %}mdi:snowflake-melt{% elif s == 'error' %}mdi:alert{% else %}mdi:heat-pump-outline{% endif %}
+              {% set s = states('sensor.licv_8_2r1_3_operation_mode') | float(-1) | int %}
+              {% if s == 0 %}mdi:radiator{% elif s == 1 %}mdi:water-boiler{% elif s == 3 %}mdi:snowflake-melt{% elif s == 7 %}mdi:alert{% else %}mdi:heat-pump-outline{% endif %}
             icon_color: >-
               {% set p = states('sensor.kg_technik_waermepumpe_3em_leistung') | float(0) %}
               {% if p < 100 %}grey{% elif p < 2000 %}blue{% else %}red{% endif %}
@@ -682,25 +682,25 @@ views:
               columns: full
             chips:
               - type: template
-                content: "VL {{ states('sensor.luxtronik_341205_065_flow_in_temperature') }}°C"
+                content: "VL {{ states('sensor.licv_8_2r1_3_flow') }}°C"
                 icon: mdi:thermometer-chevron-up
                 icon_color: red
-                entity: sensor.luxtronik_341205_065_flow_in_temperature
+                entity: sensor.licv_8_2r1_3_flow
               - type: template
-                content: "RL {{ states('sensor.luxtronik_341205_065_flow_out_temperature') }}°C → Soll {{ states('sensor.luxtronik_341205_065_flow_out_temperature_target') }}°C"
+                content: "RL {{ states('sensor.licv_8_2r1_3_return') }}°C → Soll {{ states('sensor.licv_8_2r1_3_return_target') }}°C"
                 icon: mdi:thermometer-chevron-down
                 icon_color: blue
-                entity: sensor.luxtronik_341205_065_flow_out_temperature
+                entity: sensor.licv_8_2r1_3_return
               - type: template
-                content: "WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C"
+                content: "WW {{ states('sensor.licv_8_2r1_3_dhw') }}°C"
                 icon: mdi:water-thermometer
                 icon_color: orange
-                entity: sensor.luxtronik_341205_065_dhw_temperature
+                entity: sensor.licv_8_2r1_3_dhw
               - type: template
-                content: "Außen {{ states('sensor.luxtronik_341205_065_outdoor_temperature') }}°C"
+                content: "Außen {{ states('sensor.licv_8_2r1_3_outdoor_temp') }}°C"
                 icon: mdi:home-thermometer-outline
                 icon_color: green
-                entity: sensor.luxtronik_341205_065_outdoor_temperature
+                entity: sensor.licv_8_2r1_3_outdoor_temp
 
   # ════════════════════════════════════════════════════
   # Tab 2: Details & Steuerung
@@ -949,34 +949,29 @@ views:
         cards:
           - type: heading
             heading: "WP Steuerung"
-          - type: custom:mushroom-climate-card
-            entity: climate.luxtronik_341205_065_heating
-            name: Heizung
-            icon: mdi:radiator
-            show_temperature_control: true
           - type: custom:mushroom-select-card
-            entity: select.luxtronik_341205_065_heating_mode
+            entity: select.licv_8_2r1_3_modus_heizen
             name: Heizmodus
             icon: mdi:thermostat
           - type: custom:mushroom-select-card
-            entity: select.luxtronik_341205_065_dhw_mode
+            entity: select.licv_8_2r1_3_modus_warmw
             name: WW-Modus
             icon: mdi:water-boiler-auto
           - type: custom:mushroom-number-card
-            entity: number.luxtronik_341205_065_dhw_target_temperature
+            entity: number.licv_8_2r1_3_sollwert_warmw
             name: Warmwasser Soll
             icon: mdi:thermometer-water
             icon_color: orange
             display_mode: buttons
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_dhw_temperature
+            entity: sensor.licv_8_2r1_3_dhw
             name: Warmwasser Ist
             icon: mdi:thermometer-check
             icon_color: blue
           - type: custom:mushroom-template-card
             primary: "Extra WW (2h)"
             secondary: >-
-              {% if is_state('switch.licv_8_2r1_3_extra_dhw', 'on') %}Läuft · WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C
+              {% if is_state('switch.licv_8_2r1_3_extra_dhw', 'on') %}Läuft · WW {{ states('sensor.licv_8_2r1_3_dhw') }}°C
               {% else %}Aus · Tap zum Starten{% endif %}
             icon: mdi:water-boiler-alert
             icon_color: >-
@@ -987,61 +982,20 @@ views:
               confirmation:
                 text: "Extra Warmwasser für 2 Stunden starten/stoppen?"
           - type: custom:mushroom-number-card
-            entity: number.luxtronik_341205_065_heating_curve_end_temperature
-            name: Heizkurve Endpunkt
-            icon: mdi:chart-bell-curve-cumulative
-            display_mode: buttons
-          - type: custom:mushroom-number-card
-            entity: number.luxtronik_341205_065_heating_curve_parallel_shift_temperature
-            name: Heizkurve Parallelverschiebung
-            icon: mdi:arrow-up-down
-            display_mode: buttons
-          - type: custom:mushroom-number-card
-            entity: number.luxtronik_341205_065_electrical_power_limitation_value
-            name: Leistungslimit
-            icon: mdi:speedometer
-            icon_color: red
-            display_mode: buttons
-          - type: custom:mushroom-number-card
-            entity: number.luxtronik_341205_065_heating_curve_night_temperature
-            name: Heizkurve Nachtabsenkung
-            icon: mdi:weather-night
-            display_mode: buttons
-          - type: custom:mushroom-number-card
-            entity: number.luxtronik_341205_065_heating_threshold_temperature
+            entity: number.licv_8_2r1_3_heating_limit
             name: Heizgrenze
             icon: mdi:thermometer-alert
             display_mode: buttons
-          - type: custom:mushroom-entity-card
-            entity: switch.luxtronik_341205_065_smartgrid
-            name: "SG-Ready"
-            icon: mdi:transmission-tower
-            icon_color: >-
-              {{ 'green' if is_state('switch.luxtronik_341205_065_smartgrid', 'on') else 'grey' }}
-            tap_action:
-              action: toggle
-              confirmation:
-                text: "Smart Grid umschalten? ON = Erhöhter Betrieb, OFF = Normal"
           - type: custom:mushroom-template-card
             primary: >-
-              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}SG: Erhöht{% else %}SG: Normal{% endif %}
+              WW {{ states('sensor.licv_8_2r1_3_domestic_hot_water') }} kWh
             secondary: >-
-              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}WP läuft mit erhöhter Leistung (PV-Überschuss/günstiger Strom)
-              {% else %}WP im Normalbetrieb · Tap zum Aktivieren{% endif %}
-            icon: mdi:lightning-bolt-circle
-            icon_color: >-
-              {% if is_state('switch.luxtronik_341205_065_smartgrid', 'on') %}green{% else %}grey{% endif %}
-            entity: switch.luxtronik_341205_065_smartgrid
-          - type: custom:mushroom-template-card
-            primary: >-
-              WW {{ states('sensor.luxtronik_341205_065_dhw_energy_input') }} kWh
-            secondary: >-
-              {% set th = states('sensor.luxtronik_341205_065_dhw_heat_amount') | float(0) %}
-              {% set el = states('sensor.luxtronik_341205_065_dhw_energy_input') | float(0) %}
-              {% if el > 1 %}WW-COP (Luxtronik): {{ (th / el) | round(2) }}{% else %}Keine Daten{% endif %}
+              {% set th = states('sensor.licv_8_2r1_3_domestic_hot_water_2') | float(0) %}
+              {% set el = states('sensor.licv_8_2r1_3_domestic_hot_water') | float(0) %}
+              {% if el > 1 %}WW-COP: {{ (th / el) | round(2) }}{% else %}Keine Daten{% endif %}
             icon: mdi:water-boiler-alert
             icon_color: orange
-            entity: sensor.luxtronik_341205_065_dhw_energy_input
+            entity: sensor.licv_8_2r1_3_domestic_hot_water
 
       # ── WP Diagnose ─────────────────────────────────────
       - type: grid
@@ -1079,7 +1033,7 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: temp
-              - entity: sensor.luxtronik_341205_065_flow_out_temperature
+              - entity: sensor.licv_8_2r1_3_return
                 name: Rücklauf
                 color: "#2196F3"
                 stroke_width: 2
@@ -1089,7 +1043,7 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: temp
-              - entity: sensor.luxtronik_341205_065_dhw_temperature
+              - entity: sensor.licv_8_2r1_3_dhw
                 name: Warmwasser
                 color: "#FF9800"
                 stroke_width: 2
@@ -1099,7 +1053,7 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: temp
-              - entity: sensor.luxtronik_341205_065_suction_compressor_temperature
+              - entity: sensor.licv_8_2r1_3_heat_source_inlet
                 name: Wärmequelle
                 color: "#009688"
                 stroke_width: 1
@@ -1109,7 +1063,7 @@ views:
                   func: avg
                   duration: 5min
                 yaxis_id: temp
-              - entity: sensor.luxtronik_341205_065_flow_out_temperature_target
+              - entity: sensor.licv_8_2r1_3_return_target
                 name: Soll Rücklauf
                 color: "#2196F3"
                 stroke_width: 1
@@ -1120,7 +1074,7 @@ views:
                   func: last
                   duration: 5min
                 yaxis_id: temp
-              - entity: sensor.luxtronik_341205_065_outdoor_temperature
+              - entity: sensor.licv_8_2r1_3_outdoor_temp
                 name: Außen
                 color: "#4CAF50"
                 stroke_width: 1
@@ -1214,7 +1168,7 @@ views:
                 group_by:
                   func: avg
                   duration: 5min
-              - entity: sensor.luxtronik_341205_065_outdoor_temperature
+              - entity: sensor.licv_8_2r1_3_outdoor_temp
                 name: Außentemperatur
                 color: "#4CAF50"
                 stroke_width: 1
@@ -1310,22 +1264,22 @@ views:
             icon: mdi:fire
             icon_color: red
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_heat_energy_input
-            name: Stromaufnahme (myUplink)
+            entity: sensor.licv_8_2r1_3_total
+            name: Stromaufnahme gesamt
             icon: mdi:flash
             icon_color: amber
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_operation_hours
+            entity: sensor.licv_8_2r1_3_operating_hours_hp
             name: Betriebsstunden Verdichter
             icon: mdi:clock-outline
             icon_color: blue
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_operation_hours_heating
+            entity: sensor.licv_8_2r1_3_operat_hours_heat
             name: Betriebsstunden Heizen
             icon: mdi:clock-outline
             icon_color: grey
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_dhw_operation_hours
+            entity: sensor.licv_8_2r1_3_operating_hours_dhw
             name: Betriebsstunden WW
             icon: mdi:clock-outline
             icon_color: grey
@@ -1335,18 +1289,13 @@ views:
             icon: mdi:meter-electric
             icon_color: amber
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_heat_amount_heating
-            name: Wärmemenge gesamt
+            entity: sensor.licv_8_2r1_3_heating_2
+            name: Wärmemenge Heizung gesamt
             icon: mdi:fire-circle
             icon_color: red
           - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_heat_amount_heating
-            name: Heizung gesamt
-            icon: mdi:counter
-            icon_color: red
-          - type: custom:mushroom-entity-card
-            entity: sensor.luxtronik_341205_065_dhw_heat_amount
-            name: Warmwasser gesamt
+            entity: sensor.licv_8_2r1_3_domestic_hot_water_2
+            name: Wärmemenge WW gesamt
             icon: mdi:counter
             icon_color: orange
 
@@ -1389,7 +1338,7 @@ views:
                         return m[Math.round(val)] || '';
                       }
             series:
-              - entity: sensor.luxtronik_341205_065_status
+              - entity: sensor.licv_8_2r1_3_operation_mode
                 name: "WP Modus"
                 color: "#2196F3"
                 stroke_width: 3

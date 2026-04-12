@@ -103,7 +103,7 @@
       id: export_niedrig
     # Ausschalten: WW warm genug
     - platform: numeric_state
-      entity_id: sensor.luxtronik_341205_065_dhw_temperature
+      entity_id: sensor.licv_8_2r1_3_dhw
       above: 48
       id: ww_warm
   condition: []
@@ -122,7 +122,7 @@
               entity_id: sensor.export_power
               above: 500
             - condition: numeric_state
-              entity_id: sensor.luxtronik_341205_065_dhw_temperature
+              entity_id: sensor.licv_8_2r1_3_dhw
               below: 45
             - condition: state
               entity_id: switch.licv_8_2r1_3_extra_dhw
@@ -137,7 +137,7 @@
                 message: >-
                   Extra-WW gestartet (Batterie {{ states('sensor.battery_level') }}%,
                   Export {{ states('sensor.export_power') }}W,
-                  WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C)
+                  WW {{ states('sensor.licv_8_2r1_3_dhw') }}°C)
         # ── Ausschalten ──
         - conditions:
             - condition: trigger
@@ -158,5 +158,5 @@
                 message: >-
                   Extra-WW gestoppt ({{ trigger.id }}: Batterie {{ states('sensor.battery_level') }}%,
                   Export {{ states('sensor.export_power') }}W,
-                  WW {{ states('sensor.luxtronik_341205_065_dhw_temperature') }}°C)
+                  WW {{ states('sensor.licv_8_2r1_3_dhw') }}°C)
   mode: single
