@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "All patch/minor updates in one PR that merges itself once CI is green; majors wait for a human.",
+  "extends": ["config:recommended"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/Berlin",
+  "pre-commit": { "enabled": true },
+  "lockFileMaintenance": { "enabled": true, "automerge": true },
+  "automergeType": "pr",
+  "platformAutomerge": false,
+  "packageRules": [
+    {
+      "description": "Patch and minor updates in one PR, merged by themselves once CI is green",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "non-major dependencies",
+      "automerge": true
+    },
+    {
+      "description": "Major updates wait for a human",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ]
+}
