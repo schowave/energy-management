@@ -13,6 +13,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=shelly-common.sh
 source "${SCRIPT_DIR}/shelly-common.sh"
 
 SUBNET="192.168.1"
@@ -87,6 +88,8 @@ new_devices=()
 printf "%-16s %-25s %-14s %-4s %-25s %s\n" "IP" "Modell" "MAC" "Gen" "Name" "Status"
 printf "%-16s %-25s %-14s %-4s %-25s %s\n" "───" "───" "───" "───" "───" "───"
 
+# Dateinamen sind die vom Scan selbst geschriebenen Host-Oktette (nur Ziffern)
+# shellcheck disable=SC2012
 for f in $(ls "${TMPDIR_SCAN}/" 2>/dev/null | sort -n); do
     line=$(cat "${TMPDIR_SCAN}/${f}")
     IFS='|' read -r ip model mac name gen <<< "$line"
@@ -171,7 +174,7 @@ for device in "${new_devices[@]}"; do
     echo "  Geschoss: ${GESCHOSSE[*]}"
     read -rp "  Geschoss: " geschoss
     geschoss=$(echo "$geschoss" | tr '[:lower:]' '[:upper:]')
-    if [[ ! " ${GESCHOSSE[*]} " =~ " ${geschoss} " ]]; then
+    if [[ " ${GESCHOSSE[*]} " != *" ${geschoss} "* ]]; then
         echo -e "  ${YELLOW}⚠️  Unbekanntes Geschoss '${geschoss}', wird trotzdem verwendet${NC}"
     fi
 
