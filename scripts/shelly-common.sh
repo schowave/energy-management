@@ -5,7 +5,8 @@
 # Wird per "source" eingebunden, nicht direkt ausgeführt.
 # ============================================================================
 
-# Farben
+# Farben (YELLOW wird nur von den einbindenden Skripten genutzt)
+# shellcheck disable=SC2034
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
 # Pfade (SCRIPT_DIR muss VOR dem Sourcing gesetzt sein, oder wir leiten ab)
@@ -33,7 +34,10 @@ derive_hostname() {
 # ---------------------------------------------------------------------------
 load_devices() {
     DEVICES=()
+    # register wird von shelly-devices.sh aufgerufen
+    # shellcheck disable=SC2329
     register() { DEVICES+=("$1;$2;$3"); }
+    # shellcheck source=shelly-devices.sh
     source "$DEVICES_FILE"
 }
 
@@ -139,7 +143,10 @@ if isinstance(devices, dict):
     while IFS='|' read -r mac name category room_id; do
         [[ -z "$mac" ]] && continue
         cloud_names["$mac"]="$name"
+        # cloud_categories/cloud_rooms werden in shelly-discover.sh gelesen
+        # shellcheck disable=SC2034
         cloud_categories["$mac"]="$category"
+        # shellcheck disable=SC2034
         cloud_rooms["$mac"]="$room_id"
     done < "$mapfile_tmp"
 

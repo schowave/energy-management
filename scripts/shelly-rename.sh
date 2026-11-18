@@ -15,6 +15,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=shelly-common.sh
 source "${SCRIPT_DIR}/shelly-common.sh"
 
 DRY_RUN=false
@@ -131,8 +132,8 @@ for entry in "${DEVICES[@]}"; do
     fi
 
     # Name setzen
-    result=$(curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Sys.SetConfig" \
-        -d "{\"config\":{\"device\":{\"name\":\"${name}\"}}}" 2>/dev/null) || {
+    curl -s --max-time "$TIMEOUT" "http://${ip}/rpc/Sys.SetConfig" \
+        -d "{\"config\":{\"device\":{\"name\":\"${name}\"}}}" >/dev/null 2>&1 || {
         echo -e "  ${RED}❌ Fehler beim Name setzen${NC}\n"
         ((failed++))
         continue

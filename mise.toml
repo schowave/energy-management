@@ -1,0 +1,21 @@
+# Workspace standard: `mise run setup` after a fresh clone, `mise run check` before every push.
+
+[tools]
+shellcheck = "0.11.0"
+actionlint = "1.7.12"
+
+[tasks.setup]
+description = "Install all pinned tools"
+run = "mise install"
+
+[tasks."check:shellcheck"]
+description = "Lint the shell scripts"
+run = "find scripts -type f -name '*.sh' -print0 | xargs -0 shellcheck -x"
+
+[tasks."check:actionlint"]
+description = "Lint GitHub Actions workflows"
+run = "actionlint"
+
+[tasks.check]
+description = "Everything that must be green before a push"
+depends = ["check:shellcheck", "check:actionlint"]
